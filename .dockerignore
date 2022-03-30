@@ -1,0 +1,8 @@
+*
+!emischeduler/src/**
+!emischeduler/pyproject.toml
+!emischeduler/poetry.lock
+!emischeduler/LICENSE
+!emischeduler/README.md
+!environment.yml
+!requirements.txt

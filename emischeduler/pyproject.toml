@@ -1,0 +1,44 @@
+[tool.poetry]
+name = "emischeduler"
+version = "0.1.0"
+description = "emission scheduling 📅"
+readme = "README.md"
+authors = ["radio-aktywne <it@radioaktywne.pl>"]
+classifiers = [
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent"
+]
+repository = "https://github.com/radio-aktywne/emischeduler"
+documentation = "https://radio-aktywne.github.io/emischeduler"
+
+[tool.poetry.dependencies]
+python = "^3.9"
+typer = { version = "^0.4", extras = ["all"] }
+click = "~8.0.0"
+pydantic = "^1.9"
+redis = "^4.2"
+rq = "^1.10"
+rqmonitor = "^1.0"
+gevent = "^21.12"
+minio = "^7.1"
+httpx = "^0.22"
+websockets = "^10.2"
+pystreams = { git = "https://github.com/radio-aktywne/pystreams.git", tag = "0.1.1" }
+
+# dev
+
+# test
+pytest = { version = "^7.0", optional = true }
+
+[tool.poetry.extras]
+# need to do it that way until poetry supports dependency groups: https://github.com/python-poetry/poetry/issues/1644
+dev = ["pytest"]
+test = ["pytest"]
+[tool.poetry.scripts]
+# cli entry point
+emischeduler = "emischeduler.__main__:cli"
+
+[build-system]
+# this should be there, see https://python-poetry.org/docs/pyproject/#poetry-and-pep-517
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
