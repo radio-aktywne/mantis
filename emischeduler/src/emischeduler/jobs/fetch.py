@@ -4,7 +4,7 @@ from logging import Logger
 from minio import Minio
 
 from emischeduler.config import config
-from emischeduler.models.sync import Event
+from emischeduler.models.stream import Event
 
 
 def get_logger() -> Logger:
@@ -26,7 +26,7 @@ def get_recordings_bucket() -> str:
 
 def get_recording_path(client: Minio, event: Event) -> str:
     objects = client.list_objects(
-        get_recordings_bucket(), prefix=f"{event.id}/"
+        get_recordings_bucket(), prefix=f"{event.show.label}/"
     )
     latest = max(
         [o for o in objects if not o.is_dir], key=lambda o: o.last_modified
@@ -37,7 +37,7 @@ def get_recording_path(client: Minio, event: Event) -> str:
 def fetch_internal(
     event: Event, path: str, logger: Logger = get_logger()
 ) -> None:
-    logger.info(f"Fetching stream file for {event.id}...")
+    logger.info(f"Fetching stream file for {event.show.label}...")
     logger.info("Getting Minio client...")
     client = get_minio()
     logger.info("Resolving bucket...")

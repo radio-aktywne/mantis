@@ -2,32 +2,63 @@ import logging
 from datetime import datetime, timedelta
 from logging import Logger
 from tempfile import mkstemp
+from typing import List
 
+import httpx
+from pydantic import parse_obj_as
 from rq import Queue, get_current_job
 
+from emischeduler.config import config
 from emischeduler.jobs.cleanup import cleanup
 from emischeduler.jobs.fetch import fetch
 from emischeduler.jobs.reserve import reserve
 from emischeduler.jobs.stream import stream
-from emischeduler.models.sync import Event, Timetable
+from emischeduler.models import stream as StreamModels, sync as SyncModels
 from emischeduler.queues import QueueKeys
-from emischeduler.utils import ExponentialBackoffRetry, to_utc
+from emischeduler.utils import ExponentialBackoffRetry, to_utc, utcnow
 
 
 def get_logger() -> Logger:
     return logging.getLogger("sync")
 
 
-def get_timetable() -> Timetable:
-    # TODO: fill after making emitimes
-    return Timetable(events=[])
+def timetable_endpoint() -> str:
+    return f"http://{config.emishows_host}:{config.emishows_port}/timetable/"
+
+
+def get_timetable() -> List[SyncModels.Event]:
+    from_date = utcnow()
+    to_date = from_date + timedelta(days=1)
+    response = httpx.get(
+        timetable_endpoint(),
+        params={
+            "from": from_date.replace(tzinfo=None).isoformat(),
+            "to": to_date.replace(tzinfo=None).isoformat(),
+        },
+    )
+    return parse_obj_as(List[SyncModels.Event], response.json())
 
 
 def get_queue(key: str) -> Queue:
     return Queue.from_queue_key(key)
 
 
-def enqueue_replay(event: Event, keys: QueueKeys) -> None:
+def map_event(event: SyncModels.Event) -> StreamModels.Event:
+    return StreamModels.Event(
+        show=StreamModels.Show(
+            label=str(event.show.label),
+            metadata={
+                "title": event.show.title,
+                "description": event.show.description,
+            },
+        ),
+        start=to_utc(event.params.start),
+        end=to_utc(event.params.end),
+    )
+
+
+def enqueue_replay(event: SyncModels.Event, keys: QueueKeys) -> None:
+    event = map_event(event)
     _, path = mkstemp()
     fetch_job = get_queue(keys.fetch).enqueue_at(
         to_utc(event.start) - timedelta(minutes=30),
@@ -81,8 +112,8 @@ def sync_internal(keys: QueueKeys, logger: Logger = get_logger()) -> None:
     timetable = get_timetable()
     logger.info("Got timetable.")
     logger.info("Enqueueing events...")
-    for event in timetable.events:
-        if event.type == "replay":
+    for event in timetable:
+        if event.type == 2:
             enqueue_replay(event, keys)
     logger.info("Events enqueued.")
     logger.info("Enqueueing next sync...")

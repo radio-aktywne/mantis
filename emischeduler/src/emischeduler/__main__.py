@@ -17,7 +17,7 @@ from emischeduler.dashboard import Dashboard
 from emischeduler.jobs.sync import enqueue_sync_at
 from emischeduler.queues import QueueRegistry
 from emischeduler.redis import get_redis_client
-from emischeduler.utils import GracefulShutdown, next_at, utcnow
+from emischeduler.utils import GracefulShutdown, next_at
 from emischeduler.workers import WorkerPoolRegistry
 
 cli = typer.Typer()  # this is actually callable and thus can be an entry point

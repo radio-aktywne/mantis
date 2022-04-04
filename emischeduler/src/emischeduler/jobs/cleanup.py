@@ -4,7 +4,7 @@ from pathlib import Path
 
 from rq.job import Job, get_current_job
 
-from emischeduler.models.sync import Event
+from emischeduler.models.stream import Event
 
 
 def get_logger() -> Logger:
@@ -14,7 +14,7 @@ def get_logger() -> Logger:
 def cleanup_internal(
     event: Event, path: str, logger: Logger = get_logger()
 ) -> None:
-    logger.info(f"Cleaning up after {event.id}...")
+    logger.info(f"Cleaning up after {event.show.label}...")
     logger.info(f"Deleting stream file {path}...")
     Path(path).unlink(missing_ok=True)
     logger.info("Cleanup complete.")
