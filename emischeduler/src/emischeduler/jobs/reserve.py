@@ -8,17 +8,15 @@ from rq.job import Job, get_current_job
 from websockets import connect
 
 from emischeduler.config import config
-from emischeduler.models.reserve import (
+from emischeduler.models.stream import (
     Availability,
     AvailableNotification,
     AvailableResponse,
-    Event as ReserveEvent,
-    Reservation,
+    Event,
     ReserveRequest,
     ReserveResponse,
     Token,
 )
-from emischeduler.models.sync import Event
 
 
 def get_logger() -> Logger:
@@ -65,15 +63,8 @@ def wait_for_availability() -> None:
 
 def make_reservation(event: Event) -> Token:
     request = ReserveRequest(
-        reservation=Reservation(
-            event=ReserveEvent(
-                id=event.id,
-                title=event.title,
-                start=event.start,
-                end=event.end,
-            ),
-            record=False,
-        )
+        event=event,
+        record=False,
     )
     response = httpx.post(reserve_endpoint(), json=json.loads(request.json()))
     response.raise_for_status()
@@ -81,7 +72,7 @@ def make_reservation(event: Event) -> Token:
 
 
 def reserve_internal(event: Event, logger: Logger = get_logger()) -> Token:
-    logger.info(f"Reserving stream for {event.id}...")
+    logger.info(f"Reserving stream for {event.show.label}...")
     logger.info(f"Checking availability...")
     if not get_availability().available:
         logger.info(f"Not available!")

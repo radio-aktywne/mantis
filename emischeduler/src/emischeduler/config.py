@@ -25,6 +25,8 @@ class Config(BaseModel):
     emiarchive_password: str = os.getenv(
         "EMISCHEDULER_EMIARCHIVE_PASSWORD", "password"
     )
+    emishows_host: str = os.getenv("EMISCHEDULER_EMISHOWS_HOST", "localhost")
+    emishows_port: int = int(os.getenv("EMISCHEDULER_EMISHOWS_PORT", 35000))
 
 
 config = Config()
