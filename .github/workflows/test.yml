@@ -39,20 +39,11 @@ env:
 jobs:
   test:
     name: Run tests
-    strategy:
-      # don't stop all tests if one fails
-      fail-fast: false
-      matrix:
-        # better to use pinned versions here
-        config:
-          - { os: ubuntu-20.04, shell: bash -l }
-          - { os: macos-10.15, shell: bash -l }
-          - { os: windows-2019, shell: cmd /C CALL }
-    runs-on: ${{ matrix.config.os }}
+    runs-on: ubuntu-20.04
     defaults:
       run:
         # necessary for conda to work
-        shell: ${{ matrix.config.shell }} {0}
+        shell: bash -l {0}
     steps:
       - # get repository code
         name: Checkout code
