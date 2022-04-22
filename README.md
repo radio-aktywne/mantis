@@ -4,8 +4,8 @@
 
 emission scheduling 📅
 
-[![Running tests](https://github.com/radio-aktywne/emischeduler/actions/workflows/test.yml/badge.svg)](https://github.com/radio-aktywne/emischeduler/actions/workflows/test.yml)
-[![Deploying docs](https://github.com/radio-aktywne/emischeduler/actions/workflows/docs.yml/badge.svg)](https://github.com/radio-aktywne/emischeduler/actions/workflows/docs.yml)
+[![Tests](https://github.com/radio-aktywne/emischeduler/actions/workflows/test-docker.yml/badge.svg)](https://github.com/radio-aktywne/emischeduler/actions/workflows/test-docker.yml)
+[![Docs](https://github.com/radio-aktywne/emischeduler/actions/workflows/docs.yml/badge.svg)](https://github.com/radio-aktywne/emischeduler/actions/workflows/docs.yml)
 
 </div>
 
@@ -47,8 +47,8 @@ $ emischeduler
 We are using [`conda`](https://conda.io) for environment management (but you
 can as well use any other tool, e.g. `pyenv + venv`). The major reason is
 that `conda` lets you specify `python` version and will install that version in
-the environment. This ensures consistency between different instances (
-developers, CI, deployment).
+the environment. This ensures consistency between different instances
+(developers, CI, deployment).
 
 The first step is of course to install [`conda`](https://conda.io).
 
@@ -124,7 +124,7 @@ for them.
 Docs should be placed in `emischeduler/docs/docs`. They are pretty
 straightforward to write.
 
-To build the docs, `cd` into `emischeduler/docs` and run:
+To build the docs,`cd` into `emischeduler/docs` and run:
 
 ```sh
 mkdocs build
@@ -154,10 +154,10 @@ changes in the `poetry.lock` file.
 When you push changes to remote, different GitHub Actions run to ensure project
 consistency. There are defined workflows for:
 
-- testing on different platforms
 - deploying docs to GitHub Pages
-- testing Docker builds
+- testing inside Docker container
 - drafting release notes
+- publishing Docker images
 
 For more info see the files in `.github/workflows` directory and `Actions` tab
 on GitHub.
@@ -171,6 +171,11 @@ themselves are broken).
 Every time you merge a pull request into main, a draft release is automatically
 updated, adding the pull request to changelog. Changes can be categorized by
 using labels. You can configure that in `.github/release-drafter.yml` file.
+
+Every time you publish a release:
+
+- the Docker image is built and uploaded to GitHub registry with tag taken from
+  release tag
 
 ## Docker
 

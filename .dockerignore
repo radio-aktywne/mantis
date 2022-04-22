@@ -1,5 +1,6 @@
 *
 !emischeduler/src/**
+!emischeduler/tests/**
 !emischeduler/pyproject.toml
 !emischeduler/poetry.lock
 !emischeduler/LICENSE
