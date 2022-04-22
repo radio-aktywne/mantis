@@ -1,13 +1,17 @@
+# this file is needed to install the package from git without support for subdirectories
+# see: https://github.com/python-poetry/poetry/issues/755
+
 [tool.poetry]
 name = "emischeduler"
 version = "0.2.0"
 description = "emission scheduling 📅"
-readme = "README.md"
+readme = "emischeduler/README.md"
 authors = ["radio-aktywne <it@radioaktywne.pl>"]
 classifiers = ["License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent"]
 repository = "https://github.com/radio-aktywne/emischeduler"
 documentation = "https://radio-aktywne.github.io/emischeduler"
+packages = [{ include = "emischeduler", from = "emischeduler/src" }]
 
 [tool.poetry.dependencies]
 python = "^3.9"

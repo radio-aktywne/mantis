@@ -1,6 +1,6 @@
 ARG MINICONDA_IMAGE_TAG=4.10.3-alpine
 
-FROM continuumio/miniconda3:$MINICONDA_IMAGE_TAG
+FROM continuumio/miniconda3:$MINICONDA_IMAGE_TAG AS base
 
 # add bash, because it's not available by default on alpine
 # and ffmpeg because we need it for streaming
@@ -28,18 +28,6 @@ SHELL ["conda", "run", "--no-capture-output", "-n", "emischeduler", "/bin/bash",
 COPY ./emischeduler/pyproject.toml ./emischeduler/poetry.lock /tmp/emischeduler/
 WORKDIR /tmp/emischeduler
 
-# install dependencies only (notice that no source code is present yet) and delete cache
-RUN poetry install --no-root && \
-    rm -rf ~/.cache/pypoetry
-
-# add source and necessary files
-COPY ./emischeduler/src/ /tmp/emischeduler/src/
-COPY ./emischeduler/LICENSE ./emischeduler/README.md /tmp/emischeduler/
-
-# build wheel by poetry and install by pip (to force non-editable mode)
-RUN poetry build -f wheel && \
-    python -m pip install --no-deps --no-index --no-cache-dir --find-links=dist emischeduler
-
 ENV EMISCHEDULER_DB_HOST=localhost \
     EMISCHEDULER_DB_PORT=32000 \
     EMISCHEDULER_DB_PASSWORD=password \
@@ -57,4 +45,37 @@ ENV EMISCHEDULER_DB_HOST=localhost \
 
 EXPOSE 33000
 
-ENTRYPOINT ["conda", "run", "--no-capture-output", "-n", "emischeduler", "emischeduler"]
+ENTRYPOINT ["conda", "run", "--no-capture-output", "-n", "emischeduler"]
+
+FROM base AS test
+
+# install dependencies only (notice that no source code is present yet) and delete cache
+RUN poetry install --no-root --extras test && \
+    rm -rf ~/.cache/pypoetry
+
+# add source, tests and necessary files
+COPY ./emischeduler/src/ /tmp/emischeduler/src/
+COPY ./emischeduler/tests/ /tmp/emischeduler/tests/
+COPY ./emischeduler/LICENSE ./emischeduler/README.md /tmp/emischeduler/
+
+# build wheel by poetry and install by pip (to force non-editable mode)
+RUN poetry build -f wheel && \
+    python -m pip install --no-deps --no-index --no-cache-dir --find-links=dist emischeduler
+
+CMD ["pytest"]
+
+FROM base AS production
+
+# install dependencies only (notice that no source code is present yet) and delete cache
+RUN poetry install --no-root && \
+    rm -rf ~/.cache/pypoetry
+
+# add source and necessary files
+COPY ./emischeduler/src/ /tmp/emischeduler/src/
+COPY ./emischeduler/LICENSE ./emischeduler/README.md /tmp/emischeduler/
+
+# build wheel by poetry and install by pip (to force non-editable mode)
+RUN poetry build -f wheel && \
+    python -m pip install --no-deps --no-index --no-cache-dir --find-links=dist emischeduler
+
+CMD ["emischeduler"]
