@@ -19,7 +19,7 @@ rq = "^1.10"
 rqmonitor = "^1.0"
 gevent = "^21.12"
 minio = "^7.1"
-httpx = "^0.22"
+httpx = "^0.23"
 websockets = "^10.2"
 tzdata = "*"
 pystreams = { git = "https://github.com/radio-aktywne/pystreams.git", tag = "0.1.1" }
