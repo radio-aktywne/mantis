@@ -21,7 +21,7 @@ def get_logger() -> Logger:
 
 
 def output_format() -> str:
-    return "ogg"
+    return "opus"
 
 
 def input_node(path: str) -> FFmpegNode:
