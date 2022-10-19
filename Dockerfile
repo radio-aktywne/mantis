@@ -7,26 +7,64 @@ FROM continuumio/miniconda3:$MINICONDA_IMAGE_TAG AS base
 # and git to get pystreams
 RUN apk add --no-cache bash ffmpeg git
 
+WORKDIR /app/
+
 # install poetry
-COPY ./requirements.txt /tmp/requirements.txt
-RUN python3 -m pip install --no-cache-dir -r /tmp/requirements.txt
+COPY ./requirements.txt ./requirements.txt
+RUN --mount=type=cache,target=/root/.cache \
+    python3 -m pip install -r ./requirements.txt
 
 # create new environment
-# see: https://jcristharif.com/conda-docker-tips.html
 # warning: for some reason conda can hang on "Executing transaction" for a couple of minutes
-COPY environment.yml /tmp/environment.yml
-RUN conda env create -f /tmp/environment.yml && \
-    conda clean -afy && \
-    find /opt/conda/ -follow -type f -name '*.a' -delete && \
-    find /opt/conda/ -follow -type f -name '*.pyc' -delete && \
-    find /opt/conda/ -follow -type f -name '*.js.map' -delete
+COPY environment.yaml ./environment.yaml
+RUN --mount=type=cache,target=/opt/conda/pkgs \
+    conda env create -f ./environment.yaml
 
 # "activate" environment for all commands (note: ENTRYPOINT is separate from SHELL)
 SHELL ["conda", "run", "--no-capture-output", "-n", "emischeduler", "/bin/bash", "-c"]
 
+WORKDIR /app/emischeduler/
+
 # add poetry files
-COPY ./emischeduler/pyproject.toml ./emischeduler/poetry.lock /tmp/emischeduler/
-WORKDIR /tmp/emischeduler
+COPY ./emischeduler/pyproject.toml ./emischeduler/poetry.lock ./
+
+FROM base AS test
+
+# install dependencies only (notice that no source code is present yet)
+RUN --mount=type=cache,target=/root/.cache \
+    poetry install --no-root --only main,test
+
+# add source, tests and necessary files
+COPY ./emischeduler/src/ ./src/
+COPY ./emischeduler/tests/ ./tests/
+COPY ./emischeduler/LICENSE ./emischeduler/README.md ./
+
+# build wheel by poetry and install by pip (to force non-editable mode)
+RUN poetry build -f wheel && \
+    python -m pip install --no-deps --no-index --no-cache-dir --find-links=dist emischeduler
+
+# add entrypoint
+COPY ./entrypoint.sh ./entrypoint.sh
+
+ENTRYPOINT ["./entrypoint.sh", "pytest"]
+CMD []
+
+FROM base AS production
+
+# install dependencies only (notice that no source code is present yet)
+RUN --mount=type=cache,target=/root/.cache \
+    poetry install --no-root --only main
+
+# add source and necessary files
+COPY ./emischeduler/src/ ./src/
+COPY ./emischeduler/LICENSE ./emischeduler/README.md ./
+
+# build wheel by poetry and install by pip (to force non-editable mode)
+RUN poetry build -f wheel && \
+    python -m pip install --no-deps --no-index --no-cache-dir --find-links=dist emischeduler
+
+# add entrypoint
+COPY ./entrypoint.sh ./entrypoint.sh
 
 ENV EMISCHEDULER_DB_HOST=localhost \
     EMISCHEDULER_DB_PORT=32000 \
@@ -45,37 +83,5 @@ ENV EMISCHEDULER_DB_HOST=localhost \
 
 EXPOSE 33000
 
-ENTRYPOINT ["conda", "run", "--no-capture-output", "-n", "emischeduler"]
-
-FROM base AS test
-
-# install dependencies only (notice that no source code is present yet) and delete cache
-RUN poetry install --no-root --extras test && \
-    rm -rf ~/.cache/pypoetry
-
-# add source, tests and necessary files
-COPY ./emischeduler/src/ /tmp/emischeduler/src/
-COPY ./emischeduler/tests/ /tmp/emischeduler/tests/
-COPY ./emischeduler/LICENSE ./emischeduler/README.md /tmp/emischeduler/
-
-# build wheel by poetry and install by pip (to force non-editable mode)
-RUN poetry build -f wheel && \
-    python -m pip install --no-deps --no-index --no-cache-dir --find-links=dist emischeduler
-
-CMD ["pytest"]
-
-FROM base AS production
-
-# install dependencies only (notice that no source code is present yet) and delete cache
-RUN poetry install --no-root && \
-    rm -rf ~/.cache/pypoetry
-
-# add source and necessary files
-COPY ./emischeduler/src/ /tmp/emischeduler/src/
-COPY ./emischeduler/LICENSE ./emischeduler/README.md /tmp/emischeduler/
-
-# build wheel by poetry and install by pip (to force non-editable mode)
-RUN poetry build -f wheel && \
-    python -m pip install --no-deps --no-index --no-cache-dir --find-links=dist emischeduler
-
-CMD ["emischeduler"]
+ENTRYPOINT ["./entrypoint.sh", "emischeduler"]
+CMD []

@@ -1,7 +1,6 @@
 from typing import Optional
 
 from redis.client import Pipeline
-from redis.exceptions import RedisError
 from rq import Queue, scheduler, worker
 from rq.job import Job, JobStatus
 

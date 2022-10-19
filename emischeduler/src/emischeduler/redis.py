@@ -1,22 +1,17 @@
 from typing import Optional
 
 from redis.client import Redis
-from rq import Connection
 
-from emischeduler.config import config
+from emischeduler.config.models import RedisConfig
 
 
-def get_redis_client() -> Redis:
-    return Redis(
-        host=config.redis_host,
-        port=config.redis_port,
-        password=config.redis_password,
-    )
+def get_redis_client(config: RedisConfig) -> Redis:
+    return Redis(host=config.host, port=config.port, password=config.password)
 
 
 def make_url(
     host: str,
-    port: str,
+    port: int,
     username: Optional[str] = None,
     password: Optional[str] = None,
 ) -> str:

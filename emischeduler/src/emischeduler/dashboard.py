@@ -6,25 +6,23 @@ from rqmonitor import monitor_blueprint
 from rqmonitor.cli import create_app_with_blueprint
 from rqmonitor.defaults import RQ_MONITOR_REFRESH_INTERVAL
 
-from emischeduler.config import config
+from emischeduler.config.models import Config
 from emischeduler.redis import make_url
 
 
 class Dashboard:
-    def __init__(
-        self,
-        host: str = config.admin_host,
-        port: int = config.admin_port,
-        username: str = config.admin_username,
-        password: str = config.admin_password,
-        redis_url: str = make_url(
-            config.redis_host,
-            config.redis_port,
-            password=config.redis_password,
-        ),
-    ) -> None:
+    def __init__(self, config: Config) -> None:
+        redis_url = make_url(
+            config.redis.host,
+            config.redis.port,
+            password=config.redis.password,
+        )
         self.server = self.create_server(
-            host, port, username, password, redis_url
+            config.admin.host,
+            config.admin.port,
+            config.admin.username,
+            config.admin.password,
+            redis_url,
         )
         self.process: Optional[Process] = None
 
