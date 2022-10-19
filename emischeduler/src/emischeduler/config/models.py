@@ -16,19 +16,19 @@ class AdminConfig(BaseModel):
     password: str = "password"
 
 
-class EmistreamConfig(BaseConfig):
+class EmistreamConfig(BaseModel):
     host: str = "localhost"
     port: int = 10000
 
 
-class EmiarchiveConfig(BaseConfig):
+class EmiarchiveConfig(BaseModel):
     host: str = "localhost"
     port: int = 30000
     username: str = "readonly"
     password: str = "password"
 
 
-class EmishowsConfig(BaseConfig):
+class EmishowsConfig(BaseModel):
     host: str = "localhost"
     port: int = 35000
 
