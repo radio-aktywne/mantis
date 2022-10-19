@@ -3,7 +3,7 @@ from pydantic import BaseModel
 from emischeduler.config.base import BaseConfig
 
 
-class RedisConfig(BaseModel):
+class DatabaseConfig(BaseModel):
     host: str = "localhost"
     port: int = 32000
     password: str = "password"
@@ -34,7 +34,7 @@ class EmishowsConfig(BaseConfig):
 
 
 class Config(BaseConfig):
-    redis: RedisConfig = RedisConfig()
+    db: DatabaseConfig = DatabaseConfig()
     admin: AdminConfig = AdminConfig()
     emistream: EmistreamConfig = EmistreamConfig()
     emiarchive: EmiarchiveConfig = EmiarchiveConfig()
