@@ -1,21 +1,20 @@
 import logging
-from logging import Logger
 
 from minio import Minio
 
-from emischeduler.config import config
+from emischeduler.config.models import EmiarchiveConfig, Config
 from emischeduler.models.stream import Event
 
 
-def get_logger() -> Logger:
+def get_logger() -> logging.Logger:
     return logging.getLogger("fetch")
 
 
-def get_minio() -> Minio:
+def get_minio(config: EmiarchiveConfig) -> Minio:
     return Minio(
-        endpoint=f"{config.emiarchive_host}:{config.emiarchive_port}",
-        access_key=config.emiarchive_username,
-        secret_key=config.emiarchive_password,
+        endpoint=f"{config.host}:{config.port}",
+        access_key=config.username,
+        secret_key=config.password,
         secure=False,
     )
 
@@ -35,11 +34,14 @@ def get_recording_path(client: Minio, event: Event) -> str:
 
 
 def fetch_internal(
-    event: Event, path: str, logger: Logger = get_logger()
+    config: Config,
+    event: Event,
+    path: str,
+    logger: logging.Logger = get_logger(),
 ) -> None:
     logger.info(f"Fetching stream file for {event.show.label}...")
     logger.info("Getting Minio client...")
-    client = get_minio()
+    client = get_minio(config.emiarchive)
     logger.info("Resolving bucket...")
     bucket = get_recordings_bucket()
     logger.info("Resolving path...")
@@ -49,5 +51,5 @@ def fetch_internal(
     logger.info("Fetch complete.")
 
 
-def fetch(event: Event, path: str) -> None:
-    return fetch_internal(event, path)
+def fetch(config: Config, event: Event, path: str) -> None:
+    return fetch_internal(config, event, path)

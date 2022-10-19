@@ -5,5 +5,6 @@
 !emischeduler/poetry.lock
 !emischeduler/LICENSE
 !emischeduler/README.md
-!environment.yml
+!environment.yaml
 !requirements.txt
+!entrypoint.sh
