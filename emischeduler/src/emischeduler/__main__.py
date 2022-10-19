@@ -59,7 +59,7 @@ def main(
     logger.info("Config loaded!")
 
     try:
-        client = get_redis_client(config.redis)
+        client = get_redis_client(config.db)
         client.ping()
     except (ConnectionError, RedisError) as e:
         logger.error("Can't connect to redis.", exc_info=e)

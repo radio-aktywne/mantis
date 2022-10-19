@@ -2,10 +2,10 @@ from typing import Optional
 
 from redis.client import Redis
 
-from emischeduler.config.models import RedisConfig
+from emischeduler.config.models import DatabaseConfig
 
 
-def get_redis_client(config: RedisConfig) -> Redis:
+def get_redis_client(config: DatabaseConfig) -> Redis:
     return Redis(host=config.host, port=config.port, password=config.password)
 
 

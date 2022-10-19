@@ -13,9 +13,9 @@ from emischeduler.redis import make_url
 class Dashboard:
     def __init__(self, config: Config) -> None:
         redis_url = make_url(
-            config.redis.host,
-            config.redis.port,
-            password=config.redis.password,
+            config.db.host,
+            config.db.port,
+            password=config.db.password,
         )
         self.server = self.create_server(
             config.admin.host,
