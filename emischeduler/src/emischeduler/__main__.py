@@ -4,34 +4,20 @@ This module provides basic CLI entrypoint.
 
 """
 import logging
-import sys
-from datetime import time
 from typing import List, Optional
 
 import typer
-from redis.exceptions import RedisError
-from rq import Connection
-from rq.registry import ScheduledJobRegistry
 from typer import FileText
 
 from emischeduler import log
-from emischeduler.config.models import Config
-from emischeduler.config.utils import get_config
-from emischeduler.dashboard import Dashboard
-from emischeduler.jobs.sync import enqueue_sync_at
-from emischeduler.queues import QueueRegistry
-from emischeduler.redis import get_redis_client
-from emischeduler.utils import next_at, GracefulShutdown
-from emischeduler.workers import WorkerPoolRegistry
+from emischeduler.api.app import build as build_api
+from emischeduler.config import get_config
+from emischeduler.scheduler.app import build as build_scheduler
+from emischeduler.server import run
 
 cli = typer.Typer()  # this is actually callable and thus can be an entry point
 
 logger = logging.getLogger(__name__)
-
-
-def enqueue_sync(config: Config, queues: QueueRegistry) -> None:
-    if ScheduledJobRegistry(queue=queues.sync_queue).count == 0:
-        enqueue_sync_at(config, queues.keys(), next_at(time(hour=3)))
 
 
 @cli.command()
@@ -58,23 +44,10 @@ def main(
         raise typer.Exit(1)
     logger.info("Config loaded!")
 
-    try:
-        client = get_redis_client(config.db)
-        client.ping()
-    except (ConnectionError, RedisError) as e:
-        logger.error("Can't connect to redis.", exc_info=e)
-        sys.exit(1)
+    scheduler = build_scheduler(config)
+    api = build_api(config, scheduler)
 
-    with Connection(client):
-        dashboard = Dashboard(config)
-        queues = QueueRegistry()
-        pools = WorkerPoolRegistry(queues)
-        pools.start()
-        dashboard.start()
-        enqueue_sync(config, queues)
-        with GracefulShutdown():
-            pools.wait()
-            dashboard.wait()
+    run(scheduler, api, config)
 
 
 if __name__ == "__main__":

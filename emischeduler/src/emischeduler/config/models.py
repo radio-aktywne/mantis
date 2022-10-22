@@ -1,19 +1,13 @@
+from pathlib import Path
+
 from pydantic import BaseModel
 
 from emischeduler.config.base import BaseConfig
 
 
-class DatabaseConfig(BaseModel):
-    host: str = "localhost"
-    port: int = 32000
-    password: str = "password"
-
-
-class AdminConfig(BaseModel):
+class ApiConfig(BaseModel):
     host: str = "0.0.0.0"
     port: int = 33000
-    username: str = "admin"
-    password: str = "password"
 
 
 class EmistreamConfig(BaseModel):
@@ -26,6 +20,7 @@ class EmiarchiveConfig(BaseModel):
     port: int = 30000
     username: str = "readonly"
     password: str = "password"
+    secure: bool = False
 
 
 class EmishowsConfig(BaseModel):
@@ -34,8 +29,10 @@ class EmishowsConfig(BaseModel):
 
 
 class Config(BaseConfig):
-    db: DatabaseConfig = DatabaseConfig()
-    admin: AdminConfig = AdminConfig()
+    api: ApiConfig = ApiConfig()
     emistream: EmistreamConfig = EmistreamConfig()
     emiarchive: EmiarchiveConfig = EmiarchiveConfig()
     emishows: EmishowsConfig = EmishowsConfig()
+    log_file: Path = Path("log.csv")
+    live_recordings_bucket: str = "live-recordings"
+    pre_recorded_bucket: str = "pre-recorded"
