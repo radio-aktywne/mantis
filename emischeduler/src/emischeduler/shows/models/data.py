@@ -1,20 +1,21 @@
 from datetime import datetime
-from typing import Any, Dict, Literal, Optional
+from typing import Optional, Dict, Any, Literal
 from uuid import UUID
 
-from pydantic import BaseModel, validator
+from pydantic import validator
 
-from emischeduler.utils import parse_datetime_with_timezone
+from emischeduler.models.base import SerializableModel
+from emischeduler.time import parse_datetime_with_timezone
 
 
-class Show(BaseModel):
+class Show(SerializableModel):
     id: int
     label: str
     title: str
     description: Optional[str]
 
 
-class EventParams(BaseModel):
+class EventParams(SerializableModel):
     start: datetime
     end: datetime
     rules: Optional[Dict[str, Any]] = None
@@ -24,7 +25,7 @@ class EventParams(BaseModel):
         return parse_datetime_with_timezone(value)
 
 
-class Event(BaseModel):
+class Event(SerializableModel):
     id: UUID
     show: Show
     type: Literal[1, 2]
