@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "emischeduler"
-version = "0.3.3"
+version = "0.3.4"
 description = "emission scheduling 📅"
 readme = "README.md"
 authors = ["radio-aktywne <it@radioaktywne.pl>"]
