@@ -1,5 +1,11 @@
 from rocketry import Rocketry
-from starlite import State, Starlite, WebSocketException, CORSConfig
+from starlite import (
+    State,
+    Starlite,
+    WebSocketException,
+    CORSConfig,
+    OpenAPIConfig,
+)
 
 from emischeduler.api.paths.router import router
 from emischeduler.config import Config
@@ -25,6 +31,7 @@ def build(config: Config, scheduler: Rocketry) -> Starlite:
             allow_methods=["*"],
             allow_headers=["*"],
         ),
+        openapi_config=OpenAPIConfig(title="emischeduler", version="v1alpha"),
         on_startup=[setup],
         on_shutdown=[cleanup],
     )
