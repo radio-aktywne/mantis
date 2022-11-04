@@ -29,21 +29,23 @@ class TasksController(Controller):
         return TaskResponse(task=Task.from_task(task))
 
     @post("/{task_name:str}/enable")
-    async def disable_task(self, state: State, task_name: str) -> TaskResponse:
+    async def enable_task(self, state: State, task_name: str) -> TaskResponse:
         scheduler: Rocketry = state.scheduler
         task: RocketryTask = scheduler.session[task_name]
         task.disabled = False
         return TaskResponse(task=Task.from_task(task))
 
     @post("/{task_name:str}/terminate")
-    async def disable_task(self, state: State, task_name: str) -> TaskResponse:
+    async def terminate_task(
+        self, state: State, task_name: str
+    ) -> TaskResponse:
         scheduler: Rocketry = state.scheduler
         task: RocketryTask = scheduler.session[task_name]
         task.force_termination = True
         return TaskResponse(task=Task.from_task(task))
 
     @post("/{task_name:str}/run")
-    async def disable_task(self, state: State, task_name: str) -> TaskResponse:
+    async def run_task(self, state: State, task_name: str) -> TaskResponse:
         scheduler: Rocketry = state.scheduler
         task: RocketryTask = scheduler.session[task_name]
         task.force_run = True
