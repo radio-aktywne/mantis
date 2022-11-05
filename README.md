@@ -14,9 +14,9 @@ emission scheduling 📅
 
 This `README` provides info about the development process.
 
-For more info about the package itself
-see `emischeduler/README.md`
-or [docs](https://radio-aktywne.github.io/emischeduler).
+For more info about the package itself see
+[package `README`](emischeduler/README.md) or
+[docs](https://radio-aktywne.github.io/emischeduler).
 
 ## Quickstart (on Ubuntu)
 
