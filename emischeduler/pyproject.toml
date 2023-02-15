@@ -15,7 +15,7 @@ pydantic =  { version = "^1.10", extras = ["dotenv"] }
 omegaconf = "^2.2"
 typer = { version = "^0.6", extras = ["all"] }
 rocketry = "^2.4"
-starlite = "^1.2"
+starlite = "^1.51"
 uvicorn = { version = "^0.17", extras = ["standard"] }
 pyhumps = "^3.7"
 minio = "^7.1"
