@@ -1,5 +1,7 @@
 import asyncio
 from collections.abc import AsyncGenerator
+from pathlib import Path
+from tempfile import TemporaryDirectory
 
 import pytest
 import pytest_asyncio
@@ -18,10 +20,18 @@ from tests.utils.waiting.waiter import Waiter
 
 
 @pytest.fixture(scope="session")
-def config() -> Config:
+def path() -> Path:
+    """Path to the store file."""
+
+    with TemporaryDirectory() as directory:
+        yield Path(directory) / "state.json"
+
+
+@pytest.fixture(scope="session")
+def config(path: Path) -> Config:
     """Loaded configuration."""
 
-    return ConfigBuilder().build()
+    return ConfigBuilder(overrides=[f"store.path={path}"]).build()
 
 
 @pytest.fixture(scope="session")

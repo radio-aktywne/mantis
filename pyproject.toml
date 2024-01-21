@@ -24,7 +24,7 @@ pystreams = { git = "https://github.com/radio-aktywne/package-pystreams.git", ta
 # Locking utilities
 pylocks = { git = "https://github.com/radio-aktywne/package-pylocks.git", tag = "0.1.0" }
 # Storage utilities
-pystores = { git = "https://github.com/radio-aktywne/package-pystores.git", tag = "0.1.0" }
+pystores = { git = "https://github.com/radio-aktywne/package-pystores.git", tag = "0.2.0" }
 # Signaling utilities
 pyevents = { git = "https://github.com/radio-aktywne/package-pyevents.git", tag = "0.1.0" }
 # Queuing utilities

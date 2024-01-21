@@ -3,7 +3,6 @@ services:
     build:
       context: ./
       network: host
-    network_mode: host
     environment:
       - "EMISCHEDULER__SERVER__HOST=${EMISCHEDULER__SERVER__HOST:-0.0.0.0}"
       - "EMISCHEDULER__SERVER__PORT=${EMISCHEDULER__SERVER__PORT:-33000}"
@@ -23,3 +22,9 @@ services:
       - "EMISCHEDULER__EMIARCHIVE__PRERECORDED_BUCKET=${EMISCHEDULER__EMIARCHIVE__PRERECORDED_BUCKET:-prerecorded}"
       - "EMISCHEDULER__EMISTREAM__HOST=${EMISCHEDULER__EMISTREAM__HOST:-localhost}"
       - "EMISCHEDULER__EMISTREAM__PORT=${EMISCHEDULER__EMISTREAM__PORT:-10000}"
+    network_mode: host
+    volumes:
+      - data:/app/data/
+
+volumes:
+  data: {}

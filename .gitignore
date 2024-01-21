@@ -10,6 +10,10 @@
 .DS_Store
 .todo
 
+# Data
+/data/*
+!/data/.gitkeep
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

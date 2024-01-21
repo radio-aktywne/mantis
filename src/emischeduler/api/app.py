@@ -15,6 +15,7 @@ from emischeduler.emishows.service import EmishowsService
 from emischeduler.emistream.service import EmistreamService
 from emischeduler.scheduling.cleaning.cleaner import Cleaner
 from emischeduler.scheduling.scheduler import Scheduler
+from emischeduler.scheduling.store import Store
 from emischeduler.scheduling.synchronizer import Synchronizer
 from emischeduler.state import State
 
@@ -58,17 +59,22 @@ class AppBuilder:
     def _build_emistream(self) -> EmistreamService:
         return EmistreamService(config=self._config.emistream)
 
+    def _build_store(self) -> Store:
+        return Store(self._config.store)
+
     def _build_scheduler(
         self,
         emiarchive: EmiarchiveService,
         emishows: EmishowsService,
         emistream: EmistreamService,
+        store: Store,
     ) -> Scheduler:
         return Scheduler(
             config=self._config,
             emiarchive=emiarchive,
             emishows=emishows,
             emistream=emistream,
+            store=store,
         )
 
     def _build_cleaner(self, scheduler: Scheduler) -> Cleaner:
@@ -85,7 +91,8 @@ class AppBuilder:
         emiarchive = self._build_emiarchive()
         emishows = self._build_emishows()
         emistream = self._build_emistream()
-        scheduler = self._build_scheduler(emiarchive, emishows, emistream)
+        store = self._build_store()
+        scheduler = self._build_scheduler(emiarchive, emishows, emistream, store)
         cleaner = self._build_cleaner(scheduler)
         synchronizer = self._build_synchronizer(emishows, scheduler)
 
@@ -95,6 +102,7 @@ class AppBuilder:
                 "emiarchive": emiarchive,
                 "emishows": emishows,
                 "emistream": emistream,
+                "store": store,
                 "scheduler": scheduler,
                 "cleaner": cleaner,
                 "synchronizer": synchronizer,
@@ -113,6 +121,13 @@ class AppBuilder:
             yield
         finally:
             logger.disabled = disabled
+
+    @asynccontextmanager
+    async def _store_lifespan(self, app: Litestar) -> AsyncGenerator[None, None]:
+        state: State = app.state
+
+        async with state.store:
+            yield
 
     @asynccontextmanager
     async def _scheduler_lifespan(self, app: Litestar) -> AsyncGenerator[None, None]:
@@ -140,6 +155,7 @@ class AppBuilder:
     ) -> list[Callable[[Litestar], AbstractAsyncContextManager]]:
         return [
             self._suppress_httpx_logging_lifespan,
+            self._store_lifespan,
             self._scheduler_lifespan,
             self._cleaner_lifespan,
             self._synchronizer_lifespan,

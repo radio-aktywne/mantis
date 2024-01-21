@@ -1067,7 +1067,7 @@ resolved_reference = "f93906c081f4bd6cf3b54691f6daea822b505ff8"
 
 [[package]]
 name = "pystores"
-version = "0.1.0"
+version = "0.2.0"
 description = "Storage utilities for Python 🐍"
 optional = false
 python-versions = "^3.12"
@@ -1077,8 +1077,8 @@ develop = false
 [package.source]
 type = "git"
 url = "https://github.com/radio-aktywne/package-pystores.git"
-reference = "0.1.0"
-resolved_reference = "418849454caa097da4fed11244efbb87e8e3fa22"
+reference = "0.2.0"
+resolved_reference = "2bc07577bd36b91fbf6abb2ee07818d202702ebc"
 
 [[package]]
 name = "pystreams"
@@ -1748,4 +1748,4 @@ files = [
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.12"
-content-hash = "8fff671da7f1e5a5d771c87dc79d91037ae692e67e505d8ccdd56136d1307555"
+content-hash = "069c3f9d6d358ab1bac8f5f86a390186a816cc29a6dda173dc75f3da40ea9dc8"

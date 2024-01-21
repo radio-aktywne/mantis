@@ -6,6 +6,7 @@ from emischeduler.emishows.service import EmishowsService
 from emischeduler.emistream.service import EmistreamService
 from emischeduler.scheduling.cleaning.cleaner import Cleaner
 from emischeduler.scheduling.scheduler import Scheduler
+from emischeduler.scheduling.store import Store
 from emischeduler.scheduling.synchronizer import Synchronizer
 
 
@@ -17,6 +18,7 @@ class State(LitestarState):
         emiarchive: Service for emiarchive.
         emishows: Service for emishows API.
         emistream: Service for emistream API.
+        store: Store for scheduler's state.
         scheduler: Scheduler that manages the lifecycle of scheduled tasks.
         cleaner: Cleaner that removes finished tasks from scheduler's state.
         synchronizer: Synchronizer that synchronizes scheduler's tasks with expected ones.
@@ -26,6 +28,7 @@ class State(LitestarState):
     emiarchive: EmiarchiveService
     emishows: EmishowsService
     emistream: EmistreamService
+    store: Store
     scheduler: Scheduler
     cleaner: Cleaner
     synchronizer: Synchronizer
