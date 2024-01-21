@@ -1,3 +1,5 @@
+import asyncio
+
 from minio import Minio
 from minio.datatypes import Object
 from minio.error import MinioException
@@ -5,7 +7,6 @@ from minio.error import MinioException
 from emischeduler.config.models import EmiarchiveConfig
 from emischeduler.emiarchive import errors as e
 from emischeduler.emiarchive import models as m
-from emischeduler.utils import background
 
 
 class BucketReader:
@@ -30,7 +31,7 @@ class BucketReader:
         """Get an object."""
 
         try:
-            object = await background(
+            object = await asyncio.to_thread(
                 self._client.stat_object,
                 bucket_name=self._bucket,
                 object_name=request.name,
@@ -45,7 +46,7 @@ class BucketReader:
         """List objects."""
 
         try:
-            objects = await background(
+            objects = await asyncio.to_thread(
                 self._client.list_objects,
                 bucket_name=self._bucket,
                 prefix=request.prefix,
@@ -61,7 +62,7 @@ class BucketReader:
         """Download an object."""
 
         try:
-            object = await background(
+            object = await asyncio.to_thread(
                 self._client.fget_object,
                 bucket_name=self._bucket,
                 object_name=request.name,
