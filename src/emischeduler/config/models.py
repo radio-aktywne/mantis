@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta
+from pathlib import Path
 
 from pydantic import BaseModel, Field, NaiveDatetime
 
@@ -19,6 +20,16 @@ class ServerConfig(BaseModel):
         le=65535,
         title="Port",
         description="Port to run the server on.",
+    )
+
+
+class StoreConfig(BaseModel):
+    """Configuration for the store."""
+
+    path: Path = Field(
+        "data/state.json",
+        title="Path",
+        description="Path to the store file.",
     )
 
 
@@ -145,6 +156,11 @@ class Config(BaseConfig):
         ServerConfig(),
         title="Server",
         description="Configuration for the server.",
+    )
+    store: StoreConfig = Field(
+        StoreConfig(),
+        title="Store",
+        description="Configuration for the store.",
     )
     stream: StreamConfig = Field(
         StreamConfig(),

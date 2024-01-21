@@ -20,9 +20,10 @@ class Scheduler(s.Scheduler):
         emiarchive: EmiarchiveService,
         emishows: EmishowsService,
         emistream: EmistreamService,
+        store: Store,
     ) -> None:
         super().__init__(
-            store=Store(),
+            store=store,
             lock=Lock(),
             events=EventFactory(),
             queue=Queue(),
