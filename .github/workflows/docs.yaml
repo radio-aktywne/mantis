@@ -1,46 +1,115 @@
 name: Docs
 
-on:
-  workflow_dispatch:
+# Only one workflow can run at a time
+# If there is newer workflow in progress, cancel older ones
+concurrency:
+  group: docs
+  cancel-in-progress: true
+
+# Put 'on' in quotes to avoid YAML parsing error
+"on":
+  # Enable manual triggering
+  workflow_dispatch: {}
+  # Run on commits to main branch
   push:
-    # trigger only on main branch
     branches:
       - main
-    # trigger only on changes to the following files
+    # Run only on changes to relevant files
     paths:
-      - "emischeduler/docs/**"
-      - ".github/workflows/docs.yaml"
-
-# env for all jobs
-env:
-  PIP_CACHE_DIR: ~/.cache/pip
-  # increase this value to manually reset cache
-  CACHE_NUMBER: 0
+      - .github/workflows/docs.yaml
+      - docs/**
+      - flake.lock
+      - "*.nix"
+      - Taskfile.dist.yaml
 
 jobs:
-  docs:
-    name: Deploy docs
-    # better to use pinned version here
-    runs-on: ubuntu-latest
+  build:
+    name: Build docs
+    # Pin version of Ubuntu to avoid breaking changes
+    runs-on: ubuntu-22.04
+    # Use reasonable timeout to avoid stuck workflows
+    timeout-minutes: 10
+    env:
+      NIX_CACHE_DIR: /home/runner/.nixcache/
+    permissions:
+      # Needed to checkout code
+      contents: read
+      # Needed to upload page artifact
+      pages: write
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
-      - name: Cache packages
-        uses: actions/cache@v3
+        uses: actions/checkout@v4.1.1
+      - name: Setup Nix cache
+        uses: actions/cache@v3.3.2
+        id: cache-nix
         with:
-          path: |
-            ${{ env.PIP_CACHE_DIR }}
-          key: ${{ runner.os }}-pkgs-${{ env.CACHE_NUMBER }}
-      - name: Set up Python
-        id: python
-        uses: actions/setup-python@v4
+          path: ${{ env.NIX_CACHE_DIR }}
+          key: docs-nix
+      - name: Setup docs modules cache
+        uses: actions/cache@v3.3.2
         with:
-          python-version: "3.10.6"
-      - name: Set up pip cache
-        run: ${{ steps.python.outputs.python-path }} -m pip config set global.cache-dir ${{ env.PIP_CACHE_DIR }}
-      - name: Install mkdocs
-        working-directory: emischeduler/docs
-        run: ${{ steps.python.outputs.python-path }} -m pip install -r requirements.txt
-      - name: Deploy docs
-        working-directory: emischeduler/docs
-        run: mkdocs gh-deploy --force
+          path: docs/node_modules/
+          key: docs-modules
+      - name: Install Nix
+        uses: cachix/install-nix-action@v24
+        with:
+          github_access_token: ${{ github.token }}
+          install_url: https://releases.nixos.org/nix/nix-2.19.2/install
+      # See: https://github.com/cachix/install-nix-action/issues/56
+      - name: Import Nix store cache
+        if: steps.cache-nix.outputs.cache-hit == 'true'
+        run: >
+          nix-store
+          --import
+          < ${{ env.NIX_CACHE_DIR }}/archive.nar
+      - name: Build docs
+        run: >
+          nix
+          develop
+          ./#docs
+          --command
+          --
+          task
+          docs
+          --
+          build
+          --out-dir
+          build/
+      - name: Setup Pages
+        uses: actions/configure-pages@v4.0.0
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v2.0.0
+        with:
+          path: docs/build/
+      # See: https://github.com/cachix/install-nix-action/issues/56
+      - name: Export Nix store cache
+        if: "!cancelled()"
+        run: >
+          mkdir
+          -p
+          ${{ env.NIX_CACHE_DIR }}
+          &&
+          nix-store
+          --export $(find /nix/store/ -maxdepth 1 -name '*-*')
+          > ${{ env.NIX_CACHE_DIR }}/archive.nar
+  deploy:
+    name: Deploy docs
+    # Run only if build job succeeded
+    needs: build
+    # Pin version of Ubuntu to avoid breaking changes
+    runs-on: ubuntu-22.04
+    # Use reasonable timeout to avoid stuck workflows
+    timeout-minutes: 10
+    # Use Pages environment
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    permissions:
+      # Needed to to deploy to Pages
+      pages: write
+      # Also needed to deploy to Pages
+      id-token: write
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v3.0.1
