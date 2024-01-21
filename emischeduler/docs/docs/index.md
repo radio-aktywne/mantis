@@ -1,5 +1,0 @@
-# emischeduler
-
-emission scheduling 📅
-
-TODO
