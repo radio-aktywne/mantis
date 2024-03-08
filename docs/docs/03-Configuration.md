@@ -13,6 +13,9 @@ You can configure the app at runtime using various environment variables:
 - `EMISCHEDULER__SERVER__PORT` -
   port to run the server on
   (default: `33000`)
+- `EMISCHEDULER__STORE__PATH` -
+  path to the store file
+  (default: `data/state.json`)
 - `EMISCHEDULER__STREAM__TIMEOUT` -
   timeout for trying to reserve a stream
   (default: `PT1H`)
