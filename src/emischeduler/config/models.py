@@ -27,7 +27,7 @@ class StoreConfig(BaseModel):
     """Configuration for the store."""
 
     path: Path = Field(
-        "data/state.json",
+        Path("data/state.json"),
         title="Path",
         description="Path to the store file.",
     )
