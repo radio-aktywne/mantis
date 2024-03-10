@@ -1,8 +1,9 @@
 from enum import StrEnum
-from typing import Annotated, Literal, TypedDict
+from typing import Annotated, Literal
 from uuid import UUID
 
 from pydantic import AfterValidator, Field, NaiveDatetime
+from typing_extensions import TypedDict
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 from emischeduler.models.base import SerializableModel
