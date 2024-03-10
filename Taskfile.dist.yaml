@@ -137,30 +137,6 @@ tasks:
         '!'
         -d
         .venv/
-  venv:
-    desc: Create virtualenv
-    cmds:
-      - >
-        test
-        -f
-        .venv/bin/activate
-        &&
-        source
-        .venv/bin/activate
-        &&
-        deactivate
-        ;
-        python
-        -m
-        venv
-        {{ .CLI_ARGS }}
-        .venv/
-        &&
-        python
-        -m
-        venv
-        --upgrade
-        .venv/
   install:
     desc: Install package
     sources:
@@ -174,13 +150,12 @@ tasks:
     generates:
       - .venv/**/*
     cmds:
-      - task: venv
-        vars:
-          CLI_ARGS: ""
       - >
-        source
-        .venv/bin/activate
-        &&
+        poetry
+        env
+        use
+        "$(which python)"
+      - >
         poetry
         install
         --sync
@@ -198,9 +173,6 @@ tasks:
     cmds:
       - task: install-internal
       - >
-        source
-        .venv/bin/activate
-        &&
         poetry
         update
         --no-interaction
@@ -210,9 +182,6 @@ tasks:
     cmds:
       - task: install-internal
       - >
-        source
-        .venv/bin/activate
-        &&
         poetry
         lock
         --no-interaction
@@ -222,9 +191,6 @@ tasks:
     cmds:
       - task: install-internal
       - >
-        source
-        .venv/bin/activate
-        &&
         poetry
         version
         {{ .CLI_ARGS | default "minor" }}
@@ -233,9 +199,8 @@ tasks:
     cmds:
       - task: install-internal
       - >
-        source
-        .venv/bin/activate
-        &&
+        poetry
+        run
         pytest
         {{ .CLI_ARGS }}
   run:
@@ -244,9 +209,8 @@ tasks:
     cmds:
       - task: install-internal
       - >
-        source
-        .venv/bin/activate
-        &&
+        poetry
+        run
         emischeduler
         {{ .CLI_ARGS }}
   docker:
