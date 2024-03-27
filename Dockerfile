@@ -36,7 +36,7 @@ WORKDIR /app/
 
 # Create app user and data directory
 RUN useradd --create-home app && \
-    mkdir -p data/
+    mkdir --parents data/
 
 # Setup entrypoint for RUN commands
 COPY scripts/shell.sh scripts/shell.sh
@@ -59,13 +59,13 @@ COPY src/ src/
 # See: https://github.com/python-poetry/poetry/issues/1382
 # hadolint ignore=SC2239
 RUN poetry build --no-interaction --format wheel && \
-    poetry run python -m pip install --no-deps --no-index --no-cache-dir dist/*.whl && \
-    rm -rf dist/ ./*.egg-info
+    poetry run -- python -m pip install --no-deps --no-index --no-cache-dir dist/*.whl && \
+    rm --recursive --force dist/ ./*.egg-info
 
 # Setup main entrypoint
 COPY scripts/entrypoint.sh scripts/entrypoint.sh
-ENTRYPOINT ["/app/scripts/entrypoint.sh", "poetry", "run", "emischeduler"]
+ENTRYPOINT ["/app/scripts/entrypoint.sh", "poetry", "run", "--", "emischeduler"]
 CMD []
 
 # Setup ownership
-RUN chown -R app: /app/
+RUN chown --recursive app: ./
