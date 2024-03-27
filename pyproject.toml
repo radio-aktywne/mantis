@@ -20,17 +20,17 @@ uvicorn = { version = "^0.28", extras = ["standard"] }
 # For correct handling of timezones
 tzdata = "*"
 # Streaming utilities
-pystreams = { git = "https://github.com/radio-aktywne/package-pystreams.git", tag = "0.6.0" }
+pystreams = { git = "https://github.com/radio-aktywne/package-pystreams.git", tag = "0.8.0" }
 # Locking utilities
-pylocks = { git = "https://github.com/radio-aktywne/package-pylocks.git", tag = "0.2.0" }
+pylocks = { git = "https://github.com/radio-aktywne/package-pylocks.git", tag = "0.3.0" }
 # Storage utilities
-pystores = { git = "https://github.com/radio-aktywne/package-pystores.git", tag = "0.3.0" }
+pystores = { git = "https://github.com/radio-aktywne/package-pystores.git", tag = "0.4.0" }
 # Signaling utilities
-pyevents = { git = "https://github.com/radio-aktywne/package-pyevents.git", tag = "0.2.0" }
+pyevents = { git = "https://github.com/radio-aktywne/package-pyevents.git", tag = "0.3.0" }
 # Queuing utilities
-pyqueues = { git = "https://github.com/radio-aktywne/package-pyqueues.git", tag = "0.2.0" }
+pyqueues = { git = "https://github.com/radio-aktywne/package-pyqueues.git", tag = "0.3.0" }
 # Task scheduler
-pyscheduler = { git = "https://github.com/radio-aktywne/package-pyscheduler.git", tag = "0.3.0" }
+pyscheduler = { git = "https://github.com/radio-aktywne/package-pyscheduler.git", tag = "0.4.0" }
 # Helps building API clients
 gracy = "^1.33"
 # MinIO client

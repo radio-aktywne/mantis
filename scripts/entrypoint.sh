@@ -5,7 +5,7 @@
 . /env/activate
 
 # Set permissions
-chown -R app: /app/
+chown --recursive app: data/
 
 # Run as non-root user
 # Use tini to handle signals

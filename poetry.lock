@@ -973,7 +973,7 @@ yaml = ["pyyaml (>=6.0.1)"]
 
 [[package]]
 name = "pyevents"
-version = "0.2.0"
+version = "0.3.0"
 description = "Signaling utilities for Python 🐍"
 optional = false
 python-versions = "^3.11"
@@ -983,8 +983,8 @@ develop = false
 [package.source]
 type = "git"
 url = "https://github.com/radio-aktywne/package-pyevents.git"
-reference = "0.2.0"
-resolved_reference = "5836a6f4aabda717272b9d7ee9b914b8b024c013"
+reference = "0.3.0"
+resolved_reference = "dfc57cafd8b78bb46d3ef5c8d8c6ae34c1325e83"
 
 [[package]]
 name = "pygments"
@@ -1003,7 +1003,7 @@ windows-terminal = ["colorama (>=0.4.6)"]
 
 [[package]]
 name = "pylocks"
-version = "0.2.0"
+version = "0.3.0"
 description = "Locking utilities for Python 🐍"
 optional = false
 python-versions = "^3.11"
@@ -1013,12 +1013,12 @@ develop = false
 [package.source]
 type = "git"
 url = "https://github.com/radio-aktywne/package-pylocks.git"
-reference = "0.2.0"
-resolved_reference = "85e526d8df60abb564fea2918e6063e80fbb5d8b"
+reference = "0.3.0"
+resolved_reference = "3f2f5d8a9799f85965634a0e65241051d0c7821e"
 
 [[package]]
 name = "pyqueues"
-version = "0.2.0"
+version = "0.3.0"
 description = "Queueing utilities for Python 🐍"
 optional = false
 python-versions = "^3.11"
@@ -1028,12 +1028,12 @@ develop = false
 [package.source]
 type = "git"
 url = "https://github.com/radio-aktywne/package-pyqueues.git"
-reference = "0.2.0"
-resolved_reference = "c3897781a647775f362b868f42dd2228350b37a9"
+reference = "0.3.0"
+resolved_reference = "2ced961324a3eef3fdbbea08942c93365b9dc333"
 
 [[package]]
 name = "pyscheduler"
-version = "0.3.0"
+version = "0.4.0"
 description = "Task scheduler for Python 🐍"
 optional = false
 python-versions = "^3.11"
@@ -1043,12 +1043,12 @@ develop = false
 [package.source]
 type = "git"
 url = "https://github.com/radio-aktywne/package-pyscheduler.git"
-reference = "0.3.0"
-resolved_reference = "52ab03e83f5494ff214359a53c1bf77ce8d75d21"
+reference = "0.4.0"
+resolved_reference = "9833d142d5fe32fe2673b792356540a6b32d1f97"
 
 [[package]]
 name = "pystores"
-version = "0.3.0"
+version = "0.4.0"
 description = "Storage utilities for Python 🐍"
 optional = false
 python-versions = "^3.11"
@@ -1058,12 +1058,12 @@ develop = false
 [package.source]
 type = "git"
 url = "https://github.com/radio-aktywne/package-pystores.git"
-reference = "0.3.0"
-resolved_reference = "005b101be7c1827f5cb0e51b9b6d924ad6daf818"
+reference = "0.4.0"
+resolved_reference = "c0848bb40586d24472a6579b8be49edbe50e8ae0"
 
 [[package]]
 name = "pystreams"
-version = "0.6.0"
+version = "0.8.0"
 description = "Streaming utilities for Python 🐍"
 optional = false
 python-versions = "^3.11"
@@ -1073,8 +1073,8 @@ develop = false
 [package.source]
 type = "git"
 url = "https://github.com/radio-aktywne/package-pystreams.git"
-reference = "0.6.0"
-resolved_reference = "c1d258988165fd461cb810fd69d33825e11f6fba"
+reference = "0.8.0"
+resolved_reference = "0feea8755d74f7163aa81cd3babc050390183f6b"
 
 [[package]]
 name = "pytest"
@@ -1735,4 +1735,4 @@ files = [
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.11"
-content-hash = "60f2f85d512ca7a9669fcac37a659da02761ff5638712e41a650cb5c5912d4ed"
+content-hash = "c56b0de19ab44ee9b7069a7e8a158dd9ad3e6b6282a43524047248564acf7a0d"

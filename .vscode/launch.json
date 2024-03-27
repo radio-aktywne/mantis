@@ -3,7 +3,7 @@
   "configurations": [
     {
       "name": "emischeduler",
-      "type": "python",
+      "type": "debugpy",
       "request": "launch",
       "module": "emischeduler",
       "justMyCode": false

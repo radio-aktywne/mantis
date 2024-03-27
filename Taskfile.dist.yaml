@@ -201,6 +201,7 @@ tasks:
       - >
         poetry
         run
+        --
         pytest
         {{ .CLI_ARGS }}
   run:
@@ -211,6 +212,7 @@ tasks:
       - >
         poetry
         run
+        --
         emischeduler
         {{ .CLI_ARGS }}
   docker:
