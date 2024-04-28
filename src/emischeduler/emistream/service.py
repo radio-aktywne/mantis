@@ -3,7 +3,7 @@ from collections.abc import AsyncGenerator
 from gracy import BaseEndpoint, GracefulRetry, Gracy, GracyConfig, GracyNamespace
 from httpx import AsyncClient
 
-from emischeduler.config.models import EmistreamConfig
+from emischeduler.config.models import EmistreamHTTPConfig
 from emischeduler.emistream.models import (
     Availability,
     Event,
@@ -24,9 +24,9 @@ class EmistreamEndpoint(BaseEndpoint):
 class EmistreamServiceBase(Gracy[EmistreamEndpoint]):
     """Base class for emistream API service."""
 
-    def __init__(self, config: EmistreamConfig, *args, **kwargs) -> None:
+    def __init__(self, config: EmistreamHTTPConfig, *args, **kwargs) -> None:
         class Config:
-            BASE_URL = f"http://{config.host}:{config.port}"
+            BASE_URL = config.url
             SETTINGS = GracyConfig(
                 retry=GracefulRetry(
                     delay=1,

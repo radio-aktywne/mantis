@@ -249,8 +249,9 @@ class StreamOperation(o.Operation):
             finally:
                 sse.cancel()
 
-    def _build_stream_target(self, port: int) -> str:
-        host = gethostbyname(self._config.emistream.host)
+    def _build_stream_target(self) -> str:
+        host = gethostbyname(self._config.emistream.srt.host)
+        port = self._config.emistream.srt.port
         return f"srt://{host}:{port}"
 
     def _build_stream_input(self, path: Path, format: str) -> FFmpegNode:
@@ -266,7 +267,7 @@ class StreamOperation(o.Operation):
         self, format: str, reservation: stm.ReserveResponse
     ) -> FFmpegNode:
         return FFmpegNode(
-            target=self._build_stream_target(reservation.port),
+            target=self._build_stream_target(),
             options={
                 "acodec": "copy",
                 "f": format,
