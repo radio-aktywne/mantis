@@ -51,13 +51,13 @@ class AppBuilder:
         ]
 
     def _build_emiarchive(self) -> EmiarchiveService:
-        return EmiarchiveService(config=self._config.emiarchive)
+        return EmiarchiveService(config=self._config.emiarchive.s3)
 
     def _build_emishows(self) -> EmishowsService:
-        return EmishowsService(config=self._config.emishows)
+        return EmishowsService(config=self._config.emishows.http)
 
     def _build_emistream(self) -> EmistreamService:
-        return EmistreamService(config=self._config.emistream)
+        return EmistreamService(config=self._config.emistream.http)
 
     def _build_store(self) -> Store:
         return Store(self._config.store)
