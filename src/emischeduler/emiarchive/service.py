@@ -4,7 +4,7 @@ from minio import Minio
 from minio.datatypes import Object
 from minio.error import MinioException
 
-from emischeduler.config.models import EmiarchiveS3Config
+from emischeduler.config.models import EmiarchiveConfig
 from emischeduler.emiarchive import errors as e
 from emischeduler.emiarchive import models as m
 
@@ -78,16 +78,16 @@ class BucketReader:
 class EmiarchiveService:
     """Service for emiarchive."""
 
-    def __init__(self, config: EmiarchiveS3Config) -> None:
+    def __init__(self, config: EmiarchiveConfig) -> None:
         client = Minio(
-            endpoint=f"{config.host}:{config.port}",
-            access_key=config.user,
-            secret_key=config.password,
-            secure=config.secure,
+            endpoint=f"{config.s3.host}:{config.s3.port}",
+            access_key=config.s3.user,
+            secret_key=config.s3.password,
+            secure=config.s3.secure,
             cert_check=False,
         )
-        self._live = BucketReader(client, config.live_bucket)
-        self._prerecorded = BucketReader(client, config.prerecorded_bucket)
+        self._live = BucketReader(client, config.s3.live_bucket)
+        self._prerecorded = BucketReader(client, config.s3.prerecorded_bucket)
 
     @property
     def live(self) -> BucketReader:
