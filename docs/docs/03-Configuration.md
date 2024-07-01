@@ -31,8 +31,8 @@ You can configure the app at runtime using various environment variables:
 - `EMISCHEDULER__SYNCHRONIZER__INTERVAL` -
   interval between synchronizations
   (default: `PT1M`)
-- `EMISCHEDULER__SYNCHRONIZER__WINDOW` -
-  duration of the time window
+- `EMISCHEDULER__SYNCHRONIZER__STREAM__WINDOW` -
+  duration of the time window for stream tasks
   (default: `P1D`)
 - `EMISCHEDULER__EMISHOWS__HTTP__SCHEME` -
   scheme of the HTTP API of the emishows service

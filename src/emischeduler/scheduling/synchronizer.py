@@ -11,43 +11,26 @@ from pyscheduler.models import enums as e
 from pyscheduler.models import transfer as t
 from zoneinfo import ZoneInfo
 
-from emischeduler.config.models import SynchronizerConfig
+from emischeduler.config.models import StreamSynchronizerConfig, SynchronizerConfig
 from emischeduler.emishows import models as sm
-from emischeduler.emishows.errors import EmishowsError
 from emischeduler.emishows.service import EmishowsService
 from emischeduler.scheduling.operations.operations.stream import Parameters
 from emischeduler.scheduling.scheduler import Scheduler
 from emischeduler.time import naiveutcnow
 
 
-class Synchronizer:
-    """Synchronizes schedulers's tasks with expected ones."""
+class StreamSynchronizer:
+    """Synchronizes stream tasks."""
 
     def __init__(
         self,
-        config: SynchronizerConfig,
+        config: StreamSynchronizerConfig,
         emishows: EmishowsService,
         scheduler: Scheduler,
     ) -> None:
         self._config = config
         self._emishows = emishows
         self._scheduler = scheduler
-
-    def _find_next_time(self, dt: NaiveDatetime) -> NaiveDatetime:
-        reference = self._config.reference
-        interval = self._config.interval
-
-        return reference + math.ceil((dt - reference) / interval) * interval
-
-    async def _wait(self) -> None:
-        now = naiveutcnow()
-        target = self._find_next_time(now)
-
-        delta = target - now
-        delta = delta.total_seconds()
-        delta = max(delta, 0)
-
-        await asyncio.sleep(delta)
 
     def _get_time_window(self) -> tuple[NaiveDatetime, NaiveDatetime]:
         start = naiveutcnow()
@@ -59,11 +42,15 @@ class Synchronizer:
         self, start: NaiveDatetime, end: NaiveDatetime
     ) -> list[sm.EventSchedule]:
         schedules: list[sm.EventSchedule] = []
-        offset: int = 0
+        offset = 0
+        types = {"replay", "prerecorded"}
 
         while True:
             response = await self._emishows.schedule.list(
-                start=start, end=end, offset=offset
+                start=start,
+                end=end,
+                offset=offset,
+                where={"OR": [{"type": type} for type in types]},
             )
             schedules = schedules + response.schedules
             offset = offset + len(response.schedules)
@@ -131,7 +118,7 @@ class Synchronizer:
             return []
 
         events: list[sm.Event] = []
-        offset: int = 0
+        offset = 0
 
         while True:
             response = await self._emishows.events.list(
@@ -294,7 +281,7 @@ class Synchronizer:
         for event, instance in add:
             await self._add(event, instance)
 
-    async def _synchronize(self) -> None:
+    async def synchronize(self) -> None:
         start, end = self._get_time_window()
 
         schedules = await self._get_schedules(start, end)
@@ -306,13 +293,49 @@ class Synchronizer:
         await self._cancel_extra_tasks(schedules, valid)
         await self._add_new_tasks(schedules, valid)
 
+
+class Synchronizer:
+    """Synchronizes scheduled tasks with expected ones."""
+
+    def __init__(
+        self,
+        config: SynchronizerConfig,
+        emishows: EmishowsService,
+        scheduler: Scheduler,
+    ) -> None:
+        self._config = config
+        self._stream_synchronizer = StreamSynchronizer(
+            config.stream, emishows, scheduler
+        )
+
+    def _find_next_time(self, dt: NaiveDatetime) -> NaiveDatetime:
+        reference = self._config.reference
+        interval = self._config.interval
+
+        return reference + math.ceil((dt - reference) / interval) * interval
+
+    async def _wait(self) -> None:
+        now = naiveutcnow()
+        target = self._find_next_time(now)
+
+        delta = target - now
+        delta = delta.total_seconds()
+        delta = max(delta, 0)
+
+        await asyncio.sleep(delta)
+
+    async def _synchronize(self) -> None:
+        await self._stream_synchronizer.synchronize()
+
     async def _run(self) -> None:
         try:
             while True:
                 await self._wait()
                 try:
                     await self._synchronize()
-                except EmishowsError:
+                except asyncio.CancelledError:
+                    raise
+                except Exception:
                     pass
         except asyncio.CancelledError:
             pass
