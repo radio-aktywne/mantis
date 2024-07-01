@@ -58,6 +58,16 @@ class CleanerConfig(BaseModel):
     )
 
 
+class StreamSynchronizerConfig(BaseModel):
+    """Configuration for the stream synchronizer."""
+
+    window: timedelta = Field(
+        timedelta(days=1),
+        title="Window",
+        description="Duration of the time window.",
+    )
+
+
 class SynchronizerConfig(BaseModel):
     """Configuration for the synchronizer."""
 
@@ -71,10 +81,10 @@ class SynchronizerConfig(BaseModel):
         title="Interval",
         description="Interval between synchronizations.",
     )
-    window: timedelta = Field(
-        timedelta(days=1),
-        title="Window",
-        description="Duration of the time window.",
+    stream: StreamSynchronizerConfig = Field(
+        StreamSynchronizerConfig(),
+        title="Stream",
+        description="Configuration for the stream synchronizer.",
     )
 
 
