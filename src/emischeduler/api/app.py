@@ -10,7 +10,7 @@ from litestar.plugins import PluginProtocol
 
 from emischeduler.api.routes.router import router
 from emischeduler.config.models import Config
-from emischeduler.emiarchive.service import EmiarchiveService
+from emischeduler.datarecords.service import DatarecordsService
 from emischeduler.emishows.service import EmishowsService
 from emischeduler.emistream.service import EmistreamService
 from emischeduler.scheduling.cleaning.cleaner import Cleaner
@@ -50,8 +50,8 @@ class AppBuilder:
             self._build_pydantic_plugin(),
         ]
 
-    def _build_emiarchive(self) -> EmiarchiveService:
-        return EmiarchiveService(config=self._config.emiarchive)
+    def _build_datarecords(self) -> DatarecordsService:
+        return DatarecordsService(config=self._config.datarecords)
 
     def _build_emishows(self) -> EmishowsService:
         return EmishowsService(config=self._config.emishows)
@@ -64,14 +64,14 @@ class AppBuilder:
 
     def _build_scheduler(
         self,
-        emiarchive: EmiarchiveService,
+        datarecords: DatarecordsService,
         emishows: EmishowsService,
         emistream: EmistreamService,
         store: Store,
     ) -> Scheduler:
         return Scheduler(
             config=self._config,
-            emiarchive=emiarchive,
+            datarecords=datarecords,
             emishows=emishows,
             emistream=emistream,
             store=store,
@@ -88,18 +88,18 @@ class AppBuilder:
         )
 
     def _build_initial_state(self) -> State:
-        emiarchive = self._build_emiarchive()
+        datarecords = self._build_datarecords()
         emishows = self._build_emishows()
         emistream = self._build_emistream()
         store = self._build_store()
-        scheduler = self._build_scheduler(emiarchive, emishows, emistream, store)
+        scheduler = self._build_scheduler(datarecords, emishows, emistream, store)
         cleaner = self._build_cleaner(scheduler)
         synchronizer = self._build_synchronizer(emishows, scheduler)
 
         return State(
             {
                 "config": self._config,
-                "emiarchive": emiarchive,
+                "datarecords": datarecords,
                 "emishows": emishows,
                 "emistream": emistream,
                 "store": store,

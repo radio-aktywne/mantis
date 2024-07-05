@@ -1,5 +1,5 @@
-class EmiarchiveError(Exception):
-    """Base class for emiarchive errors."""
+class DatarecordsError(Exception):
+    """Base class for datarecords errors."""
 
     def __init__(self, message: str | None = None) -> None:
         self._message = message

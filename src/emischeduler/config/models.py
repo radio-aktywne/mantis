@@ -136,8 +136,8 @@ class EmishowsConfig(BaseModel):
     )
 
 
-class EmiarchiveS3Config(BaseModel):
-    """Configuration for the Emiarchive S3 API."""
+class DatarecordsS3Config(BaseModel):
+    """Configuration for the Datarecords S3 API."""
 
     secure: bool = Field(
         False,
@@ -178,11 +178,11 @@ class EmiarchiveS3Config(BaseModel):
     )
 
 
-class EmiarchiveConfig(BaseModel):
-    """Configuration for the Emiarchive service."""
+class DatarecordsConfig(BaseModel):
+    """Configuration for the Datarecords database."""
 
-    s3: EmiarchiveS3Config = Field(
-        EmiarchiveS3Config(),
+    s3: DatarecordsS3Config = Field(
+        DatarecordsS3Config(),
         title="S3",
         description="Configuration for the S3 API.",
     )
@@ -295,10 +295,10 @@ class Config(BaseConfig):
         title="Emishows",
         description="Configuration for the Emishows service.",
     )
-    emiarchive: EmiarchiveConfig = Field(
-        EmiarchiveConfig(),
-        title="Emiarchive",
-        description="Configuration for the Emiarchive service.",
+    datarecords: DatarecordsConfig = Field(
+        DatarecordsConfig(),
+        title="Datarecords",
+        description="Configuration for the Datarecords database.",
     )
     emistream: EmistreamConfig = Field(
         EmistreamConfig(),
