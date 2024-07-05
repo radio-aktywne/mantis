@@ -46,25 +46,25 @@ You can configure the app at runtime using various environment variables:
 - `EMISCHEDULER__EMISHOWS__HTTP__PATH` -
   path of the HTTP API of the emishows service
   (default: ``)
-- `EMISCHEDULER__EMIARCHIVE__S3__SECURE` -
-  whether to use secure connections for the S3 API of the emiarchive service
+- `EMISCHEDULER__DATARECORDS__S3__SECURE` -
+  whether to use secure connections for the S3 API of the datarecords database
   (default: `false`)
-- `EMISCHEDULER__EMIARCHIVE__S3__HOST` -
-  host of the S3 API of the emiarchive service
+- `EMISCHEDULER__DATARECORDS__S3__HOST` -
+  host of the S3 API of the datarecords database
   (default: `localhost`)
-- `EMISCHEDULER__EMIARCHIVE__S3__PORT` -
-  port of the S3 API of the emiarchive service
+- `EMISCHEDULER__DATARECORDS__S3__PORT` -
+  port of the S3 API of the datarecords database
   (default: `30000`)
-- `EMISCHEDULER__EMIARCHIVE__S3__USER` -
-  user to authenticate with the S3 API of the emiarchive service
+- `EMISCHEDULER__DATARECORDS__S3__USER` -
+  user to authenticate with the S3 API of the datarecords database
   (default: `readonly`)
-- `EMISCHEDULER__EMIARCHIVE__S3__PASSWORD` -
-  password to authenticate with the S3 API of the emiarchive service
+- `EMISCHEDULER__DATARECORDS__S3__PASSWORD` -
+  password to authenticate with the S3 API of the datarecords database
   (default: `password`)
-- `EMISCHEDULER__EMIARCHIVE__S3__LIVE_BUCKET` -
+- `EMISCHEDULER__DATARECORDS__S3__LIVE_BUCKET` -
   name of the bucket with recordings of live events
   (default: `live`)
-- `EMISCHEDULER__EMIARCHIVE__S3__PRERECORDED_BUCKET` -
+- `EMISCHEDULER__DATARECORDS__S3__PRERECORDED_BUCKET` -
   name of the bucket with prerecorded events
   (default: `prerecorded`)
 - `EMISCHEDULER__EMISTREAM__HTTP__SCHEME` -

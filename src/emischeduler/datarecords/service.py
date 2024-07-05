@@ -4,9 +4,9 @@ from minio import Minio
 from minio.datatypes import Object
 from minio.error import MinioException
 
-from emischeduler.config.models import EmiarchiveConfig
-from emischeduler.emiarchive import errors as e
-from emischeduler.emiarchive import models as m
+from emischeduler.config.models import DatarecordsConfig
+from emischeduler.datarecords import errors as e
+from emischeduler.datarecords import models as m
 
 
 class BucketReader:
@@ -37,7 +37,7 @@ class BucketReader:
                 object_name=request.name,
             )
         except (ValueError, TypeError, MinioException) as ex:
-            raise e.EmiarchiveError(message=str(ex)) from ex
+            raise e.DatarecordsError(message=str(ex)) from ex
 
         object = self._map_object(object)
         return m.GetResponse(object=object)
@@ -53,7 +53,7 @@ class BucketReader:
                 recursive=request.recursive,
             )
         except (ValueError, TypeError, MinioException) as ex:
-            raise e.EmiarchiveError(message=str(ex)) from ex
+            raise e.DatarecordsError(message=str(ex)) from ex
 
         objects = [self._map_object(object) for object in objects]
         return m.ListResponse(objects=objects)
@@ -69,16 +69,16 @@ class BucketReader:
                 file_path=str(request.path),
             )
         except (ValueError, TypeError, MinioException) as ex:
-            raise e.EmiarchiveError(message=str(ex)) from ex
+            raise e.DatarecordsError(message=str(ex)) from ex
 
         object = self._map_object(object)
         return m.DownloadResponse(object=object)
 
 
-class EmiarchiveService:
-    """Service for emiarchive."""
+class DatarecordsService:
+    """Service for datarecords."""
 
-    def __init__(self, config: EmiarchiveConfig) -> None:
+    def __init__(self, config: DatarecordsConfig) -> None:
         client = Minio(
             endpoint=f"{config.s3.host}:{config.s3.port}",
             access_key=config.s3.user,

@@ -109,8 +109,8 @@ async def emistream(
 
 
 @pytest_asyncio.fixture(scope="session")
-async def emiarchive() -> AsyncGenerator[AsyncDockerContainer, None]:
-    """Emiarchive container."""
+async def datarecords() -> AsyncGenerator[AsyncDockerContainer, None]:
+    """Datarecords container."""
 
     async def _check() -> None:
         async with AsyncClient(base_url="http://localhost:30000") as client:
@@ -118,7 +118,7 @@ async def emiarchive() -> AsyncGenerator[AsyncDockerContainer, None]:
             response.raise_for_status()
 
     container = AsyncDockerContainer(
-        "ghcr.io/radio-aktywne/databases/emiarchive:latest",
+        "ghcr.io/radio-aktywne/databases/datarecords:latest",
         network="host",
     )
 
@@ -133,11 +133,11 @@ async def emiarchive() -> AsyncGenerator[AsyncDockerContainer, None]:
 
 
 @pytest_asyncio.fixture(scope="session")
-async def emishows_database() -> AsyncGenerator[AsyncDockerContainer, None]:
-    """Emishows database container."""
+async def datashows() -> AsyncGenerator[AsyncDockerContainer, None]:
+    """Datashows container."""
 
     container = AsyncDockerContainer(
-        "ghcr.io/radio-aktywne/databases/emishows-db:latest",
+        "ghcr.io/radio-aktywne/databases/datashows:latest",
         network="host",
         privileged=True,
     )
@@ -160,17 +160,17 @@ async def emishows_database() -> AsyncGenerator[AsyncDockerContainer, None]:
 
 
 @pytest_asyncio.fixture(scope="session")
-async def emitimes() -> AsyncGenerator[AsyncDockerContainer, None]:
-    """Emitimes container."""
+async def datatimes() -> AsyncGenerator[AsyncDockerContainer, None]:
+    """Datatimes container."""
 
     async def _check() -> None:
         auth = BasicAuth(username="user", password="password")
         async with AsyncClient(base_url="http://localhost:36000", auth=auth) as client:
-            response = await client.get("/user/emitimes")
+            response = await client.get("/user/datatimes")
             response.raise_for_status()
 
     container = AsyncDockerContainer(
-        "ghcr.io/radio-aktywne/databases/emitimes:latest",
+        "ghcr.io/radio-aktywne/databases/datatimes:latest",
         network="host",
     )
 
@@ -186,7 +186,7 @@ async def emitimes() -> AsyncGenerator[AsyncDockerContainer, None]:
 
 @pytest_asyncio.fixture(scope="session")
 async def emishows(
-    emishows_database: AsyncDockerContainer, emitimes: AsyncDockerContainer
+    datashows: AsyncDockerContainer, datatimes: AsyncDockerContainer
 ) -> AsyncGenerator[AsyncDockerContainer, None]:
     """Emishows container."""
 
@@ -221,8 +221,8 @@ async def emishows_client(
 
 
 @pytest.fixture(scope="session")
-def emiarchive_client(emiarchive: AsyncDockerContainer) -> Minio:
-    """Emiarchive client."""
+def datarecords_client(datarecords: AsyncDockerContainer) -> Minio:
+    """Datarecords client."""
 
     return Minio(
         endpoint="localhost:30000",
@@ -237,7 +237,7 @@ def emiarchive_client(emiarchive: AsyncDockerContainer) -> Minio:
 async def client(
     app: Litestar,
     emishows: AsyncDockerContainer,
-    emiarchive: AsyncDockerContainer,
+    datarecords: AsyncDockerContainer,
     emistream: AsyncDockerContainer,
 ) -> AsyncGenerator[AsyncTestClient, None]:
     """Reusable test client."""

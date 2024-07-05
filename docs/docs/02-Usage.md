@@ -20,7 +20,7 @@ The flow of the task is the following:
 
 1. Start running at the scheduled time.
 2. Fetch matching event and its instance from `emishows` app.
-3. Download recording from `emiarchive` database and store it locally.
+3. Download recording from `datarecords` database and store it locally.
 4. Wait until 10 seconds before the planned start of the emission.
 5. Reserve the stream in `emistream` app.
 6. Wait until 1 second before the planned start of the emission.

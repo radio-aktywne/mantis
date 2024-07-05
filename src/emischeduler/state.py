@@ -1,7 +1,7 @@
 from litestar.datastructures import State as LitestarState
 
 from emischeduler.config.models import Config
-from emischeduler.emiarchive.service import EmiarchiveService
+from emischeduler.datarecords.service import DatarecordsService
 from emischeduler.emishows.service import EmishowsService
 from emischeduler.emistream.service import EmistreamService
 from emischeduler.scheduling.cleaning.cleaner import Cleaner
@@ -15,7 +15,7 @@ class State(LitestarState):
 
     Attributes:
         config: Configuration for the application.
-        emiarchive: Service for emiarchive.
+        datarecords: Service for datarecords database.
         emishows: Service for emishows API.
         emistream: Service for emistream API.
         store: Store for scheduler's state.
@@ -25,7 +25,7 @@ class State(LitestarState):
     """
 
     config: Config
-    emiarchive: EmiarchiveService
+    datarecords: DatarecordsService
     emishows: EmishowsService
     emistream: EmistreamService
     store: Store

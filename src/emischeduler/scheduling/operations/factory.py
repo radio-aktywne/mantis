@@ -1,7 +1,7 @@
 from pyscheduler.protocols import operation as o
 
 from emischeduler.config.models import Config
-from emischeduler.emiarchive.service import EmiarchiveService
+from emischeduler.datarecords.service import DatarecordsService
 from emischeduler.emishows.service import EmishowsService
 from emischeduler.emistream.service import EmistreamService
 from emischeduler.scheduling.operations.operations.stream import StreamOperation
@@ -12,12 +12,12 @@ class OperationFactory(o.OperationFactory):
     def __init__(
         self,
         config: Config,
-        emiarchive: EmiarchiveService,
+        datarecords: DatarecordsService,
         emishows: EmishowsService,
         emistream: EmistreamService,
     ) -> None:
         self._config = config
-        self._emiarchive = emiarchive
+        self._datarecords = datarecords
         self._emishows = emishows
         self._emistream = emistream
 
@@ -28,7 +28,7 @@ class OperationFactory(o.OperationFactory):
             case "stream":
                 return StreamOperation(
                     config=self._config,
-                    emiarchive=self._emiarchive,
+                    datarecords=self._datarecords,
                     emishows=self._emishows,
                     emistream=self._emistream,
                 )

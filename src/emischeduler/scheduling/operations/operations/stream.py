@@ -13,8 +13,8 @@ from pystreams.process import ProcessBasedStreamFactory
 from zoneinfo import ZoneInfo
 
 from emischeduler.config.models import Config
-from emischeduler.emiarchive import models as am
-from emischeduler.emiarchive.service import EmiarchiveService
+from emischeduler.datarecords import models as am
+from emischeduler.datarecords.service import DatarecordsService
 from emischeduler.emishows import errors as she
 from emischeduler.emishows import models as shm
 from emischeduler.emishows.service import EmishowsService
@@ -84,12 +84,12 @@ class StreamOperation(o.Operation):
     def __init__(
         self,
         config: Config,
-        emiarchive: EmiarchiveService,
+        datarecords: DatarecordsService,
         emishows: EmishowsService,
         emistream: EmistreamService,
     ) -> None:
         self._config = config
-        self._emiarchive = emiarchive
+        self._datarecords = datarecords
         self._emishows = emishows
         self._emistream = emistream
 
@@ -169,7 +169,7 @@ class StreamOperation(o.Operation):
 
         for event, instance in pool:
             request = am.ListRequest(prefix=f"{event.id}/{instance.start.isoformat()}")
-            response = await self._emiarchive.live.list(request)
+            response = await self._datarecords.live.list(request)
 
             object = next(iter(response.objects), None)
             if object is not None:
@@ -181,7 +181,7 @@ class StreamOperation(o.Operation):
         self, event: shm.Event, instance: shm.EventInstance
     ) -> str | None:
         request = am.ListRequest(prefix=f"{event.id}/{instance.start.isoformat()}")
-        response = await self._emiarchive.prerecorded.list(request)
+        response = await self._datarecords.prerecorded.list(request)
 
         object = next(iter(response.objects), None)
 
@@ -196,10 +196,10 @@ class StreamOperation(o.Operation):
         match event.type:
             case shm.EventType.replay:
                 key = await self._find_replay_key(event, instance)
-                reader = self._emiarchive.live
+                reader = self._datarecords.live
             case shm.EventType.prerecorded:
                 key = await self._find_prerecorded_key(event, instance)
-                reader = self._emiarchive.prerecorded
+                reader = self._datarecords.prerecorded
             case _:
                 raise UnexpectedEventTypeError(event.id, event.type)
 
