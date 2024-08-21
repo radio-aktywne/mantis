@@ -1,5 +1,5 @@
 ---
-slug: /configuration
+slug: /config
 title: Configuration
 ---
 
@@ -13,6 +13,9 @@ You can configure the app at runtime using various environment variables:
 - `EMISCHEDULER__SERVER__PORT` -
   port to run the server on
   (default: `33000`)
+- `EMISCHEDULER__SERVER__TRUSTED` -
+  trusted IP addresses
+  (default: `*`)
 - `EMISCHEDULER__STORE__PATH` -
   path to the store file
   (default: `data/state.json`)
@@ -62,10 +65,10 @@ You can configure the app at runtime using various environment variables:
   password to authenticate with the S3 API of the datarecords database
   (default: `password`)
 - `EMISCHEDULER__DATARECORDS__S3__LIVE_BUCKET` -
-  name of the bucket with recordings of live events
+  name of the bucket to download recordings of live streams from
   (default: `live`)
 - `EMISCHEDULER__DATARECORDS__S3__PRERECORDED_BUCKET` -
-  name of the bucket with prerecorded events
+  name of the bucket to download prerecorded streams from
   (default: `prerecorded`)
 - `EMISCHEDULER__EMISTREAM__HTTP__SCHEME` -
   scheme of the HTTP API of the emistream service
@@ -85,3 +88,6 @@ You can configure the app at runtime using various environment variables:
 - `EMISCHEDULER__EMISTREAM__SRT__PORT` -
   port of the SRT stream of the emistream service
   (default: `10000`)
+- `EMISCHEDULER__DEBUG` -
+  enable debug mode
+  (default: `false`)

@@ -1,34 +1,38 @@
 from litestar.datastructures import State as LitestarState
 
 from emischeduler.config.models import Config
-from emischeduler.datarecords.service import DatarecordsService
-from emischeduler.emishows.service import EmishowsService
-from emischeduler.emistream.service import EmistreamService
-from emischeduler.scheduling.cleaning.cleaner import Cleaner
-from emischeduler.scheduling.scheduler import Scheduler
-from emischeduler.scheduling.store import Store
-from emischeduler.scheduling.synchronizer import Synchronizer
+from emischeduler.services.cleaner.service import CleanerService
+from emischeduler.services.datarecords.service import DatarecordsService
+from emischeduler.services.emishows.service import EmishowsService
+from emischeduler.services.emistream.service import EmistreamService
+from emischeduler.services.scheduler.service import SchedulerService
+from emischeduler.services.scheduler.store import Store
+from emischeduler.services.synchronizer.service import SynchronizerService
 
 
 class State(LitestarState):
-    """Use this class as a type hint for the state of your application.
-
-    Attributes:
-        config: Configuration for the application.
-        datarecords: Service for datarecords database.
-        emishows: Service for emishows API.
-        emistream: Service for emistream API.
-        store: Store for scheduler's state.
-        scheduler: Scheduler that manages the lifecycle of scheduled tasks.
-        cleaner: Cleaner that removes finished tasks from scheduler's state.
-        synchronizer: Synchronizer that synchronizes scheduler's tasks with expected ones.
-    """
+    """Use this class as a type hint for the state of the application."""
 
     config: Config
+    """Configuration for the application."""
+
     datarecords: DatarecordsService
+    """Service for datarecords database."""
+
     emishows: EmishowsService
+    """Service for emishows API."""
+
     emistream: EmistreamService
+    """Service for emistream API."""
+
     store: Store
-    scheduler: Scheduler
-    cleaner: Cleaner
-    synchronizer: Synchronizer
+    """Store for scheduling state."""
+
+    scheduler: SchedulerService
+    """Service to manage the lifecycle of scheduled tasks."""
+
+    cleaner: CleanerService
+    """Service to remove finished tasks from scheduler's state."""
+
+    synchronizer: SynchronizerService
+    """Service to synchronize scheduled tasks with expected ones."""
