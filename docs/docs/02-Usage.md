@@ -35,28 +35,34 @@ Below are some examples of how to use it with `curl`.
 ### List tasks
 
 ```sh
-curl http://localhost:33000/tasks
+curl \
+    --request GET \
+    http://localhost:33000/tasks
 ```
 
 ### Get generic task details
 
 ```sh
-curl http://localhost:33000/tasks/85478e12-fd0d-4de3-a26b-cd1ec7f94f2b
+curl \
+    --request GET \
+    http://localhost:33000/tasks/85478e12-fd0d-4de3-a26b-cd1ec7f94f2b
 ```
 
 ### Get details about a task with a specific status
 
 ```sh
-curl http://localhost:33000/tasks/failed/85478e12-fd0d-4de3-a26b-cd1ec7f94f2b
+curl \
+    --request GET \
+    http://localhost:33000/tasks/failed/85478e12-fd0d-4de3-a26b-cd1ec7f94f2b
 ```
 
 ### Schedule a task manually
 
 ```sh
 curl \
-    -X POST \
-    -H "Content-Type: application/json" \
-    -d '{
+    --request POST \
+    --header "Content-Type: application/json" \
+    --data '{
       "operation": {"type": "test", "parameters": {}},
       "condition": {"type": "now", "parameters": {}},
       "dependencies": {}
@@ -67,17 +73,34 @@ curl \
 ### Cancel a task
 
 ```sh
-curl -X DELETE http://localhost:33000/tasks/85478e12-fd0d-4de3-a26b-cd1ec7f94f2b
+curl \
+    --request DELETE \
+    http://localhost:33000/tasks/85478e12-fd0d-4de3-a26b-cd1ec7f94f2b
 ```
 
 ### Clean stale tasks
 
 ```sh
 curl \
-    -X POST \
-    -H "Content-Type: application/json" \
-    -d '{
+    --request POST \
+    --header "Content-Type: application/json" \
+    --data '{
       "strategy": {"type": "all", "parameters": {}}
     }' \
     http://localhost:33000/tasks/clean
+```
+
+## Ping
+
+You can check the status of the app by sending
+either a `GET` or `HEAD` request to the `/ping` endpoint.
+The app should respond with a `204 No Content` status code.
+
+For example, you can use `curl` to do that:
+
+```sh
+curl \
+    --request HEAD \
+    --head \
+    http://localhost:33000/ping
 ```

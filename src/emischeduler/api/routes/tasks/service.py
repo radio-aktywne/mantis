@@ -1,122 +1,184 @@
-from pyscheduler import errors as se
-from pyscheduler.models import transfer as t
+from collections.abc import Generator
+from contextlib import contextmanager
 
 from emischeduler.api.routes.tasks import errors as e
 from emischeduler.api.routes.tasks import models as m
-from emischeduler.scheduling.scheduler import Scheduler
+from emischeduler.services.scheduler import errors as se
+from emischeduler.services.scheduler.models import transfer as sm
+from emischeduler.services.scheduler.service import SchedulerService
 
 
 class Service:
     """Service for the tasks endpoint."""
 
-    def __init__(self, scheduler: Scheduler) -> None:
+    def __init__(self, scheduler: SchedulerService) -> None:
         self._scheduler = scheduler
 
-    async def get_index(self) -> m.GetIndexResponse:
-        """Get tasks index."""
-
-        return await self._scheduler.tasks.list()
-
-    async def get_task(self, id: m.GetTaskIdParameter) -> m.GetTaskResponse:
-        """Get a task."""
-
-        task = await self._scheduler.tasks.get(id)
-
-        if task is None:
-            raise e.TaskNotFoundError(id)
-
-        return task
-
-    async def get_pending_task(
-        self, id: m.GetPendingTaskIdParameter
-    ) -> m.GetPendingTaskResponse:
-        """Get a pending task."""
-
-        task = await self._scheduler.tasks.pending.get(id)
-
-        if task is None:
-            raise e.TaskNotFoundError(id)
-
-        return task
-
-    async def get_running_task(
-        self, id: m.GetRunningTaskIdParameter
-    ) -> m.GetRunningTaskResponse:
-        """Get a running task."""
-
-        task = await self._scheduler.tasks.running.get(id)
-
-        if task is None:
-            raise e.TaskNotFoundError(id)
-
-        return task
-
-    async def get_cancelled_task(
-        self, id: m.GetCancelledTaskIdParameter
-    ) -> m.GetCancelledTaskResponse:
-        """Get a cancelled task."""
-
-        task = await self._scheduler.tasks.cancelled.get(id)
-
-        if task is None:
-            raise e.TaskNotFoundError(id)
-
-        return task
-
-    async def get_failed_task(
-        self, id: m.GetFailedTaskIdParameter
-    ) -> m.GetFailedTaskResponse:
-        """Get a failed task."""
-
-        task = await self._scheduler.tasks.failed.get(id)
-
-        if task is None:
-            raise e.TaskNotFoundError(id)
-
-        return task
-
-    async def get_completed_task(
-        self, id: m.GetCompletedTaskIdParameter
-    ) -> m.GetCompletedTaskResponse:
-        """Get a completed task."""
-
-        task = await self._scheduler.tasks.completed.get(id)
-
-        if task is None:
-            raise e.TaskNotFoundError(id)
-
-        return task
-
-    async def schedule_task(
-        self, request: m.ScheduleTaskRequest
-    ) -> m.ScheduleTaskResponse:
-        """Schedule a task."""
-
+    @contextmanager
+    def _handle_errors(self) -> Generator[None]:
         try:
-            return await self._scheduler.schedule(request)
+            yield
         except se.InvalidOperationError as ex:
-            message = f"Invalid operation: {ex.type}."
-            raise e.InvalidRequestError(message) from ex
+            raise e.ValidationError(str(ex)) from ex
         except se.InvalidConditionError as ex:
-            message = f"Invalid condition: {ex.type}."
-            raise e.InvalidRequestError(message) from ex
-        except se.DependencyNotFoundError as ex:
-            message = f"Dependency not found: {ex.id}."
-            raise e.InvalidRequestError(message) from ex
-
-    async def cancel_task(self, id: m.CancelTaskIdParameter) -> m.CancelTaskResponse:
-        """Cancel a task."""
-
-        try:
-            return await self._scheduler.cancel(t.CancelRequest(id=id))
+            raise e.ValidationError(str(ex)) from ex
+        except se.InvalidCleaningStrategyError as ex:
+            raise e.ValidationError(str(ex)) from ex
         except se.TaskNotFoundError as ex:
             raise e.TaskNotFoundError(ex.id) from ex
+        except se.ServiceError as ex:
+            raise e.ServiceError(str(ex)) from ex
 
-    async def clean_tasks(self, request: m.CleanTasksRequest) -> m.CleanTasksResponse:
+    async def list(self, request: m.ListRequest) -> m.ListResponse:
+        """List tasks."""
+
+        with self._handle_errors():
+            tasks = await self._scheduler.tasks.list()
+
+        tasks = m.TaskIndex.map(tasks)
+        return m.ListResponse(
+            tasks=tasks,
+        )
+
+    async def get(self, request: m.GetRequest) -> m.GetResponse:
+        """Get a task."""
+
+        id = request.id
+
+        with self._handle_errors():
+            task = await self._scheduler.tasks.get(id)
+
+        if task is None:
+            raise e.TaskNotFoundError(id)
+
+        task = m.GenericTask.map(task)
+        return m.GetResponse(
+            task=task,
+        )
+
+    async def get_pending(self, request: m.GetPendingRequest) -> m.GetPendingResponse:
+        """Get a pending task."""
+
+        id = request.id
+
+        with self._handle_errors():
+            task = await self._scheduler.tasks.pending.get(id)
+
+        if task is None:
+            raise e.TaskNotFoundError(id)
+
+        task = m.PendingTask.map(task)
+        return m.GetPendingResponse(
+            task=task,
+        )
+
+    async def get_running(self, request: m.GetRunningRequest) -> m.GetRunningResponse:
+        """Get a running task."""
+
+        id = request.id
+
+        with self._handle_errors():
+            task = await self._scheduler.tasks.running.get(id)
+
+        if task is None:
+            raise e.TaskNotFoundError(id)
+
+        task = m.RunningTask.map(task)
+        return m.GetRunningResponse(
+            task=task,
+        )
+
+    async def get_cancelled(
+        self, request: m.GetCancelledRequest
+    ) -> m.GetCancelledResponse:
+        """Get a cancelled task."""
+
+        id = request.id
+
+        with self._handle_errors():
+            task = await self._scheduler.tasks.cancelled.get(id)
+
+        if task is None:
+            raise e.TaskNotFoundError(id)
+
+        task = m.CancelledTask.map(task)
+        return m.GetCancelledResponse(
+            task=task,
+        )
+
+    async def get_failed(self, request: m.GetFailedRequest) -> m.GetFailedResponse:
+        """Get a failed task."""
+
+        id = request.id
+
+        with self._handle_errors():
+            task = await self._scheduler.tasks.failed.get(id)
+
+        if task is None:
+            raise e.TaskNotFoundError(id)
+
+        task = m.FailedTask.map(task)
+        return m.GetFailedResponse(
+            task=task,
+        )
+
+    async def get_completed(
+        self, request: m.GetCompletedRequest
+    ) -> m.GetCompletedResponse:
+        """Get a completed task."""
+
+        id = request.id
+
+        with self._handle_errors():
+            task = await self._scheduler.tasks.completed.get(id)
+
+        if task is None:
+            raise e.TaskNotFoundError(id)
+
+        task = m.CompletedTask.map(task)
+        return m.GetCompletedResponse(
+            task=task,
+        )
+
+    async def schedule(self, request: m.ScheduleRequest) -> m.ScheduleResponse:
+        """Schedule a task."""
+
+        data = request.data
+
+        with self._handle_errors():
+            task = await self._scheduler.schedule(data.map())
+
+        task = m.PendingTask.map(task)
+        return m.ScheduleResponse(
+            task=task,
+        )
+
+    async def cancel(self, request: m.CancelRequest) -> m.CancelResponse:
+        """Cancel a task."""
+
+        id = request.id
+
+        req = sm.CancelRequest(
+            id=id,
+        )
+
+        with self._handle_errors():
+            task = await self._scheduler.cancel(req)
+
+        task = m.CancelledTask.map(task)
+        return m.CancelResponse(
+            task=task,
+        )
+
+    async def clean(self, request: m.CleanRequest) -> m.CleanResponse:
         """Clean tasks."""
 
-        try:
-            return await self._scheduler.clean(request)
-        except se.InvalidCleaningStrategyError as ex:
-            message = f"Invalid cleaning strategy: {ex.type}."
-            raise e.InvalidRequestError(message) from ex
+        data = request.data
+
+        with self._handle_errors():
+            results = await self._scheduler.clean(data.map())
+
+        results = m.CleaningResult.map(results)
+        return m.CleanResponse(
+            results=results,
+        )

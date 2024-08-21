@@ -202,6 +202,11 @@ tasks:
         poetry
         run
         --
+        dotenv
+        --file
+        .env.python
+        run
+        --
         pytest
         {{ .CLI_ARGS }}
   run:
@@ -211,6 +216,11 @@ tasks:
       - task: install-internal
       - >
         poetry
+        run
+        --
+        dotenv
+        --file
+        .env.python
         run
         --
         emischeduler

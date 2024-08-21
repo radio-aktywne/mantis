@@ -6,7 +6,12 @@
       "type": "debugpy",
       "request": "launch",
       "module": "emischeduler",
-      "justMyCode": false
+      "justMyCode": false,
+      "env": {
+        "PATH": "${workspaceFolder}/.venv/bin:${env:PATH}",
+        "PYTHONPATH": "${workspaceFolder}/.venv/lib/python3.12/site-packages:${env:EXTRAPYTHONPATH}",
+        "EMISCHEDULER__DEBUG": "true"
+      }
     }
   ]
 }

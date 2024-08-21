@@ -23,7 +23,8 @@ async def test_post(client: AsyncTestClient) -> None:
         },
     )
 
-    assert response.status_code == HTTP_201_CREATED
+    status = response.status_code
+    assert status == HTTP_201_CREATED
 
     data = response.json()
     assert "task" in data
@@ -73,7 +74,8 @@ async def test_get(client: AsyncTestClient) -> None:
 
     response = await client.get("/tasks")
 
-    assert response.status_code == HTTP_200_OK
+    status = response.status_code
+    assert status == HTTP_200_OK
 
     data = response.json()
     assert "pending" in data
@@ -121,7 +123,8 @@ async def test_get_by_id(client: AsyncTestClient) -> None:
 
     response = await client.get(f"/tasks/{id}")
 
-    assert response.status_code == HTTP_200_OK
+    status = response.status_code
+    assert status == HTTP_200_OK
 
     data = response.json()
     assert "task" in data

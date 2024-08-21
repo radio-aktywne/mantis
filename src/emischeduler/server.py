@@ -1,7 +1,7 @@
 import uvicorn
 from litestar import Litestar
 
-from emischeduler.config.models import Config
+from emischeduler.config.models import ServerConfig
 
 
 class Server:
@@ -9,20 +9,19 @@ class Server:
 
     Args:
         app: The application.
-        config: The configuration for the application.
+        config: The configuration for the server.
     """
 
-    def __init__(self, app: Litestar, config: Config) -> None:
+    def __init__(self, app: Litestar, config: ServerConfig) -> None:
         self._app = app
         self._config = config
 
     def run(self) -> None:
         """Run the server."""
 
-        config = self._config.server
-
         uvicorn.run(
             self._app,
-            host=config.host,
-            port=config.port,
+            host=self._config.host,
+            port=self._config.port,
+            forwarded_allow_ips=self._config.trusted,
         )

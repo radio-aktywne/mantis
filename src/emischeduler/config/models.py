@@ -1,121 +1,89 @@
 from datetime import datetime, timedelta
 from pathlib import Path
+from socket import gethostbyname
 
-from pydantic import BaseModel, Field, NaiveDatetime
+from pydantic import BaseModel, Field
 
 from emischeduler.config.base import BaseConfig
+from emischeduler.utils.time import NaiveDatetime
 
 
 class ServerConfig(BaseModel):
     """Configuration for the server."""
 
-    host: str = Field(
-        "0.0.0.0",
-        title="Host",
-        description="Host to run the server on.",
-    )
-    port: int = Field(
-        33000,
-        ge=0,
-        le=65535,
-        title="Port",
-        description="Port to run the server on.",
-    )
+    host: str = "0.0.0.0"
+    """Host to run the server on."""
+
+    port: int = Field(33000, ge=0, le=65535)
+    """Port to run the server on."""
+
+    trusted: str | list[str] | None = "*"
+    """Trusted IP addresses."""
 
 
 class StoreConfig(BaseModel):
     """Configuration for the store."""
 
-    path: Path = Field(
-        Path("data/state.json"),
-        title="Path",
-        description="Path to the store file.",
-    )
+    path: Path = Path("data/state.json")
+    """Path to the store file."""
 
 
 class StreamConfig(BaseModel):
     """Configuration for the stream operation."""
 
-    timeout: timedelta = Field(
-        timedelta(hours=1),
-        title="Timeout",
-        description="Timeout for trying to reserve a stream.",
-    )
+    timeout: timedelta = timedelta(hours=1)
+    """Timeout for trying to reserve a stream."""
 
 
 class CleanerConfig(BaseModel):
     """Configuration for the cleaner."""
 
-    reference: NaiveDatetime = Field(
-        datetime(2000, 1, 1, 0, 0, 0, 0),
-        title="Reference",
-        description="Reference datetime for cleaning.",
-    )
-    interval: timedelta = Field(
-        timedelta(days=1),
-        title="Interval",
-        description="Interval between cleanings.",
-    )
+    reference: NaiveDatetime = datetime(2000, 1, 1, 0, 0, 0, 0)
+    """Reference datetime for cleaning."""
+
+    interval: timedelta = timedelta(days=1)
+    """Interval between cleanings."""
 
 
 class StreamSynchronizerConfig(BaseModel):
     """Configuration for the stream synchronizer."""
 
-    window: timedelta = Field(
-        timedelta(days=1),
-        title="Window",
-        description="Duration of the time window.",
-    )
+    window: timedelta = timedelta(days=1)
+    """Duration of the time window."""
 
 
 class SynchronizerConfig(BaseModel):
     """Configuration for the synchronizer."""
 
-    reference: NaiveDatetime = Field(
-        datetime(2000, 1, 1, 0, 0, 0, 0),
-        title="Reference",
-        description="Reference datetime for synchronization.",
-    )
-    interval: timedelta = Field(
-        timedelta(minutes=1),
-        title="Interval",
-        description="Interval between synchronizations.",
-    )
-    stream: StreamSynchronizerConfig = Field(
-        StreamSynchronizerConfig(),
-        title="Stream",
-        description="Configuration for the stream synchronizer.",
-    )
+    reference: NaiveDatetime = datetime(2000, 1, 1, 0, 0, 0, 0)
+    """Reference datetime for synchronization."""
+
+    interval: timedelta = timedelta(minutes=1)
+    """Interval between synchronizations."""
+
+    stream: StreamSynchronizerConfig = StreamSynchronizerConfig()
+    """Configuration for the stream synchronizer."""
 
 
 class EmishowsHTTPConfig(BaseModel):
-    """Configuration for the Emishows HTTP API."""
+    """Configuration for the HTTP API of the emishows service."""
 
-    scheme: str = Field(
-        "http",
-        title="Scheme",
-        description="Scheme of the HTTP API.",
-    )
-    host: str = Field(
-        "localhost",
-        title="Host",
-        description="Host of the HTTP API.",
-    )
-    port: int | None = Field(
-        35000,
-        ge=1,
-        le=65535,
-        title="Port",
-        description="Port of the HTTP API.",
-    )
-    path: str | None = Field(
-        None,
-        title="Path",
-        description="Path of the HTTP API.",
-    )
+    scheme: str = "http"
+    """Scheme of the HTTP API."""
+
+    host: str = "localhost"
+    """Host of the HTTP API."""
+
+    port: int | None = Field(35000, ge=1, le=65535)
+    """Port of the HTTP API."""
+
+    path: str | None = None
+    """Path of the HTTP API."""
 
     @property
     def url(self) -> str:
+        """URL of the HTTP API."""
+
         url = f"{self.scheme}://{self.host}"
         if self.port:
             url = f"{url}:{self.port}"
@@ -127,95 +95,72 @@ class EmishowsHTTPConfig(BaseModel):
 
 
 class EmishowsConfig(BaseModel):
-    """Configuration for the Emishows service."""
+    """Configuration for the emishows service."""
 
-    http: EmishowsHTTPConfig = Field(
-        EmishowsHTTPConfig(),
-        title="HTTP",
-        description="Configuration for the HTTP API.",
-    )
+    http: EmishowsHTTPConfig = EmishowsHTTPConfig()
+    """Configuration for the HTTP API."""
 
 
 class DatarecordsS3Config(BaseModel):
-    """Configuration for the Datarecords S3 API."""
+    """Configuration for the S3 API of the datarecords database."""
 
-    secure: bool = Field(
-        False,
-        title="Secure",
-        description="Whether to use a secure connection.",
-    )
-    host: str = Field(
-        "localhost",
-        title="Host",
-        description="Host of the S3 API.",
-    )
-    port: int | None = Field(
-        30000,
-        ge=1,
-        le=65535,
-        title="Port",
-        description="Port of the S3 API.",
-    )
-    user: str = Field(
-        "readonly",
-        title="User",
-        description="Username to authenticate with the S3 API.",
-    )
-    password: str = Field(
-        "password",
-        title="Password",
-        description="Password to authenticate with the S3 API.",
-    )
-    live_bucket: str = Field(
-        "live",
-        title="LiveBucket",
-        description="Name of the bucket with recordings of live events.",
-    )
-    prerecorded_bucket: str = Field(
-        "prerecorded",
-        title="PrerecordedBucket",
-        description="Name of the bucket with prerecorded events.",
-    )
+    secure: bool = False
+    """Whether to use a secure connection."""
+
+    host: str = "localhost"
+    """Host of the S3 API."""
+
+    port: int | None = Field(30000, ge=1, le=65535)
+    """Port of the S3 API."""
+
+    user: str = "readonly"
+    """Username to authenticate with the S3 API."""
+
+    password: str = "password"
+    """Password to authenticate with the S3 API."""
+
+    live_bucket: str = "live"
+    """Name of the bucket to download recordings of live streams from."""
+
+    prerecorded_bucket: str = "prerecorded"
+    """Name of the bucket to download prerecorded streams from."""
+
+    @property
+    def endpoint(self) -> str:
+        """Endpoint to connect to the S3 API."""
+
+        if self.port is None:
+            return self.host
+
+        return f"{self.host}:{self.port}"
 
 
 class DatarecordsConfig(BaseModel):
-    """Configuration for the Datarecords database."""
+    """Configuration for the datarecords database."""
 
-    s3: DatarecordsS3Config = Field(
-        DatarecordsS3Config(),
-        title="S3",
-        description="Configuration for the S3 API.",
-    )
+    s3: DatarecordsS3Config = DatarecordsS3Config()
+    """Configuration for the S3 API of the datarecords database."""
 
 
 class EmistreamHTTPConfig(BaseModel):
-    """Configuration for the Emistream HTTP API."""
+    """Configuration for the HTTP API of the emistream service."""
 
-    scheme: str = Field(
-        "http",
-        title="Scheme",
-        description="Scheme of the HTTP API.",
-    )
-    host: str = Field(
-        "localhost",
-        title="Host",
-        description="Host of the HTTP API.",
-    )
-    port: int | None = Field(
-        10000,
-        ge=1,
-        le=65535,
-        title="Port",
-        description="Port of the HTTP API.",
-    )
-    path: str | None = Field(
-        None,
-        title="Path",
-        description="Path of the HTTP API.",
-    )
+    scheme: str = "http"
+    """Scheme of the HTTP API."""
+
+    host: str = "localhost"
+    """Host of the HTTP API."""
+
+    port: int | None = Field(10000, ge=1, le=65535)
+    """Port of the HTTP API."""
+
+    path: str | None = None
+    """Path of the HTTP API."""
 
     @property
     def url(self) -> str:
+        """URL of the HTTP API."""
+
         url = f"{self.scheme}://{self.host}"
         if self.port:
             url = f"{url}:{self.port}"
@@ -227,81 +172,59 @@ class EmistreamHTTPConfig(BaseModel):
 
 
 class EmistreamSRTConfig(BaseModel):
-    """Configuration for the Emistream SRT stream."""
+    """Configuration for the SRT stream of the emistream service."""
 
-    host: str = Field(
-        "localhost",
-        title="Host",
-        description="Host of the SRT stream.",
-    )
-    port: int = Field(
-        10000,
-        ge=1,
-        le=65535,
-        title="Port",
-        description="Port of the SRT stream.",
-    )
+    host: str = "localhost"
+    """Host of the SRT stream."""
+
+    port: int = Field(10000, ge=1, le=65535)
+    """Port of the SRT stream."""
 
     @property
     def url(self) -> str:
-        return f"srt://{self.host}:{self.port}"
+        """URL of the SRT stream."""
+
+        host = gethostbyname(self.host)
+        port = self.port
+        return f"srt://{host}:{port}"
 
 
 class EmistreamConfig(BaseModel):
-    """Configuration for the Emistream service."""
+    """Configuration for the emistream service."""
 
-    http: EmistreamHTTPConfig = Field(
-        EmistreamHTTPConfig(),
-        title="HTTP",
-        description="Configuration for the HTTP API.",
-    )
-    srt: EmistreamSRTConfig = Field(
-        EmistreamSRTConfig(),
-        title="SRT",
-        description="Configuration for the SRT stream.",
-    )
+    http: EmistreamHTTPConfig = EmistreamHTTPConfig()
+    """Configuration for the HTTP API."""
+
+    srt: EmistreamSRTConfig = EmistreamSRTConfig()
+    """Configuration for the SRT stream."""
 
 
 class Config(BaseConfig):
     """Configuration for the application."""
 
-    server: ServerConfig = Field(
-        ServerConfig(),
-        title="Server",
-        description="Configuration for the server.",
-    )
-    store: StoreConfig = Field(
-        StoreConfig(),
-        title="Store",
-        description="Configuration for the store.",
-    )
-    stream: StreamConfig = Field(
-        StreamConfig(),
-        title="Stream",
-        description="Configuration for the stream operation.",
-    )
-    cleaner: CleanerConfig = Field(
-        CleanerConfig(),
-        title="Cleaner",
-        description="Configuration for the cleaner.",
-    )
-    synchronizer: SynchronizerConfig = Field(
-        SynchronizerConfig(),
-        title="Synchronizer",
-        description="Configuration for the synchronizer.",
-    )
-    emishows: EmishowsConfig = Field(
-        EmishowsConfig(),
-        title="Emishows",
-        description="Configuration for the Emishows service.",
-    )
-    datarecords: DatarecordsConfig = Field(
-        DatarecordsConfig(),
-        title="Datarecords",
-        description="Configuration for the Datarecords database.",
-    )
-    emistream: EmistreamConfig = Field(
-        EmistreamConfig(),
-        title="Emistream",
-        description="Configuration for the Emistream service.",
-    )
+    server: ServerConfig = ServerConfig()
+    """Configuration for the server."""
+
+    store: StoreConfig = StoreConfig()
+    """Configuration for the store."""
+
+    stream: StreamConfig = StreamConfig()
+    """Configuration for the stream operation."""
+
+    cleaner: CleanerConfig = CleanerConfig()
+    """Configuration for the cleaner."""
+
+    synchronizer: SynchronizerConfig = SynchronizerConfig()
+    """Configuration for the synchronizer."""
+
+    emishows: EmishowsConfig = EmishowsConfig()
+    """Configuration for the emishows service."""
+
+    datarecords: DatarecordsConfig = DatarecordsConfig()
+    """Configuration for the datarecords database."""
+
+    emistream: EmistreamConfig = EmistreamConfig()
+    """Configuration for the emistream service."""
+
+    debug: bool = False
+    """Enable debug mode."""

@@ -1,13 +1,17 @@
+from typing import Annotated
+
 from litestar import Controller as BaseController
-from litestar import delete, get, post
+from litestar import handlers
 from litestar.di import Provide
+from litestar.params import Body, Parameter
 from litestar.response import Response
 from litestar.status_codes import HTTP_200_OK
 
-from emischeduler.api.exceptions import NotFoundException, UnprocessableContentException
+from emischeduler.api.exceptions import BadRequestException, NotFoundException
 from emischeduler.api.routes.tasks import errors as e
 from emischeduler.api.routes.tasks import models as m
 from emischeduler.api.routes.tasks.service import Service
+from emischeduler.api.validator import Validator
 from emischeduler.state import State
 
 
@@ -15,7 +19,9 @@ class DependenciesBuilder:
     """Builder for the dependencies of the controller."""
 
     async def _build_service(self, state: State) -> Service:
-        return Service(scheduler=state.scheduler)
+        return Service(
+            scheduler=state.scheduler,
+        )
 
     def build(self) -> dict[str, Provide]:
         return {
@@ -28,154 +34,309 @@ class Controller(BaseController):
 
     dependencies = DependenciesBuilder().build()
 
-    @get(
+    @handlers.get(
         summary="Get index",
-        description="Get tasks index.",
     )
-    async def get_index(self, service: Service) -> Response[m.GetIndexResponse]:
-        response = await service.get_index()
-        return Response(response)
+    async def list(self, service: Service) -> Response[m.ListResponseTasks]:
+        """List tasks."""
 
-    @get(
+        req = m.ListRequest()
+
+        req = await service.list(req)
+
+        tasks = req.tasks
+
+        return Response(tasks)
+
+    @handlers.get(
         "/{id:uuid}",
         summary="Get task",
-        description="Get task by id.",
-        raises=[NotFoundException],
+        raises=[
+            NotFoundException,
+        ],
     )
-    async def get_task(
-        self, service: Service, id: m.GetTaskIdParameter
-    ) -> Response[m.GetTaskResponse]:
+    async def get(
+        self,
+        service: Service,
+        id: Annotated[
+            m.GetRequestId,
+            Parameter(
+                description="Identifier of the task.",
+            ),
+        ],
+    ) -> Response[m.GetResponseTask]:
+        """Get a task."""
+
+        req = m.GetRequest(
+            id=id,
+        )
+
         try:
-            response = await service.get_task(id)
+            res = await service.get(req)
         except e.TaskNotFoundError as ex:
-            raise NotFoundException(extra=id) from ex
+            raise NotFoundException(extra=str(ex)) from ex
 
-        return Response(response)
+        task = res.task
 
-    @get(
+        return Response(task)
+
+    @handlers.get(
         "/pending/{id:uuid}",
         summary="Get pending task",
-        description="Get pending task by id.",
-        raises=[NotFoundException],
+        raises=[
+            NotFoundException,
+        ],
     )
-    async def get_pending_task(
-        self, service: Service, id: m.GetPendingTaskIdParameter
-    ) -> Response[m.GetPendingTaskResponse]:
+    async def get_pending(
+        self,
+        service: Service,
+        id: Annotated[
+            m.GetPendingRequestId,
+            Parameter(
+                description="Identifier of the task.",
+            ),
+        ],
+    ) -> Response[m.GetPendingResponseTask]:
+        """Get a pending task."""
+
+        req = m.GetPendingRequest(
+            id=id,
+        )
+
         try:
-            response = await service.get_pending_task(id)
+            res = await service.get_pending(req)
         except e.TaskNotFoundError as ex:
-            raise NotFoundException(extra=id) from ex
+            raise NotFoundException(extra=str(ex)) from ex
 
-        return Response(response)
+        task = res.task
 
-    @get(
+        return Response(task)
+
+    @handlers.get(
         "/running/{id:uuid}",
         summary="Get running task",
-        description="Get running task by id.",
-        raises=[NotFoundException],
+        raises=[
+            NotFoundException,
+        ],
     )
-    async def get_running_task(
-        self, service: Service, id: m.GetRunningTaskIdParameter
-    ) -> Response[m.GetRunningTaskResponse]:
+    async def get_running(
+        self,
+        service: Service,
+        id: Annotated[
+            m.GetRunningRequestId,
+            Parameter(
+                description="Identifier of the task.",
+            ),
+        ],
+    ) -> Response[m.GetRunningResponseTask]:
+        """Get a running task."""
+
+        req = m.GetRunningRequest(
+            id=id,
+        )
+
         try:
-            response = await service.get_running_task(id)
+            res = await service.get_running(req)
         except e.TaskNotFoundError as ex:
-            raise NotFoundException(extra=id) from ex
+            raise NotFoundException(extra=str(ex)) from ex
 
-        return Response(response)
+        task = res.task
 
-    @get(
+        return Response(task)
+
+    @handlers.get(
         "/cancelled/{id:uuid}",
         summary="Get cancelled task",
-        description="Get cancelled task by id.",
-        raises=[NotFoundException],
+        raises=[
+            NotFoundException,
+        ],
     )
-    async def get_cancelled_task(
-        self, service: Service, id: m.GetCancelledTaskIdParameter
-    ) -> Response[m.GetCancelledTaskResponse]:
+    async def get_cancelled(
+        self,
+        service: Service,
+        id: Annotated[
+            m.GetCancelledRequestId,
+            Parameter(
+                description="Identifier of the task.",
+            ),
+        ],
+    ) -> Response[m.GetCancelledResponseTask]:
+        """Get a cancelled task."""
+
+        req = m.GetCancelledRequest(
+            id=id,
+        )
+
         try:
-            response = await service.get_cancelled_task(id)
+            res = await service.get_cancelled(req)
         except e.TaskNotFoundError as ex:
-            raise NotFoundException(extra=id) from ex
+            raise NotFoundException(extra=str(ex)) from ex
 
-        return Response(response)
+        task = res.task
 
-    @get(
+        return Response(task)
+
+    @handlers.get(
         "/failed/{id:uuid}",
         summary="Get failed task",
-        description="Get failed task by id.",
-        raises=[NotFoundException],
+        raises=[
+            NotFoundException,
+        ],
     )
-    async def get_failed_task(
-        self, service: Service, id: m.GetFailedTaskIdParameter
-    ) -> Response[m.GetFailedTaskResponse]:
+    async def get_failed(
+        self,
+        service: Service,
+        id: Annotated[
+            m.GetFailedRequestId,
+            Parameter(
+                description="Identifier of the task.",
+            ),
+        ],
+    ) -> Response[m.GetFailedResponseTask]:
+        """Get a failed task."""
+
+        req = m.GetFailedRequest(
+            id=id,
+        )
+
         try:
-            response = await service.get_failed_task(id)
+            res = await service.get_failed(req)
         except e.TaskNotFoundError as ex:
-            raise NotFoundException(extra=id) from ex
+            raise NotFoundException(extra=str(ex)) from ex
 
-        return Response(response)
+        task = res.task
 
-    @get(
+        return Response(task)
+
+    @handlers.get(
         "/completed/{id:uuid}",
         summary="Get completed task",
-        description="Get completed task by id.",
-        raises=[NotFoundException],
+        raises=[
+            NotFoundException,
+        ],
     )
-    async def get_completed_task(
-        self, service: Service, id: m.GetCompletedTaskIdParameter
-    ) -> Response[m.GetCompletedTaskResponse]:
+    async def get_completed(
+        self,
+        service: Service,
+        id: Annotated[
+            m.GetCompletedRequestId,
+            Parameter(
+                description="Identifier of the task.",
+            ),
+        ],
+    ) -> Response[m.GetCompletedResponseTask]:
+        """Get a completed task."""
+
+        req = m.GetCompletedRequest(
+            id=id,
+        )
+
         try:
-            response = await service.get_completed_task(id)
+            res = await service.get_completed(req)
         except e.TaskNotFoundError as ex:
-            raise NotFoundException(extra=id) from ex
+            raise NotFoundException(extra=str(ex)) from ex
 
-        return Response(response)
+        task = res.task
 
-    @post(
+        return Response(task)
+
+    @handlers.post(
         summary="Schedule task",
-        description="Schedule a task.",
-        raises=[UnprocessableContentException],
+        raises=[
+            BadRequestException,
+        ],
     )
-    async def schedule_task(
-        self, service: Service, data: m.ScheduleTaskRequest
-    ) -> Response[m.ScheduleTaskResponse]:
-        try:
-            response = await service.schedule_task(data)
-        except e.InvalidRequestError as ex:
-            raise UnprocessableContentException(extra=ex.message) from ex
-        return Response(response)
+    async def schedule(
+        self,
+        service: Service,
+        data: Annotated[
+            m.ScheduleRequestData,
+            Body(
+                description="Data to schedule a task.",
+            ),
+        ],
+    ) -> Response[m.ScheduleResponseTask]:
+        """Schedule a task."""
 
-    @delete(
+        data = Validator(m.ScheduleRequestData).object(data)
+
+        req = m.ScheduleRequest(
+            data=data,
+        )
+
+        try:
+            res = await service.schedule(req)
+        except e.ValidationError as ex:
+            raise BadRequestException(extra=str(ex)) from ex
+
+        task = res.task
+
+        return Response(task)
+
+    @handlers.delete(
         "/{id:uuid}",
         summary="Cancel task",
-        description="Cancel a task.",
-        raises=[NotFoundException],
         status_code=HTTP_200_OK,
+        raises=[
+            NotFoundException,
+        ],
     )
-    async def cancel_task(
-        self, service: Service, id: m.CancelTaskIdParameter
-    ) -> Response[m.CancelTaskResponse]:
+    async def cancel(
+        self,
+        service: Service,
+        id: Annotated[
+            m.CancelRequestId,
+            Parameter(
+                description="Identifier of the task.",
+            ),
+        ],
+    ) -> Response[m.CancelResponseTask]:
+        """Cancel a task."""
+
+        req = m.CancelRequest(
+            id=id,
+        )
+
         try:
-            response = await service.cancel_task(id)
+            res = await service.cancel(req)
         except e.TaskNotFoundError as ex:
-            raise NotFoundException(extra=id) from ex
+            raise NotFoundException(extra=str(ex)) from ex
 
-        return Response(response)
+        task = res.task
 
-    @post(
+        return Response(task)
+
+    @handlers.post(
         "/clean",
         summary="Clean tasks",
-        description="Clean stale tasks.",
-        raises=[UnprocessableContentException],
         status_code=HTTP_200_OK,
+        raises=[
+            BadRequestException,
+        ],
     )
-    async def clean_tasks(
-        self, service: Service, data: m.CleanTasksRequest
-    ) -> Response[m.CleanTasksResponse]:
-        try:
-            response = await service.clean_tasks(data)
-        except e.InvalidRequestError as ex:
-            raise UnprocessableContentException(extra=ex.message) from ex
+    async def clean(
+        self,
+        service: Service,
+        data: Annotated[
+            m.CleanRequestData,
+            Body(
+                description="Data to clean tasks.",
+            ),
+        ],
+    ) -> Response[m.CleanResponseResults]:
+        """Clean tasks."""
 
-        return Response(response)
+        data = Validator(m.CleanRequestData).object(data)
+
+        req = m.CleanRequest(
+            data=data,
+        )
+
+        try:
+            res = await service.clean(req)
+        except e.ValidationError as ex:
+            raise BadRequestException(extra=str(ex)) from ex
+
+        results = res.results
+
+        return Response(results)
