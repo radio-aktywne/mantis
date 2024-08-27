@@ -1,7 +1,7 @@
 [tool.poetry]
 package-mode = true
 name = "emischeduler"
-version = "0.12.0"
+version = "0.13.0"
 description = "Emission scheduling 📅"
 authors = ["radio-aktywne <it@radioaktywne.pl>"]
 
