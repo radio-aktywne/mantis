@@ -34,6 +34,16 @@ class StreamConfig(BaseModel):
     timeout: timedelta = timedelta(hours=1)
     """Timeout for trying to reserve a stream."""
 
+    window: timedelta = timedelta(days=60)
+    """Duration of the time window for searching for past records."""
+
+
+class OperationsConfig(BaseModel):
+    """Configuration for the operations."""
+
+    stream: StreamConfig = StreamConfig()
+    """Configuration for the stream operation."""
+
 
 class CleanerConfig(BaseModel):
     """Configuration for the cleaner."""
@@ -52,6 +62,13 @@ class StreamSynchronizerConfig(BaseModel):
     """Duration of the time window."""
 
 
+class SynchronizersConfig(BaseModel):
+    """Configuration for the synchronizers."""
+
+    stream: StreamSynchronizerConfig = StreamSynchronizerConfig()
+    """Configuration for the stream synchronizer."""
+
+
 class SynchronizerConfig(BaseModel):
     """Configuration for the synchronizer."""
 
@@ -61,8 +78,44 @@ class SynchronizerConfig(BaseModel):
     interval: timedelta = timedelta(minutes=1)
     """Interval between synchronizations."""
 
-    stream: StreamSynchronizerConfig = StreamSynchronizerConfig()
-    """Configuration for the stream synchronizer."""
+    synchronizers: SynchronizersConfig = SynchronizersConfig()
+    """Configuration for the synchronizers."""
+
+
+class EmirecordsHTTPConfig(BaseModel):
+    """Configuration for the HTTP API of the emirecords service."""
+
+    scheme: str = "http"
+    """Scheme of the HTTP API."""
+
+    host: str = "localhost"
+    """Host of the HTTP API."""
+
+    port: int | None = Field(31000, ge=1, le=65535)
+    """Port of the HTTP API."""
+
+    path: str | None = None
+    """Path of the HTTP API."""
+
+    @property
+    def url(self) -> str:
+        """URL of the HTTP API."""
+
+        url = f"{self.scheme}://{self.host}"
+        if self.port:
+            url = f"{url}:{self.port}"
+        if self.path:
+            path = self.path if self.path.startswith("/") else f"/{self.path}"
+            path = path.rstrip("/")
+            url = f"{url}{path}"
+        return url
+
+
+class EmirecordsConfig(BaseModel):
+    """Configuration for the emirecords service."""
+
+    http: EmirecordsHTTPConfig = EmirecordsHTTPConfig()
+    """Configuration for the HTTP API."""
 
 
 class EmishowsHTTPConfig(BaseModel):
@@ -99,47 +152,6 @@ class EmishowsConfig(BaseModel):
 
     http: EmishowsHTTPConfig = EmishowsHTTPConfig()
     """Configuration for the HTTP API."""
-
-
-class DatarecordsS3Config(BaseModel):
-    """Configuration for the S3 API of the datarecords database."""
-
-    secure: bool = False
-    """Whether to use a secure connection."""
-
-    host: str = "localhost"
-    """Host of the S3 API."""
-
-    port: int | None = Field(30000, ge=1, le=65535)
-    """Port of the S3 API."""
-
-    user: str = "readonly"
-    """Username to authenticate with the S3 API."""
-
-    password: str = "password"
-    """Password to authenticate with the S3 API."""
-
-    live_bucket: str = "live"
-    """Name of the bucket to download recordings of live streams from."""
-
-    prerecorded_bucket: str = "prerecorded"
-    """Name of the bucket to download prerecorded streams from."""
-
-    @property
-    def endpoint(self) -> str:
-        """Endpoint to connect to the S3 API."""
-
-        if self.port is None:
-            return self.host
-
-        return f"{self.host}:{self.port}"
-
-
-class DatarecordsConfig(BaseModel):
-    """Configuration for the datarecords database."""
-
-    s3: DatarecordsS3Config = DatarecordsS3Config()
-    """Configuration for the S3 API of the datarecords database."""
 
 
 class EmistreamHTTPConfig(BaseModel):
@@ -208,8 +220,8 @@ class Config(BaseConfig):
     store: StoreConfig = StoreConfig()
     """Configuration for the store."""
 
-    stream: StreamConfig = StreamConfig()
-    """Configuration for the stream operation."""
+    operations: OperationsConfig = OperationsConfig()
+    """Configuration for the operations."""
 
     cleaner: CleanerConfig = CleanerConfig()
     """Configuration for the cleaner."""
@@ -217,11 +229,11 @@ class Config(BaseConfig):
     synchronizer: SynchronizerConfig = SynchronizerConfig()
     """Configuration for the synchronizer."""
 
+    emirecords: EmirecordsConfig = EmirecordsConfig()
+    """Configuration for the emirecords service."""
+
     emishows: EmishowsConfig = EmishowsConfig()
     """Configuration for the emishows service."""
-
-    datarecords: DatarecordsConfig = DatarecordsConfig()
-    """Configuration for the datarecords database."""
 
     emistream: EmistreamConfig = EmistreamConfig()
     """Configuration for the emistream service."""
