@@ -13,7 +13,7 @@ from urllib3.exceptions import InsecureRequestWarning
 from emischeduler.api.routes.router import router
 from emischeduler.config.models import Config
 from emischeduler.services.cleaner.service import CleanerService
-from emischeduler.services.datarecords.service import DatarecordsService
+from emischeduler.services.emirecords.service import EmirecordsService
 from emischeduler.services.emishows.service import EmishowsService
 from emischeduler.services.emistream.service import EmistreamService
 from emischeduler.services.scheduler.service import SchedulerService
@@ -128,9 +128,9 @@ class AppBuilder:
             self._build_pydantic_plugin(),
         ]
 
-    def _build_datarecords(self) -> DatarecordsService:
-        return DatarecordsService(
-            config=self._config.datarecords,
+    def _build_emirecords(self) -> EmirecordsService:
+        return EmirecordsService(
+            config=self._config.emirecords,
         )
 
     def _build_emishows(self) -> EmishowsService:
@@ -150,14 +150,14 @@ class AppBuilder:
 
     def _build_scheduler(
         self,
-        datarecords: DatarecordsService,
+        emirecords: EmirecordsService,
         emishows: EmishowsService,
         emistream: EmistreamService,
         store: Store,
     ) -> SchedulerService:
         return SchedulerService(
             config=self._config,
-            datarecords=datarecords,
+            emirecords=emirecords,
             emishows=emishows,
             emistream=emistream,
             store=store,
@@ -179,21 +179,19 @@ class AppBuilder:
         )
 
     def _build_initial_state(self) -> State:
-        config = self._config
-        datarecords = self._build_datarecords()
+        emirecords = self._build_emirecords()
         emishows = self._build_emishows()
         emistream = self._build_emistream()
+
+        config = self._config
         store = self._build_store()
-        scheduler = self._build_scheduler(datarecords, emishows, emistream, store)
+        scheduler = self._build_scheduler(emirecords, emishows, emistream, store)
         cleaner = self._build_cleaner(scheduler)
         synchronizer = self._build_synchronizer(emishows, scheduler)
 
         return State(
             {
                 "config": config,
-                "datarecords": datarecords,
-                "emishows": emishows,
-                "emistream": emistream,
                 "store": store,
                 "scheduler": scheduler,
                 "cleaner": cleaner,

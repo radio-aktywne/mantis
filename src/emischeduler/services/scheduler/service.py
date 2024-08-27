@@ -1,7 +1,7 @@
 from pyscheduler import scheduler as s
 
 from emischeduler.config.models import Config
-from emischeduler.services.datarecords.service import DatarecordsService
+from emischeduler.services.emirecords.service import EmirecordsService
 from emischeduler.services.emishows.service import EmishowsService
 from emischeduler.services.emistream.service import EmistreamService
 from emischeduler.services.scheduler.cleaning.factory import CleaningStrategyFactory
@@ -19,7 +19,7 @@ class SchedulerService(s.Scheduler):
     def __init__(
         self,
         config: Config,
-        datarecords: DatarecordsService,
+        emirecords: EmirecordsService,
         emishows: EmishowsService,
         emistream: EmistreamService,
         store: Store,
@@ -29,7 +29,12 @@ class SchedulerService(s.Scheduler):
             lock=Lock(),
             events=EventFactory(),
             queue=Queue(),
-            operations=OperationFactory(config, datarecords, emishows, emistream),
+            operations=OperationFactory(
+                config=config,
+                emirecords=emirecords,
+                emishows=emishows,
+                emistream=emistream,
+            ),
             conditions=ConditionFactory(),
             cleaning=CleaningStrategyFactory(),
         )

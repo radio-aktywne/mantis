@@ -19,9 +19,12 @@ You can configure the app at runtime using various environment variables:
 - `EMISCHEDULER__STORE__PATH` -
   path to the store file
   (default: `data/state.json`)
-- `EMISCHEDULER__STREAM__TIMEOUT` -
+- `EMISCHEDULER__OPERATIONS__STREAM__TIMEOUT` -
   timeout for trying to reserve a stream
   (default: `PT1H`)
+- `EMISCHEDULER__OPERATIONS__STREAM__WINDOW` -
+  duration of the time window for searching for past records
+  (default: `PT60D`)
 - `EMISCHEDULER__CLEANER__REFERENCE` -
   reference datetime for cleaning
   (default: `2000-01-01T00:00:00`)
@@ -34,9 +37,21 @@ You can configure the app at runtime using various environment variables:
 - `EMISCHEDULER__SYNCHRONIZER__INTERVAL` -
   interval between synchronizations
   (default: `PT1M`)
-- `EMISCHEDULER__SYNCHRONIZER__STREAM__WINDOW` -
+- `EMISCHEDULER__SYNCHRONIZER__SYNCHRONIZERS__STREAM__WINDOW` -
   duration of the time window for stream tasks
   (default: `P1D`)
+- `EMISTREAM__EMIRECORDS__HTTP__SCHEME` -
+  scheme of the HTTP API of the emirecords service
+  (default: `http`)
+- `EMISTREAM__EMIRECORDS__HTTP__HOST` -
+  host of the HTTP API of the emirecords service
+  (default: `localhost`)
+- `EMISTREAM__EMIRECORDS__HTTP__PORT` -
+  port of the HTTP API of the emirecords service
+  (default: `31000`)
+- `EMISTREAM__EMIRECORDS__HTTP__PATH` -
+  path of the HTTP API of the emirecords service
+  (default: ``)
 - `EMISCHEDULER__EMISHOWS__HTTP__SCHEME` -
   scheme of the HTTP API of the emishows service
   (default: `http`)
@@ -49,27 +64,6 @@ You can configure the app at runtime using various environment variables:
 - `EMISCHEDULER__EMISHOWS__HTTP__PATH` -
   path of the HTTP API of the emishows service
   (default: ``)
-- `EMISCHEDULER__DATARECORDS__S3__SECURE` -
-  whether to use secure connections for the S3 API of the datarecords database
-  (default: `false`)
-- `EMISCHEDULER__DATARECORDS__S3__HOST` -
-  host of the S3 API of the datarecords database
-  (default: `localhost`)
-- `EMISCHEDULER__DATARECORDS__S3__PORT` -
-  port of the S3 API of the datarecords database
-  (default: `30000`)
-- `EMISCHEDULER__DATARECORDS__S3__USER` -
-  user to authenticate with the S3 API of the datarecords database
-  (default: `readonly`)
-- `EMISCHEDULER__DATARECORDS__S3__PASSWORD` -
-  password to authenticate with the S3 API of the datarecords database
-  (default: `password`)
-- `EMISCHEDULER__DATARECORDS__S3__LIVE_BUCKET` -
-  name of the bucket to download recordings of live streams from
-  (default: `live`)
-- `EMISCHEDULER__DATARECORDS__S3__PRERECORDED_BUCKET` -
-  name of the bucket to download prerecorded streams from
-  (default: `prerecorded`)
 - `EMISCHEDULER__EMISTREAM__HTTP__SCHEME` -
   scheme of the HTTP API of the emistream service
   (default: `http`)
