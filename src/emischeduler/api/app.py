@@ -1,5 +1,4 @@
 import logging
-import warnings
 from collections.abc import AsyncGenerator, Callable
 from contextlib import AbstractAsyncContextManager, asynccontextmanager
 from importlib import metadata
@@ -8,7 +7,6 @@ from litestar import Litestar, Router
 from litestar.contrib.pydantic import PydanticPlugin
 from litestar.openapi import OpenAPIConfig
 from litestar.plugins import PluginProtocol
-from urllib3.exceptions import InsecureRequestWarning
 
 from emischeduler.api.routes.router import router
 from emischeduler.config.models import Config
@@ -37,16 +35,6 @@ class AppBuilder:
 
     def _get_debug(self) -> bool:
         return self._config.debug
-
-    @asynccontextmanager
-    async def _suppress_urllib_warnings_lifespan(
-        self, app: Litestar
-    ) -> AsyncGenerator[None]:
-        with warnings.catch_warnings(
-            action="ignore",
-            category=InsecureRequestWarning,
-        ):
-            yield
 
     @asynccontextmanager
     async def _suppress_httpx_logging_lifespan(
@@ -93,7 +81,6 @@ class AppBuilder:
         self,
     ) -> list[Callable[[Litestar], AbstractAsyncContextManager]]:
         return [
-            self._suppress_urllib_warnings_lifespan,
             self._suppress_httpx_logging_lifespan,
             self._store_lifespan,
             self._scheduler_lifespan,
