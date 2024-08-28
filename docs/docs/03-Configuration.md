@@ -24,7 +24,7 @@ You can configure the app at runtime using various environment variables:
   (default: `PT1H`)
 - `EMISCHEDULER__OPERATIONS__STREAM__WINDOW` -
   duration of the time window for searching for past records
-  (default: `PT60D`)
+  (default: `P60D`)
 - `EMISCHEDULER__CLEANER__REFERENCE` -
   reference datetime for cleaning
   (default: `2000-01-01T00:00:00`)
