@@ -50,7 +50,14 @@ class StreamSynchronizer(Synchronizer):
                 limit=None,
                 offset=offset,
                 where={
-                    "type": esm.EventType.replay,
+                    "OR": [
+                        {
+                            "type": esm.EventType.replay,
+                        },
+                        {
+                            "type": esm.EventType.prerecorded,
+                        },
+                    ],
                 },
                 include=None,
                 order=None,

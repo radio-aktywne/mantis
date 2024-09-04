@@ -8,6 +8,7 @@ from pyscheduler.protocols import operation as o
 from zoneinfo import ZoneInfo
 
 from emischeduler.config.models import Config
+from emischeduler.services.emilounge.service import EmiloungeService
 from emischeduler.services.emirecords.service import EmirecordsService
 from emischeduler.services.emishows import models as eshm
 from emischeduler.services.emishows.service import EmishowsService
@@ -33,6 +34,7 @@ class StreamOperation(o.Operation):
     def __init__(
         self,
         config: Config,
+        emilounge: EmiloungeService,
         emirecords: EmirecordsService,
         emishows: EmishowsService,
         emistream: EmistreamService,
@@ -43,6 +45,7 @@ class StreamOperation(o.Operation):
         )
         self._downloader = Downloader(
             config=config,
+            emilounge=emilounge,
             emirecords=emirecords,
             emishows=emishows,
         )
@@ -72,6 +75,9 @@ class StreamOperation(o.Operation):
     def _validate_instance(
         self, event: eshm.Event, instance: eshm.EventInstance
     ) -> None:
+        if event.type not in {eshm.EventType.replay, eshm.EventType.prerecorded}:
+            raise e.UnexpectedEventTypeError(event.id, event.type)
+
         tz = ZoneInfo(event.timezone)
         if instance.end.replace(tzinfo=tz) < awareutcnow():
             raise e.InstanceAlreadyEndedError(event.id, instance.start, instance.end)

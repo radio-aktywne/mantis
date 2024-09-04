@@ -11,6 +11,7 @@ from litestar.plugins import PluginProtocol
 from emischeduler.api.routes.router import router
 from emischeduler.config.models import Config
 from emischeduler.services.cleaner.service import CleanerService
+from emischeduler.services.emilounge.service import EmiloungeService
 from emischeduler.services.emirecords.service import EmirecordsService
 from emischeduler.services.emishows.service import EmishowsService
 from emischeduler.services.emistream.service import EmistreamService
@@ -115,6 +116,11 @@ class AppBuilder:
             self._build_pydantic_plugin(),
         ]
 
+    def _build_emilounge(self) -> EmiloungeService:
+        return EmiloungeService(
+            config=self._config.emilounge,
+        )
+
     def _build_emirecords(self) -> EmirecordsService:
         return EmirecordsService(
             config=self._config.emirecords,
@@ -137,6 +143,7 @@ class AppBuilder:
 
     def _build_scheduler(
         self,
+        emilounge: EmiloungeService,
         emirecords: EmirecordsService,
         emishows: EmishowsService,
         emistream: EmistreamService,
@@ -144,6 +151,7 @@ class AppBuilder:
     ) -> SchedulerService:
         return SchedulerService(
             config=self._config,
+            emilounge=emilounge,
             emirecords=emirecords,
             emishows=emishows,
             emistream=emistream,
@@ -166,13 +174,16 @@ class AppBuilder:
         )
 
     def _build_initial_state(self) -> State:
+        emilounge = self._build_emilounge()
         emirecords = self._build_emirecords()
         emishows = self._build_emishows()
         emistream = self._build_emistream()
 
         config = self._config
         store = self._build_store()
-        scheduler = self._build_scheduler(emirecords, emishows, emistream, store)
+        scheduler = self._build_scheduler(
+            emilounge, emirecords, emishows, emistream, store
+        )
         cleaner = self._build_cleaner(scheduler)
         synchronizer = self._build_synchronizer(emishows, scheduler)
 

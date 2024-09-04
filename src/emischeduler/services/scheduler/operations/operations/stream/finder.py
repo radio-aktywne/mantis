@@ -47,7 +47,6 @@ class Finder:
                 offset=offset,
                 where={
                     "id": str(event),
-                    "type": eshm.EventType.replay,
                 },
                 include=None,
                 order=None,

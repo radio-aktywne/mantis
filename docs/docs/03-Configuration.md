@@ -40,6 +40,18 @@ You can configure the app at runtime using various environment variables:
 - `EMISCHEDULER__SYNCHRONIZER__SYNCHRONIZERS__STREAM__WINDOW` -
   duration of the time window for stream tasks
   (default: `P1D`)
+- `EMISCHEDULER__EMILOUNGE__HTTP__SCHEME` -
+  scheme of the HTTP API of the emilounge service
+  (default: `http`)
+- `EMISCHEDULER__EMILOUNGE__HTTP__HOST` -
+  host of the HTTP API of the emilounge service
+  (default: `localhost`)
+- `EMISCHEDULER__EMILOUNGE__HTTP__PORT` -
+  port of the HTTP API of the emilounge service
+  (default: `28000`)
+- `EMISCHEDULER__EMILOUNGE__HTTP__PATH` -
+  path of the HTTP API of the emilounge service
+  (default: ``)
 - `EMISCHEDULER__EMIRECORDS__HTTP__SCHEME` -
   scheme of the HTTP API of the emirecords service
   (default: `http`)
