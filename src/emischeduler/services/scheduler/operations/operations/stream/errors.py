@@ -48,3 +48,10 @@ class DownloadUnavailableError(Exception):
 
     def __init__(self, event: UUID, start: datetime) -> None:
         super().__init__(f"No download available for event {event} and start {start}.")
+
+
+class UnexpectedFormatError(Exception):
+    """Raised when an unexpected format is encountered."""
+
+    def __init__(self, format: str) -> None:
+        super().__init__(f"Unexpected format {format}.")

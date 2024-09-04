@@ -82,6 +82,42 @@ class SynchronizerConfig(BaseModel):
     """Configuration for the synchronizers."""
 
 
+class EmiloungeHTTPConfig(BaseModel):
+    """Configuration for the HTTP API of the emilounge service."""
+
+    scheme: str = "http"
+    """Scheme of the HTTP API."""
+
+    host: str = "localhost"
+    """Host of the HTTP API."""
+
+    port: int | None = Field(28000, ge=1, le=65535)
+    """Port of the HTTP API."""
+
+    path: str | None = None
+    """Path of the HTTP API."""
+
+    @property
+    def url(self) -> str:
+        """URL of the HTTP API."""
+
+        url = f"{self.scheme}://{self.host}"
+        if self.port:
+            url = f"{url}:{self.port}"
+        if self.path:
+            path = self.path if self.path.startswith("/") else f"/{self.path}"
+            path = path.rstrip("/")
+            url = f"{url}{path}"
+        return url
+
+
+class EmiloungeConfig(BaseModel):
+    """Configuration for the emilounge service."""
+
+    http: EmiloungeHTTPConfig = EmiloungeHTTPConfig()
+    """Configuration for the HTTP API."""
+
+
 class EmirecordsHTTPConfig(BaseModel):
     """Configuration for the HTTP API of the emirecords service."""
 
@@ -228,6 +264,9 @@ class Config(BaseConfig):
 
     synchronizer: SynchronizerConfig = SynchronizerConfig()
     """Configuration for the synchronizer."""
+
+    emilounge: EmiloungeConfig = EmiloungeConfig()
+    """Configuration for the emilounge service."""
 
     emirecords: EmirecordsConfig = EmirecordsConfig()
     """Configuration for the emirecords service."""

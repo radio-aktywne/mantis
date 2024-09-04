@@ -1,6 +1,7 @@
 from pyscheduler import scheduler as s
 
 from emischeduler.config.models import Config
+from emischeduler.services.emilounge.service import EmiloungeService
 from emischeduler.services.emirecords.service import EmirecordsService
 from emischeduler.services.emishows.service import EmishowsService
 from emischeduler.services.emistream.service import EmistreamService
@@ -19,6 +20,7 @@ class SchedulerService(s.Scheduler):
     def __init__(
         self,
         config: Config,
+        emilounge: EmiloungeService,
         emirecords: EmirecordsService,
         emishows: EmishowsService,
         emistream: EmistreamService,
@@ -31,6 +33,7 @@ class SchedulerService(s.Scheduler):
             queue=Queue(),
             operations=OperationFactory(
                 config=config,
+                emilounge=emilounge,
                 emirecords=emirecords,
                 emishows=emishows,
                 emistream=emistream,
