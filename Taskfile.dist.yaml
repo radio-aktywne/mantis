@@ -223,7 +223,7 @@ tasks:
         .env.python
         run
         --
-        emischeduler
+        mantis
         {{ .CLI_ARGS }}
   docker:
     desc: Run in docker container

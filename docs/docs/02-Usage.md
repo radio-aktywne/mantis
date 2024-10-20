@@ -19,10 +19,10 @@ at a given time before the start of the broadcast (default: 15 minutes).
 The flow of the task is the following:
 
 1. Start running at the scheduled time.
-2. Fetch matching event and its instance from `emishows` service.
-3. Download recording from `emirecords` service and store it locally.
+2. Fetch matching event and its instance from `beaver` service.
+3. Download recording from `gecko` service and store it locally.
 4. Wait until 10 seconds before the planned start of the broadcast.
-5. Reserve the stream in `emistream` service.
+5. Reserve the stream in `octopus` service.
 6. Wait until 1 second before the planned start of the broadcast.
 7. Start streaming the recording to the reserved stream.
 8. Finish after the whole recording has been streamed.

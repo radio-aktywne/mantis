@@ -10,9 +10,9 @@ from httpx import AsyncClient, BasicAuth
 from litestar import Litestar
 from litestar.testing import AsyncTestClient
 
-from emischeduler.api.app import AppBuilder
-from emischeduler.config.builder import ConfigBuilder
-from emischeduler.config.models import Config
+from mantis.api.app import AppBuilder
+from mantis.config.builder import ConfigBuilder
+from mantis.config.models import Config
 from tests.utils.containers import AsyncDockerContainer
 from tests.utils.waiting.conditions import CallableCondition, CommandCondition
 from tests.utils.waiting.strategies import TimeoutStrategy
@@ -34,7 +34,7 @@ def env(path: Path) -> Generator[dict[str, str]]:
     old = os.environ.copy()
 
     try:
-        os.environ["EMISCHEDULER__STORE__PATH"] = str(path)
+        os.environ["MANTIS__STORE__PATH"] = str(path)
 
         yield os.environ
     finally:
@@ -57,8 +57,8 @@ def app(config: Config) -> Litestar:
 
 
 @pytest_asyncio.fixture(scope="session")
-async def emicast() -> AsyncGenerator[AsyncDockerContainer]:
-    """Emicast container."""
+async def quokka() -> AsyncGenerator[AsyncDockerContainer]:
+    """Quokka container."""
 
     async def _check() -> None:
         auth = BasicAuth(username="admin", password="password")
@@ -67,7 +67,7 @@ async def emicast() -> AsyncGenerator[AsyncDockerContainer]:
             response.raise_for_status()
 
     container = AsyncDockerContainer(
-        "ghcr.io/radio-aktywne/services/emicast:latest",
+        "ghcr.io/radio-aktywne/services/quokka:latest",
         network="host",
     )
 
@@ -82,13 +82,13 @@ async def emicast() -> AsyncGenerator[AsyncDockerContainer]:
 
 
 @pytest_asyncio.fixture(scope="session")
-async def emifuse(
-    emicast: AsyncDockerContainer,
+async def dingo(
+    quokka: AsyncDockerContainer,
 ) -> AsyncGenerator[AsyncDockerContainer]:
-    """Emifuse container."""
+    """Dingo container."""
 
     container = AsyncDockerContainer(
-        "ghcr.io/radio-aktywne/services/emifuse:latest",
+        "ghcr.io/radio-aktywne/services/dingo:latest",
         network="host",
     )
 
@@ -98,8 +98,58 @@ async def emifuse(
 
 
 @pytest_asyncio.fixture(scope="session")
-async def mediarecords() -> AsyncGenerator[AsyncDockerContainer]:
-    """Mediarecords container."""
+async def amber() -> AsyncGenerator[AsyncDockerContainer]:
+    """Amber container."""
+
+    async def _check() -> None:
+        async with AsyncClient(base_url="http://localhost:29000") as client:
+            response = await client.get("/minio/health/ready")
+            response.raise_for_status()
+
+    container = AsyncDockerContainer(
+        "ghcr.io/radio-aktywne/databases/amber:latest",
+        network="host",
+    )
+
+    waiter = Waiter(
+        condition=CallableCondition(_check),
+        strategy=TimeoutStrategy(30),
+    )
+
+    async with container as container:
+        await waiter.wait()
+        yield container
+
+
+@pytest_asyncio.fixture(scope="session")
+async def numbat(
+    amber: AsyncDockerContainer,
+) -> AsyncGenerator[AsyncDockerContainer]:
+    """Numbat container."""
+
+    async def _check() -> None:
+        async with AsyncClient(base_url="http://localhost:28000") as client:
+            response = await client.get("/ping")
+            response.raise_for_status()
+
+    container = AsyncDockerContainer(
+        "ghcr.io/radio-aktywne/services/numbat:latest",
+        network="host",
+    )
+
+    waiter = Waiter(
+        condition=CallableCondition(_check),
+        strategy=TimeoutStrategy(30),
+    )
+
+    async with container as container:
+        await waiter.wait()
+        yield container
+
+
+@pytest_asyncio.fixture(scope="session")
+async def emerald() -> AsyncGenerator[AsyncDockerContainer]:
+    """Emerald container."""
 
     async def _check() -> None:
         async with AsyncClient(base_url="http://localhost:30000") as client:
@@ -107,7 +157,7 @@ async def mediarecords() -> AsyncGenerator[AsyncDockerContainer]:
             response.raise_for_status()
 
     container = AsyncDockerContainer(
-        "ghcr.io/radio-aktywne/databases/mediarecords:latest",
+        "ghcr.io/radio-aktywne/databases/emerald:latest",
         network="host",
     )
 
@@ -122,10 +172,10 @@ async def mediarecords() -> AsyncGenerator[AsyncDockerContainer]:
 
 
 @pytest_asyncio.fixture(scope="session")
-async def emirecords(
-    mediarecords: AsyncDockerContainer,
+async def gecko(
+    emerald: AsyncDockerContainer,
 ) -> AsyncGenerator[AsyncDockerContainer]:
-    """Emirecords container."""
+    """Gecko container."""
 
     async def _check() -> None:
         async with AsyncClient(base_url="http://localhost:31000") as client:
@@ -133,7 +183,7 @@ async def emirecords(
             response.raise_for_status()
 
     container = AsyncDockerContainer(
-        "ghcr.io/radio-aktywne/services/emirecords:latest",
+        "ghcr.io/radio-aktywne/services/gecko:latest",
         network="host",
     )
 
@@ -148,10 +198,10 @@ async def emirecords(
 
 
 @pytest_asyncio.fixture(scope="session")
-async def emistream(
-    emifuse: AsyncDockerContainer,
+async def octopus(
+    dingo: AsyncDockerContainer,
 ) -> AsyncGenerator[AsyncDockerContainer]:
-    """Emistream container."""
+    """Octopus container."""
 
     async def _check() -> None:
         async with AsyncClient(base_url="http://localhost:10000") as client:
@@ -159,7 +209,7 @@ async def emistream(
             response.raise_for_status()
 
     container = AsyncDockerContainer(
-        "ghcr.io/radio-aktywne/services/emistream:latest",
+        "ghcr.io/radio-aktywne/services/octopus:latest",
         network="host",
     )
 
@@ -174,11 +224,11 @@ async def emistream(
 
 
 @pytest_asyncio.fixture(scope="session")
-async def datashows() -> AsyncGenerator[AsyncDockerContainer]:
-    """Datashows container."""
+async def sapphire() -> AsyncGenerator[AsyncDockerContainer]:
+    """Sapphire container."""
 
     container = AsyncDockerContainer(
-        "ghcr.io/radio-aktywne/databases/datashows:latest",
+        "ghcr.io/radio-aktywne/databases/sapphire:latest",
         network="host",
         privileged=True,
     )
@@ -201,17 +251,17 @@ async def datashows() -> AsyncGenerator[AsyncDockerContainer]:
 
 
 @pytest_asyncio.fixture(scope="session")
-async def datatimes() -> AsyncGenerator[AsyncDockerContainer]:
-    """Datatimes container."""
+async def howlite() -> AsyncGenerator[AsyncDockerContainer]:
+    """Howlite container."""
 
     async def _check() -> None:
         auth = BasicAuth(username="user", password="password")
         async with AsyncClient(base_url="http://localhost:36000", auth=auth) as client:
-            response = await client.get("/user/datatimes")
+            response = await client.get("/user/calendar")
             response.raise_for_status()
 
     container = AsyncDockerContainer(
-        "ghcr.io/radio-aktywne/databases/datatimes:latest",
+        "ghcr.io/radio-aktywne/databases/howlite:latest",
         network="host",
     )
 
@@ -226,10 +276,10 @@ async def datatimes() -> AsyncGenerator[AsyncDockerContainer]:
 
 
 @pytest_asyncio.fixture(scope="session")
-async def emishows(
-    datashows: AsyncDockerContainer, datatimes: AsyncDockerContainer
+async def beaver(
+    sapphire: AsyncDockerContainer, howlite: AsyncDockerContainer
 ) -> AsyncGenerator[AsyncDockerContainer]:
-    """Emishows container."""
+    """Beaver container."""
 
     async def _check() -> None:
         async with AsyncClient(base_url="http://localhost:35000") as client:
@@ -237,7 +287,7 @@ async def emishows(
             response.raise_for_status()
 
     container = AsyncDockerContainer(
-        "ghcr.io/radio-aktywne/services/emishows:latest",
+        "ghcr.io/radio-aktywne/services/beaver:latest",
         network="host",
     )
 
@@ -254,9 +304,10 @@ async def emishows(
 @pytest_asyncio.fixture(scope="session")
 async def client(
     app: Litestar,
-    emirecords: AsyncDockerContainer,
-    emishows: AsyncDockerContainer,
-    emistream: AsyncDockerContainer,
+    numbat: AsyncDockerContainer,
+    gecko: AsyncDockerContainer,
+    beaver: AsyncDockerContainer,
+    octopus: AsyncDockerContainer,
 ) -> AsyncGenerator[AsyncTestClient]:
     """Reusable test client."""
 

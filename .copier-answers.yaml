@@ -4,15 +4,15 @@ _src_path: gh:radio-aktywne/template-service-litestar
 accountname: radio-aktywne
 description: Broadcast scheduling 📅
 docs: true
-docsurl: https://radio-aktywne.github.io/emischeduler
+docsurl: https://radio-aktywne.github.io/mantis
 email: it@radioaktywne.pl
-envprefix: EMISCHEDULER
+envprefix: MANTIS
 events: false
-imagename: services/emischeduler
-importname: emischeduler
+imagename: services/mantis
+importname: mantis
 port: 33000
 registry: true
 releases: true
-reponame: emischeduler
-repourl: https://github.com/radio-aktywne/emischeduler
-servicename: emischeduler
+reponame: mantis
+repourl: https://github.com/radio-aktywne/mantis
+servicename: mantis

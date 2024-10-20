@@ -2,10 +2,10 @@ import type * as Preset from "@docusaurus/preset-classic";
 import type { Config } from "@docusaurus/types";
 import { themes } from "prism-react-renderer";
 
-const url = new URL("https://radio-aktywne.github.io/emischeduler");
+const url = new URL("https://radio-aktywne.github.io/mantis");
 
 const config: Config = {
-  title: "emischeduler docs",
+  title: "mantis docs",
   favicon: "favicon.svg?v=1",
 
   url: `${url.protocol}//${url.host}`,
@@ -41,14 +41,14 @@ const config: Config = {
 
   themeConfig: {
     navbar: {
-      title: "emischeduler docs",
+      title: "mantis docs",
       logo: {
-        alt: "emischeduler docs logo",
+        alt: "mantis docs logo",
         src: "logo.svg?v=1",
       },
       items: [
         {
-          href: "https://github.com/radio-aktywne/emischeduler",
+          href: "https://github.com/radio-aktywne/mantis",
           position: "right",
           className: "header-github-link",
           "aria-label": "GitHub repository",
