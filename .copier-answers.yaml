@@ -10,7 +10,7 @@ envprefix: MANTIS
 events: false
 imagename: services/mantis
 importname: mantis
-port: 33000
+port: 10800
 registry: true
 releases: true
 reponame: mantis

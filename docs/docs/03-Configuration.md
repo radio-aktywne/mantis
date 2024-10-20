@@ -12,7 +12,7 @@ You can configure the service at runtime using various environment variables:
   (default: `0.0.0.0`)
 - `MANTIS__SERVER__PORT` -
   port to run the server on
-  (default: `33000`)
+  (default: `10800`)
 - `MANTIS__SERVER__TRUSTED` -
   trusted IP addresses
   (default: `*`)
@@ -48,7 +48,7 @@ You can configure the service at runtime using various environment variables:
   (default: `localhost`)
 - `MANTIS__BEAVER__HTTP__PORT` -
   port of the HTTP API of the beaver service
-  (default: `35000`)
+  (default: `10500`)
 - `MANTIS__BEAVER__HTTP__PATH` -
   path of the HTTP API of the beaver service
   (default: ``)
@@ -60,7 +60,7 @@ You can configure the service at runtime using various environment variables:
   (default: `localhost`)
 - `MANTIS__GECKO__HTTP__PORT` -
   port of the HTTP API of the gecko service
-  (default: `31000`)
+  (default: `10700`)
 - `MANTIS__GECKO__HTTP__PATH` -
   path of the HTTP API of the gecko service
   (default: ``)
@@ -72,7 +72,7 @@ You can configure the service at runtime using various environment variables:
   (default: `localhost`)
 - `MANTIS__NUMBAT__HTTP__PORT` -
   port of the HTTP API of the numbat service
-  (default: `28000`)
+  (default: `10600`)
 - `MANTIS__NUMBAT__HTTP__PATH` -
   path of the HTTP API of the numbat service
   (default: ``)
@@ -84,7 +84,7 @@ You can configure the service at runtime using various environment variables:
   (default: `localhost`)
 - `MANTIS__OCTOPUS__HTTP__PORT` -
   port of the HTTP API of the octopus service
-  (default: `10000`)
+  (default: `10300`)
 - `MANTIS__OCTOPUS__HTTP__PATH` -
   path of the HTTP API of the octopus service
   (default: ``)
@@ -93,7 +93,7 @@ You can configure the service at runtime using various environment variables:
   (default: `localhost`)
 - `MANTIS__OCTOPUS__SRT__PORT` -
   port of the SRT stream of the octopus service
-  (default: `10000`)
+  (default: `10300`)
 - `MANTIS__DEBUG` -
   enable debug mode
   (default: `false`)
