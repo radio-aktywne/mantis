@@ -8,7 +8,7 @@ from emischeduler.services.emistream import models as m
 
 
 class Endpoint(BaseEndpoint):
-    """Endpoints for emistream API."""
+    """Endpoints for emistream service."""
 
     CHECK = "/check"
     RESERVE = "/reserve"
@@ -101,7 +101,7 @@ class SSENamespace(GracyNamespace[Endpoint]):
 
 
 class EmistreamService(BaseService):
-    """Service for emistream API."""
+    """Service for emistream service."""
 
     check: CheckNamespace
     reserve: ReserveNamespace

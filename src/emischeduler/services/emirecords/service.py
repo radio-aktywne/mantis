@@ -10,7 +10,7 @@ from emischeduler.utils.time import httpparse
 
 
 class Endpoint(BaseEndpoint):
-    """Endpoints for emirecords API."""
+    """Endpoints for emirecords service."""
 
     RECORDS = "/records"
 
@@ -109,6 +109,6 @@ class RecordsNamespace(GracyNamespace[Endpoint]):
 
 
 class EmirecordsService(BaseService):
-    """Service for emirecords API."""
+    """Service for emirecords service."""
 
     records: RecordsNamespace

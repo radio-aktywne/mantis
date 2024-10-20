@@ -2,7 +2,7 @@
 package-mode = true
 name = "emischeduler"
 version = "0.14.0"
-description = "Emission scheduling 📅"
+description = "Broadcast scheduling 📅"
 authors = ["radio-aktywne <it@radioaktywne.pl>"]
 
 [tool.poetry.dependencies]
@@ -21,17 +21,17 @@ tzdata = "*"
 # Environment variables loader
 python-dotenv = "^1.0"
 # Streaming utilities
-pystreams = { git = "https://github.com/radio-aktywne/package-pystreams.git", tag = "0.10.0" }
+pystreams = { git = "https://github.com/radio-aktywne/pystreams.git", tag = "0.11.0" }
 # Locking utilities
-pylocks = { git = "https://github.com/radio-aktywne/package-pylocks.git", tag = "0.4.0" }
+pylocks = { git = "https://github.com/radio-aktywne/pylocks.git", tag = "0.5.0" }
 # Storage utilities
-pystores = { git = "https://github.com/radio-aktywne/package-pystores.git", tag = "0.5.0" }
+pystores = { git = "https://github.com/radio-aktywne/pystores.git", tag = "0.6.0" }
 # Signaling utilities
-pyevents = { git = "https://github.com/radio-aktywne/package-pyevents.git", tag = "0.4.0" }
+pyevents = { git = "https://github.com/radio-aktywne/pyevents.git", tag = "0.5.0" }
 # Queuing utilities
-pyqueues = { git = "https://github.com/radio-aktywne/package-pyqueues.git", tag = "0.4.0" }
+pyqueues = { git = "https://github.com/radio-aktywne/pyqueues.git", tag = "0.5.0" }
 # Task scheduler
-pyscheduler = { git = "https://github.com/radio-aktywne/package-pyscheduler.git", tag = "0.5.0" }
+pyscheduler = { git = "https://github.com/radio-aktywne/pyscheduler.git", tag = "0.6.0" }
 # Helps building API clients
 gracy = "^1.33"
 # Async HTTP requests

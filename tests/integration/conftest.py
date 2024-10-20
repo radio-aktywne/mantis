@@ -67,7 +67,7 @@ async def emicast() -> AsyncGenerator[AsyncDockerContainer]:
             response.raise_for_status()
 
     container = AsyncDockerContainer(
-        "ghcr.io/radio-aktywne/apps/emicast:latest",
+        "ghcr.io/radio-aktywne/services/emicast:latest",
         network="host",
     )
 
@@ -88,7 +88,7 @@ async def emifuse(
     """Emifuse container."""
 
     container = AsyncDockerContainer(
-        "ghcr.io/radio-aktywne/apps/emifuse:latest",
+        "ghcr.io/radio-aktywne/services/emifuse:latest",
         network="host",
     )
 
@@ -133,7 +133,7 @@ async def emirecords(
             response.raise_for_status()
 
     container = AsyncDockerContainer(
-        "ghcr.io/radio-aktywne/apps/emirecords:latest",
+        "ghcr.io/radio-aktywne/services/emirecords:latest",
         network="host",
     )
 
@@ -159,7 +159,7 @@ async def emistream(
             response.raise_for_status()
 
     container = AsyncDockerContainer(
-        "ghcr.io/radio-aktywne/apps/emistream:latest",
+        "ghcr.io/radio-aktywne/services/emistream:latest",
         network="host",
     )
 
@@ -237,7 +237,7 @@ async def emishows(
             response.raise_for_status()
 
     container = AsyncDockerContainer(
-        "ghcr.io/radio-aktywne/apps/emishows:latest",
+        "ghcr.io/radio-aktywne/services/emishows:latest",
         network="host",
     )
 

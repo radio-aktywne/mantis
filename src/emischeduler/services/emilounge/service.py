@@ -10,7 +10,7 @@ from emischeduler.utils.time import httpparse
 
 
 class Endpoint(BaseEndpoint):
-    """Endpoints for emilounge API."""
+    """Endpoints for emilounge service."""
 
     PRERECORDINGS = "/prerecordings"
 
@@ -109,6 +109,6 @@ class PrerecordingsNamespace(GracyNamespace[Endpoint]):
 
 
 class EmiloungeService(BaseService):
-    """Service for emilounge API."""
+    """Service for emilounge service."""
 
     prerecordings: PrerecordingsNamespace
