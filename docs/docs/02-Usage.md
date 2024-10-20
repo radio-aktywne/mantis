@@ -37,7 +37,7 @@ Below are some examples of how to use it with `curl`.
 ```sh
 curl \
     --request GET \
-    http://localhost:33000/tasks
+    http://localhost:10800/tasks
 ```
 
 ### Get generic task details
@@ -45,7 +45,7 @@ curl \
 ```sh
 curl \
     --request GET \
-    http://localhost:33000/tasks/85478e12-fd0d-4de3-a26b-cd1ec7f94f2b
+    http://localhost:10800/tasks/85478e12-fd0d-4de3-a26b-cd1ec7f94f2b
 ```
 
 ### Get details about a task with a specific status
@@ -53,7 +53,7 @@ curl \
 ```sh
 curl \
     --request GET \
-    http://localhost:33000/tasks/failed/85478e12-fd0d-4de3-a26b-cd1ec7f94f2b
+    http://localhost:10800/tasks/failed/85478e12-fd0d-4de3-a26b-cd1ec7f94f2b
 ```
 
 ### Schedule a task manually
@@ -67,7 +67,7 @@ curl \
       "condition": {"type": "now", "parameters": {}},
       "dependencies": {}
     }' \
-    http://localhost:33000/tasks
+    http://localhost:10800/tasks
 ```
 
 ### Cancel a task
@@ -75,7 +75,7 @@ curl \
 ```sh
 curl \
     --request DELETE \
-    http://localhost:33000/tasks/85478e12-fd0d-4de3-a26b-cd1ec7f94f2b
+    http://localhost:10800/tasks/85478e12-fd0d-4de3-a26b-cd1ec7f94f2b
 ```
 
 ### Clean stale tasks
@@ -87,7 +87,7 @@ curl \
     --data '{
       "strategy": {"type": "all", "parameters": {}}
     }' \
-    http://localhost:33000/tasks/clean
+    http://localhost:10800/tasks/clean
 ```
 
 ## Ping
@@ -102,5 +102,5 @@ For example, you can use `curl` to do that:
 curl \
     --request HEAD \
     --head \
-    http://localhost:33000/ping
+    http://localhost:10800/ping
 ```
