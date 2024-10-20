@@ -3,10 +3,10 @@ slug: /
 title: Index
 ---
 
-# emischeduler
+# mantis
 
 Broadcast scheduling 📅
 
 ## 💡 About
 
-`emischeduler` is a service for managing automated scheduled broadcasts.
+`mantis` is a service for managing automated scheduled broadcasts.
