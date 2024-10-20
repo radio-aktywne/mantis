@@ -1,18 +1,18 @@
 # Changes here will be overwritten by Copier; NEVER EDIT MANUALLY
-_commit: 0.16.0
-_src_path: gh:radio-aktywne/template-app-litestar
+_commit: 0.17.0
+_src_path: gh:radio-aktywne/template-service-litestar
 accountname: radio-aktywne
-appname: emischeduler
-description: Emission scheduling 📅
+description: Broadcast scheduling 📅
 docs: true
-docsurl: https://radio-aktywne.github.io/app-emischeduler
+docsurl: https://radio-aktywne.github.io/emischeduler
 email: it@radioaktywne.pl
 envprefix: EMISCHEDULER
 events: false
-imagename: apps/emischeduler
+imagename: services/emischeduler
 importname: emischeduler
 port: 33000
 registry: true
 releases: true
-reponame: app-emischeduler
-repourl: https://github.com/radio-aktywne/app-emischeduler
+reponame: emischeduler
+repourl: https://github.com/radio-aktywne/emischeduler
+servicename: emischeduler

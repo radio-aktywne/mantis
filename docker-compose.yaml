@@ -36,7 +36,7 @@ services:
       - "EMISCHEDULER__DEBUG=${EMISCHEDULER__DEBUG:-false}"
     network_mode: host
     volumes:
-      - data:/app/data/
+      - data:/service/data/
 
 volumes:
   data: {}

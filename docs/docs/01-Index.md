@@ -3,11 +3,10 @@ slug: /
 title: Index
 ---
 
-# emischeduler app
+# emischeduler
 
-Emission scheduling 📅
+Broadcast scheduling 📅
 
 ## 💡 About
 
-`emischeduler` is a service for managing and performing
-automated scheduled emissions.
+`emischeduler` is a service for managing automated scheduled broadcasts.
