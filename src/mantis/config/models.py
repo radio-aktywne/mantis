@@ -277,5 +277,5 @@ class Config(BaseConfig):
     octopus: OctopusConfig = OctopusConfig()
     """Configuration for the octopus service."""
 
-    debug: bool = False
+    debug: bool = True
     """Enable debug mode."""

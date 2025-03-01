@@ -96,4 +96,4 @@ You can configure the service at runtime using various environment variables:
   (default: `10300`)
 - `MANTIS__DEBUG` -
   enable debug mode
-  (default: `false`)
+  (default: `true`)

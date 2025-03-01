@@ -24,7 +24,7 @@ class Store(f.FileStore[s.State, str], st.Store[s.State]):
             path.touch()
 
         super().__init__(
-            file=open(path, "r+t"),
+            file=open(path, "r+"),
             serializer=Serializer(),
             default=self._build_default_state(),
         )

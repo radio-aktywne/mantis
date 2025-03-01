@@ -1,7 +1,6 @@
 from datetime import UTC, datetime, timedelta
 from http import HTTPStatus
 from uuid import UUID
-
 from zoneinfo import ZoneInfo
 
 from mantis.services.beaver import errors as be
