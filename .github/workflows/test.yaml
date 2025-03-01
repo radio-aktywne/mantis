@@ -51,6 +51,12 @@ jobs:
       # Needed to checkout code
       contents: read
     steps:
+      - name: Disable restricted unprivileged user namespaces
+        run: >
+          sudo
+          sysctl
+          -w
+          kernel.apparmor_restrict_unprivileged_userns=0
       - name: Checkout code
         uses: actions/checkout@v4.2.2
       - name: Setup Nix cache
