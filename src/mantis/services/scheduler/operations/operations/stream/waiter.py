@@ -1,6 +1,5 @@
 import asyncio
 from datetime import UTC, timedelta
-
 from zoneinfo import ZoneInfo
 
 from mantis.services.beaver import models as bm

@@ -2,10 +2,10 @@ from datetime import datetime, timedelta
 from pathlib import Path
 from tempfile import TemporaryDirectory
 from uuid import UUID
+from zoneinfo import ZoneInfo
 
 from pyscheduler.models import types as t
 from pyscheduler.protocols import operation as o
-from zoneinfo import ZoneInfo
 
 from mantis.config.models import Config
 from mantis.services.beaver import models as bm

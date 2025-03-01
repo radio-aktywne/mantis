@@ -1,8 +1,8 @@
 from datetime import UTC, datetime, timedelta
 from uuid import UUID
+from zoneinfo import ZoneInfo
 
 from pydantic import ValidationError
-from zoneinfo import ZoneInfo
 
 from mantis.config.models import StreamSynchronizerConfig
 from mantis.services.beaver import models as bm

@@ -6,7 +6,7 @@ from litestar.status_codes import HTTP_200_OK, HTTP_201_CREATED
 from litestar.testing import AsyncTestClient
 
 
-@pytest.mark.asyncio(scope="session")
+@pytest.mark.asyncio(loop_scope="session")
 async def test_post(client: AsyncTestClient) -> None:
     """Test if POST /tasks returns correct response."""
 
@@ -58,7 +58,7 @@ async def test_post(client: AsyncTestClient) -> None:
     assert datetime.fromisoformat(scheduled)
 
 
-@pytest.mark.asyncio(scope="session")
+@pytest.mark.asyncio(loop_scope="session")
 async def test_get(client: AsyncTestClient) -> None:
     """Test if GET /tasks returns correct response."""
 
@@ -103,7 +103,7 @@ async def test_get(client: AsyncTestClient) -> None:
     assert id in all
 
 
-@pytest.mark.asyncio(scope="session")
+@pytest.mark.asyncio(loop_scope="session")
 async def test_get_by_id(client: AsyncTestClient) -> None:
     """Test if GET /tasks/{id} returns correct response."""
 

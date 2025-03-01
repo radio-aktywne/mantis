@@ -4,9 +4,9 @@ from contextlib import AbstractAsyncContextManager, asynccontextmanager
 from importlib import metadata
 
 from litestar import Litestar, Router
-from litestar.contrib.pydantic import PydanticPlugin
 from litestar.openapi import OpenAPIConfig
 from litestar.plugins import PluginProtocol
+from litestar.plugins.pydantic import PydanticPlugin
 
 from mantis.api.routes.router import router
 from mantis.config.models import Config

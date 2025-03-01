@@ -33,7 +33,7 @@ services:
       - "MANTIS__OCTOPUS__HTTP__PATH=${MANTIS__OCTOPUS__HTTP__PATH:-}"
       - "MANTIS__OCTOPUS__SRT__HOST=${MANTIS__OCTOPUS__SRT__HOST:-localhost}"
       - "MANTIS__OCTOPUS__SRT__PORT=${MANTIS__OCTOPUS__SRT__PORT:-10300}"
-      - "MANTIS__DEBUG=${MANTIS__DEBUG:-false}"
+      - "MANTIS__DEBUG=${MANTIS__DEBUG:-true}"
     network_mode: host
     volumes:
       - data:/service/data/
