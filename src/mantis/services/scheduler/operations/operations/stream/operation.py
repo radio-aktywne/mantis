@@ -1,6 +1,7 @@
 from datetime import datetime, timedelta
 from pathlib import Path
 from tempfile import TemporaryDirectory
+from typing import override
 from uuid import UUID
 from zoneinfo import ZoneInfo
 
@@ -93,10 +94,10 @@ class StreamOperation(o.Operation):
 
         return res.path, res.format
 
-    async def _reserve(self, event: bm.Event, format: om.Format) -> om.Credentials:
+    async def _reserve(self, event: bm.Event, fmt: om.Format) -> om.Credentials:
         req = m.ReserveRequest(
             event=event.id,
-            format=format,
+            format=fmt,
         )
 
         res = await self._reserver.reserve(req)
@@ -104,11 +105,12 @@ class StreamOperation(o.Operation):
         return res.credentials
 
     async def _stream(
-        self, path: Path, format: om.Format, credentials: om.Credentials
+        self, path: Path, fmt: om.Format, credentials: om.Credentials
     ) -> None:
-        stream = await self._runner.run(path, format, credentials)
+        stream = await self._runner.run(path, fmt, credentials)
         await stream.wait()
 
+    @override
     async def run(
         self, parameters: dict[str, t.JSON], dependencies: dict[str, t.JSON]
     ) -> t.JSON:
@@ -120,12 +122,12 @@ class StreamOperation(o.Operation):
         waiter = Waiter(event, instance)
 
         with TemporaryDirectory() as directory:
-            path, format = await self._download(event, instance, directory)
+            path, fmt = await self._download(event, instance, directory)
 
             await waiter.wait(timedelta(seconds=10))
-            credentials = await self._reserve(event, format)
+            credentials = await self._reserve(event, fmt)
 
             await waiter.wait(timedelta(seconds=1))
-            await self._stream(path, format, credentials)
+            await self._stream(path, fmt, credentials)
 
         return None

@@ -2,7 +2,7 @@
 
 <div align="center">
 
-Broadcast scheduling 📅
+Broadcast scheduling service 📅
 
 [![Lint](https://github.com/radio-aktywne/mantis/actions/workflows/lint.yaml/badge.svg)](https://github.com/radio-aktywne/mantis/actions/workflows/lint.yaml)
 [![Test](https://github.com/radio-aktywne/mantis/actions/workflows/test.yaml/badge.svg)](https://github.com/radio-aktywne/mantis/actions/workflows/test.yaml)
@@ -16,7 +16,8 @@ Broadcast scheduling 📅
 
 ## 💡 About
 
-`mantis` is a service for managing automated scheduled broadcasts.
+`mantis` is a [`Litestar`](https://litestar.dev) service
+for managing automated scheduled broadcasts.
 
 ## 📄 Further Reading
 

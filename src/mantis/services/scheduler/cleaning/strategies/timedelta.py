@@ -1,4 +1,5 @@
 from datetime import timedelta
+from typing import override
 
 from pyscheduler.models import transfer as t
 from pyscheduler.models import types
@@ -21,6 +22,7 @@ class TimedeltaCleaningStrategy(c.CleaningStrategy):
     def _parse_parameters(self, parameters: dict[str, types.JSON]) -> Parameters:
         return Parameters.model_validate(parameters)
 
+    @override
     async def evaluate(
         self, task: t.FinishedTask, parameters: dict[str, types.JSON]
     ) -> bool:

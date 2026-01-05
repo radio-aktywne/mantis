@@ -57,7 +57,7 @@ class SynchronizerService:
                     await self._synchronize()
                 except asyncio.CancelledError:
                     raise
-                except Exception:
+                except Exception:  # noqa: S110
                     pass
         except asyncio.CancelledError:
             pass
@@ -65,7 +65,6 @@ class SynchronizerService:
     @asynccontextmanager
     async def run(self) -> AsyncGenerator[None]:
         """Run in the context."""
-
         task = asyncio.create_task(self._run())
 
         try:

@@ -1,4 +1,4 @@
-from collections.abc import AsyncIterator
+from collections.abc import AsyncIterator, Sequence
 from datetime import datetime
 from enum import StrEnum
 from uuid import UUID
@@ -36,7 +36,7 @@ class PrerecordingList(SerializableModel):
     offset: int | None
     """Number of skipped prerecordings."""
 
-    prerecordings: list[Prerecording]
+    prerecordings: Sequence[Prerecording]
     """List of prerecordings."""
 
 

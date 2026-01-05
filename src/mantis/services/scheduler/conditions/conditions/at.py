@@ -1,4 +1,5 @@
 import asyncio
+from typing import override
 
 from pyscheduler.models import types as t
 from pyscheduler.protocols import condition as c
@@ -19,6 +20,7 @@ class AtCondition(c.Condition):
     def _parse_parameters(self, parameters: dict[str, t.JSON]) -> Parameters:
         return Parameters.model_validate(parameters)
 
+    @override
     async def wait(self, parameters: dict[str, t.JSON]) -> None:
         params = self._parse_parameters(parameters)
 

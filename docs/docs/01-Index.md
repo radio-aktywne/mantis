@@ -5,8 +5,9 @@ title: Index
 
 # mantis
 
-Broadcast scheduling 📅
+Broadcast scheduling service 📅
 
 ## 💡 About
 
-`mantis` is a service for managing automated scheduled broadcasts.
+`mantis` is a [`Litestar`](https://litestar.dev) service
+for managing automated scheduled broadcasts.

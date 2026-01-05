@@ -1,7 +1,12 @@
+from collections.abc import Sequence
 from datetime import UTC, datetime, timedelta
 from http import HTTPStatus
+from typing import TYPE_CHECKING, cast
 from uuid import UUID
 from zoneinfo import ZoneInfo
+
+if TYPE_CHECKING:
+    from httpx import Response
 
 from mantis.services.beaver import errors as be
 from mantis.services.beaver import models as bm
@@ -16,9 +21,9 @@ class Finder:
     def __init__(self, beaver: BeaverService) -> None:
         self._beaver = beaver
 
-    async def _get_event(self, id: UUID) -> bm.Event:
+    async def _get_event(self, event_id: UUID) -> bm.Event:
         req = bm.EventsGetRequest(
-            id=id,
+            id=event_id,
             include=None,
         )
 
@@ -26,15 +31,16 @@ class Finder:
             res = await self._beaver.events.mget(req)
         except be.ServiceError as ex:
             if hasattr(ex, "response"):
-                if ex.response.status_code == HTTPStatus.NOT_FOUND:
-                    raise e.EventNotFoundError(id) from ex
+                response = cast("Response", ex.response)  # type: ignore[attr-defined]
+                if response.status_code == HTTPStatus.NOT_FOUND:
+                    raise e.EventNotFoundError(event_id) from ex
             raise
 
         return res.event
 
     async def _list_schedules(
         self, event: UUID, start: datetime, end: datetime
-    ) -> list[bm.Schedule]:
+    ) -> Sequence[bm.Schedule]:
         schedules: list[bm.Schedule] = []
         offset = 0
 
@@ -56,7 +62,7 @@ class Finder:
             new = res.results.schedules
             count = res.results.count
 
-            schedules = schedules + new
+            schedules = schedules + list(new)
             offset = offset + len(new)
 
             if offset >= count:
@@ -96,7 +102,6 @@ class Finder:
 
     async def find(self, request: m.FindRequest) -> m.FindResponse:
         """Find an event instance."""
-
         schedule = await self._get_schedule(request.event, request.start)
         instance = await self._find_instance(schedule, request.start)
 

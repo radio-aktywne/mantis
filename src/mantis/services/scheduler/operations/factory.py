@@ -1,3 +1,5 @@
+from typing import override
+
 from pyscheduler.protocols import operation as o
 
 from mantis.config.models import Config
@@ -12,6 +14,8 @@ from mantis.services.scheduler.operations.operations.test import TestOperation
 
 
 class OperationFactory(o.OperationFactory):
+    """Factory for creating operations."""
+
     def __init__(
         self,
         config: Config,
@@ -26,8 +30,9 @@ class OperationFactory(o.OperationFactory):
         self._numbat = numbat
         self._octopus = octopus
 
-    async def create(self, type: str) -> o.Operation | None:
-        match type:
+    @override
+    async def create(self, operation_type: str) -> o.Operation | None:
+        match operation_type:
             case "test":
                 return TestOperation()
             case "stream":

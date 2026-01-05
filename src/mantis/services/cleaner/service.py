@@ -54,7 +54,6 @@ class CleanerService:
     @asynccontextmanager
     async def run(self) -> AsyncGenerator[None]:
         """Run in the context."""
-
         task = asyncio.create_task(self._run())
 
         try:

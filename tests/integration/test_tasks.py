@@ -9,7 +9,6 @@ from litestar.testing import AsyncTestClient
 @pytest.mark.asyncio(loop_scope="session")
 async def test_post(client: AsyncTestClient) -> None:
     """Test if POST /tasks returns correct response."""
-
     operation = {"type": "test", "parameters": {}}
     condition = {"type": "now", "parameters": {}}
     dependencies = {}
@@ -61,7 +60,6 @@ async def test_post(client: AsyncTestClient) -> None:
 @pytest.mark.asyncio(loop_scope="session")
 async def test_get(client: AsyncTestClient) -> None:
     """Test if GET /tasks returns correct response."""
-
     response = await client.post(
         "/tasks",
         json={
@@ -70,7 +68,7 @@ async def test_get(client: AsyncTestClient) -> None:
             "dependencies": {},
         },
     )
-    id = response.json()["task"]["id"]
+    task_id = response.json()["task"]["id"]
 
     response = await client.get("/tasks")
 
@@ -99,14 +97,13 @@ async def test_get(client: AsyncTestClient) -> None:
     completed = data["completed"]
     assert isinstance(completed, list)
 
-    all = pending + running + cancelled + failed + completed
-    assert id in all
+    all_tasks = pending + running + cancelled + failed + completed
+    assert task_id in all_tasks
 
 
 @pytest.mark.asyncio(loop_scope="session")
 async def test_get_by_id(client: AsyncTestClient) -> None:
     """Test if GET /tasks/{id} returns correct response."""
-
     operation = {"type": "test", "parameters": {}}
     condition = {"type": "now", "parameters": {}}
     dependencies = {}
@@ -119,9 +116,9 @@ async def test_get_by_id(client: AsyncTestClient) -> None:
             "dependencies": dependencies,
         },
     )
-    id = response.json()["task"]["id"]
+    task_id = response.json()["task"]["id"]
 
-    response = await client.get(f"/tasks/{id}")
+    response = await client.get(f"/tasks/{task_id}")
 
     status = response.status_code
     assert status == HTTP_200_OK
@@ -140,7 +137,7 @@ async def test_get_by_id(client: AsyncTestClient) -> None:
     tid = task["id"]
     assert isinstance(tid, str)
     assert UUID(tid)
-    assert tid == id
+    assert tid == task_id
 
     toperation = task["operation"]
     assert isinstance(toperation, dict)

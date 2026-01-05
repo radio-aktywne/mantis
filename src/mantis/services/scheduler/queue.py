@@ -5,4 +5,4 @@ from pyscheduler.protocols import queue as q
 
 
 class Queue(AsyncioQueue[UUID], q.Queue[UUID]):
-    pass
+    """Queue implementation for scheduler."""

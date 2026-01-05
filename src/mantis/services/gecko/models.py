@@ -1,4 +1,4 @@
-from collections.abc import AsyncIterator
+from collections.abc import AsyncIterator, Sequence
 from datetime import datetime
 from enum import StrEnum
 from uuid import UUID
@@ -36,7 +36,7 @@ class RecordList(SerializableModel):
     offset: int | None
     """Number of skipped records."""
 
-    records: list[Record]
+    records: Sequence[Record]
     """List of records."""
 
 

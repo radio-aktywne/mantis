@@ -31,7 +31,6 @@ class Service:
 
     async def list(self, request: m.ListRequest) -> m.ListResponse:
         """List tasks."""
-
         with self._handle_errors():
             tasks = await self._scheduler.tasks.list()
 
@@ -42,14 +41,13 @@ class Service:
 
     async def get(self, request: m.GetRequest) -> m.GetResponse:
         """Get a task."""
-
-        id = request.id
+        task_id = request.id
 
         with self._handle_errors():
-            task = await self._scheduler.tasks.get(id)
+            task = await self._scheduler.tasks.get(task_id)
 
         if task is None:
-            raise e.TaskNotFoundError(id)
+            raise e.TaskNotFoundError(task_id)
 
         task = m.GenericTask.map(task)
         return m.GetResponse(
@@ -58,14 +56,13 @@ class Service:
 
     async def get_pending(self, request: m.GetPendingRequest) -> m.GetPendingResponse:
         """Get a pending task."""
-
-        id = request.id
+        task_id = request.id
 
         with self._handle_errors():
-            task = await self._scheduler.tasks.pending.get(id)
+            task = await self._scheduler.tasks.pending.get(task_id)
 
         if task is None:
-            raise e.TaskNotFoundError(id)
+            raise e.TaskNotFoundError(task_id)
 
         task = m.PendingTask.map(task)
         return m.GetPendingResponse(
@@ -74,14 +71,13 @@ class Service:
 
     async def get_running(self, request: m.GetRunningRequest) -> m.GetRunningResponse:
         """Get a running task."""
-
-        id = request.id
+        task_id = request.id
 
         with self._handle_errors():
-            task = await self._scheduler.tasks.running.get(id)
+            task = await self._scheduler.tasks.running.get(task_id)
 
         if task is None:
-            raise e.TaskNotFoundError(id)
+            raise e.TaskNotFoundError(task_id)
 
         task = m.RunningTask.map(task)
         return m.GetRunningResponse(
@@ -92,14 +88,13 @@ class Service:
         self, request: m.GetCancelledRequest
     ) -> m.GetCancelledResponse:
         """Get a cancelled task."""
-
-        id = request.id
+        task_id = request.id
 
         with self._handle_errors():
-            task = await self._scheduler.tasks.cancelled.get(id)
+            task = await self._scheduler.tasks.cancelled.get(task_id)
 
         if task is None:
-            raise e.TaskNotFoundError(id)
+            raise e.TaskNotFoundError(task_id)
 
         task = m.CancelledTask.map(task)
         return m.GetCancelledResponse(
@@ -108,14 +103,13 @@ class Service:
 
     async def get_failed(self, request: m.GetFailedRequest) -> m.GetFailedResponse:
         """Get a failed task."""
-
-        id = request.id
+        task_id = request.id
 
         with self._handle_errors():
-            task = await self._scheduler.tasks.failed.get(id)
+            task = await self._scheduler.tasks.failed.get(task_id)
 
         if task is None:
-            raise e.TaskNotFoundError(id)
+            raise e.TaskNotFoundError(task_id)
 
         task = m.FailedTask.map(task)
         return m.GetFailedResponse(
@@ -126,14 +120,13 @@ class Service:
         self, request: m.GetCompletedRequest
     ) -> m.GetCompletedResponse:
         """Get a completed task."""
-
-        id = request.id
+        task_id = request.id
 
         with self._handle_errors():
-            task = await self._scheduler.tasks.completed.get(id)
+            task = await self._scheduler.tasks.completed.get(task_id)
 
         if task is None:
-            raise e.TaskNotFoundError(id)
+            raise e.TaskNotFoundError(task_id)
 
         task = m.CompletedTask.map(task)
         return m.GetCompletedResponse(
@@ -142,7 +135,6 @@ class Service:
 
     async def schedule(self, request: m.ScheduleRequest) -> m.ScheduleResponse:
         """Schedule a task."""
-
         data = request.data
 
         with self._handle_errors():
@@ -155,11 +147,10 @@ class Service:
 
     async def cancel(self, request: m.CancelRequest) -> m.CancelResponse:
         """Cancel a task."""
-
-        id = request.id
+        task_id = request.id
 
         req = sm.CancelRequest(
-            id=id,
+            id=task_id,
         )
 
         with self._handle_errors():
@@ -172,7 +163,6 @@ class Service:
 
     async def clean(self, request: m.CleanRequest) -> m.CleanResponse:
         """Clean tasks."""
-
         data = request.data
 
         with self._handle_errors():

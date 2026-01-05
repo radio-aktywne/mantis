@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from collections.abc import AsyncIterator
+from collections.abc import AsyncIterator, Sequence
 from datetime import datetime, timedelta
 from pathlib import Path
 from uuid import UUID
@@ -25,8 +25,6 @@ class EventDownloader(ABC):
     ) -> tuple[AsyncIterator[bytes], str]:
         """Download media for an event."""
 
-        pass
-
 
 class PrerecordedDownloader(EventDownloader):
     """Utility to download media for prerecorded events."""
@@ -37,7 +35,7 @@ class PrerecordedDownloader(EventDownloader):
 
     async def _list_prerecordings(
         self, event: UUID, after: datetime, before: datetime
-    ) -> list[nm.Prerecording]:
+    ) -> Sequence[nm.Prerecording]:
         prerecordings: list[nm.Prerecording] = []
         offset = 0
 
@@ -56,7 +54,7 @@ class PrerecordedDownloader(EventDownloader):
             new = res.results.prerecordings
             count = res.results.count
 
-            prerecordings = prerecordings + new
+            prerecordings = prerecordings + list(new)
             offset = offset + len(new)
 
             if offset >= count:
@@ -66,7 +64,7 @@ class PrerecordedDownloader(EventDownloader):
 
     async def _find_prerecording(
         self, event: bm.Event, instance: bm.EventInstance
-    ) -> gm.Record | None:
+    ) -> nm.Prerecording | None:
         after = instance.start - timedelta(seconds=1)
         before = instance.end + timedelta(seconds=1)
 
@@ -90,14 +88,15 @@ class PrerecordedDownloader(EventDownloader):
 
         res = await self._numbat.prerecordings.download(req)
 
-        type = res.type
+        content_type = res.type
         data = res.data
 
-        return data, type
+        return data, content_type
 
     async def download(
         self, event: bm.Event, instance: bm.EventInstance
     ) -> tuple[AsyncIterator[bytes], str]:
+        """Download media for a prerecorded event."""
         prerecording = await self._find_prerecording(event, instance)
 
         if prerecording is None:
@@ -118,7 +117,7 @@ class ReplayDownloader(EventDownloader):
 
     async def _list_live_schedules(
         self, show: UUID, start: datetime, end: datetime
-    ) -> list[bm.Schedule]:
+    ) -> Sequence[bm.Schedule]:
         schedules: list[bm.Schedule] = []
         offset = 0
 
@@ -141,7 +140,7 @@ class ReplayDownloader(EventDownloader):
             new = res.results.schedules
             count = res.results.count
 
-            schedules = schedules + new
+            schedules = schedules + list(new)
             offset = offset + len(new)
 
             if offset >= count:
@@ -151,7 +150,7 @@ class ReplayDownloader(EventDownloader):
 
     async def _find_past_live_schedules(
         self, show: UUID, before: datetime
-    ) -> list[bm.Schedule]:
+    ) -> Sequence[bm.Schedule]:
         end = before
         start = end - self._config.operations.stream.window
 
@@ -159,7 +158,7 @@ class ReplayDownloader(EventDownloader):
 
     async def _list_records(
         self, event: UUID, after: datetime, before: datetime
-    ) -> list[gm.Record]:
+    ) -> Sequence[gm.Record]:
         records: list[gm.Record] = []
         offset = 0
 
@@ -178,7 +177,7 @@ class ReplayDownloader(EventDownloader):
             new = res.results.records
             count = res.results.count
 
-            records = records + new
+            records = records + list(new)
             offset = offset + len(new)
 
             if offset >= count:
@@ -188,23 +187,20 @@ class ReplayDownloader(EventDownloader):
 
     async def _list_last_records(
         self, event: UUID, before: datetime
-    ) -> list[gm.Record]:
+    ) -> Sequence[gm.Record]:
         after = before - self._config.operations.stream.window
 
         return await self._list_records(event, after, before)
 
     async def _find_last_record(
-        self, schedules: list[bm.Schedule], before: datetime
+        self, schedules: Sequence[bm.Schedule], before: datetime
     ) -> gm.Record | None:
         records: list[gm.Record] = []
 
         for schedule in schedules:
             times = {instance.start for instance in schedule.instances}
             last = await self._list_last_records(schedule.event.id, before)
-
-            for record in last:
-                if record.start in times:
-                    records.append(record)
+            records.extend(record for record in last if record.start in times)
 
         if not records:
             return None
@@ -230,14 +226,15 @@ class ReplayDownloader(EventDownloader):
 
         res = await self._gecko.records.download(req)
 
-        type = res.type
+        content_type = res.type
         data = res.data
 
-        return data, type
+        return data, content_type
 
     async def download(
         self, event: bm.Event, instance: bm.EventInstance
     ) -> tuple[AsyncIterator[bytes], str]:
+        """Download media for a replay event."""
         record = await self._find_record(event, instance)
 
         if record is None:
@@ -285,40 +282,39 @@ class Downloader:
 
         return directory / instance.start.isoformat()
 
-    def _map_format(self, type: str) -> om.Format:
-        match type:
+    def _map_format(self, content_type: str) -> om.Format:
+        match content_type:
             case "audio/ogg":
                 return om.Format.OGG
             case _:
-                raise e.UnexpectedFormatError(type)
+                raise e.UnexpectedFormatError(content_type)
 
     async def _download_record(
         self, event: bm.Event, instance: bm.EventInstance, directory: Path
     ) -> tuple[Path, om.Format]:
         downloader = self._create_downloader(event)
 
-        data, type = await downloader.download(event, instance)
+        data, content_type = await downloader.download(event, instance)
 
         path = self._get_path(event, instance, directory)
 
-        with open(path, "wb") as file:
+        with path.open("wb") as file:
             async for chunk in data:
                 file.write(chunk)
 
-        format = self._map_format(type)
+        fmt = self._map_format(content_type)
 
-        return path, format
+        return path, fmt
 
     async def download(self, request: m.DownloadRequest) -> m.DownloadResponse:
         """Download a replay record."""
-
         event = request.event
         instance = request.instance
         directory = Path(request.directory)
 
-        path, format = await self._download_record(event, instance, directory)
+        path, fmt = await self._download_record(event, instance, directory)
 
         return m.DownloadResponse(
             path=path,
-            format=format,
+            format=fmt,
         )

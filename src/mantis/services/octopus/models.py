@@ -7,7 +7,7 @@ from pydantic import Field, RootModel
 
 from mantis.models.base import SerializableModel, datamodel
 from mantis.services.octopus import types as t
-from mantis.utils.time import NaiveDatetime
+from mantis.utils.time import NaiveDatetime, naiveutcnow
 
 
 class Format(StrEnum):
@@ -55,7 +55,7 @@ class ReserveResponseData(SerializableModel):
     credentials: Credentials
     """Credentials to use to connect to the stream."""
 
-    port: int = Field(..., ge=1, le=65535)
+    port: Annotated[int, Field(ge=1, le=65535)]
     """Port to use to connect to the stream."""
 
 
@@ -69,9 +69,9 @@ class FooEventData(SerializableModel):
 class FooEvent(SerializableModel):
     """Foo event."""
 
-    type: t.TypeFieldType[Literal["foo"]] = "foo"
-    created_at: t.CreatedAtFieldType
-    data: t.DataFieldType[FooEventData]
+    type: t.TypeField[Literal["foo"]] = "foo"
+    created_at: t.CreatedAtField = Field(default_factory=naiveutcnow)
+    data: t.DataField[FooEventData]
 
 
 class AvailabilityChangedEventData(SerializableModel):
@@ -84,9 +84,9 @@ class AvailabilityChangedEventData(SerializableModel):
 class AvailabilityChangedEvent(SerializableModel):
     """Event emitted when the availability of a stream changes."""
 
-    type: t.TypeFieldType[Literal["availability-changed"]] = "availability-changed"
-    created_at: t.CreatedAtFieldType
-    data: t.DataFieldType[AvailabilityChangedEventData]
+    type: t.TypeField[Literal["availability-changed"]] = "availability-changed"
+    created_at: t.CreatedAtField = Field(default_factory=naiveutcnow)
+    data: t.DataField[AvailabilityChangedEventData]
 
 
 Event = Annotated[FooEvent | AvailabilityChangedEvent, Field(..., discriminator="type")]
@@ -96,8 +96,6 @@ ParsableEvent = RootModel[Event]
 @datamodel
 class CheckRequest:
     """Request to check the availability of a stream."""
-
-    pass
 
 
 @datamodel
@@ -127,8 +125,6 @@ class ReserveResponse:
 @datamodel
 class SubscribeRequest:
     """Request to subscribe to events."""
-
-    pass
 
 
 @datamodel

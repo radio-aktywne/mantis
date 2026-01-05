@@ -7,8 +7,8 @@ from mantis.services.beaver import models as bm
 class EventNotFoundError(Exception):
     """Raised when an event cannot be found."""
 
-    def __init__(self, id: UUID) -> None:
-        super().__init__(f"No event found for id {id}.")
+    def __init__(self, event_id: UUID) -> None:
+        super().__init__(f"No event found for id {event_id}.")
 
 
 class ScheduleNotFoundError(Exception):
@@ -39,8 +39,8 @@ class InstanceAlreadyEndedError(Exception):
 class UnexpectedEventTypeError(Exception):
     """Raised when an unexpected event type is encountered."""
 
-    def __init__(self, event: UUID, type: bm.EventType) -> None:
-        super().__init__(f"Event {event} has unexpected type {type}.")
+    def __init__(self, event: UUID, event_type: bm.EventType) -> None:
+        super().__init__(f"Event {event} has unexpected type {event_type}.")
 
 
 class DownloadUnavailableError(Exception):
@@ -53,5 +53,12 @@ class DownloadUnavailableError(Exception):
 class UnexpectedFormatError(Exception):
     """Raised when an unexpected format is encountered."""
 
-    def __init__(self, format: str) -> None:
-        super().__init__(f"Unexpected format {format}.")
+    def __init__(self, fmt: str) -> None:
+        super().__init__(f"Unexpected format {fmt}.")
+
+
+class ReservationFailedError(Exception):
+    """Raised when a stream reservation fails."""
+
+    def __init__(self, event: UUID) -> None:
+        super().__init__(f"Failed to reserve stream for event {event}.")

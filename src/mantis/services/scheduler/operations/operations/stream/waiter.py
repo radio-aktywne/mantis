@@ -15,7 +15,6 @@ class Waiter:
 
     async def wait(self, delta: timedelta) -> None:
         """Wait for a time before event start."""
-
         tz = ZoneInfo(self._event.timezone)
 
         start = self._instance.start
@@ -23,7 +22,7 @@ class Waiter:
 
         target = start - delta
         now = naiveutcnow()
-        delta = (target - now).total_seconds()
-        delta = max(delta, 0)
+        seconds = (target - now).total_seconds()
+        seconds = max(seconds, 0)
 
-        await asyncio.sleep(delta)
+        await asyncio.sleep(seconds)
