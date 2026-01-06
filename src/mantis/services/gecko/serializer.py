@@ -6,8 +6,9 @@ from pydantic import (
     ValidationError,
     model_validator,
 )
+from pydantic_core import PydanticSerializationError
 
-from mantis.services.gecko import errors as e
+from mantis.services.beaver import errors as e
 
 
 class Serializer[T](RootModel[T]):
@@ -23,6 +24,9 @@ class Serializer[T](RootModel[T]):
             raise e.SerializationError(ex.errors(include_context=False)) from ex
 
     @classmethod
-    def serialize_json(cls, value: T) -> str:
-        """Serialize to JSON."""
-        return cls.model_validate(value).model_dump_json(by_alias=True)
+    def serialize(cls, value: T) -> str:
+        """Serialize the value."""
+        try:
+            return cls.model_validate(value).model_dump_json(by_alias=True).strip('"')
+        except PydanticSerializationError as ex:
+            raise e.SerializationError(str(ex)) from ex

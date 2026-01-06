@@ -48,15 +48,15 @@ class PrerecordingsNamespace(GracyNamespace[Endpoint]):
 
         params = {}
         if after is not None:
-            params["after"] = Serializer[m.ListRequestAfter].serialize_json(after)
+            params["after"] = Serializer[m.ListRequestAfter].serialize(after)
         if before is not None:
-            params["before"] = Serializer[m.ListRequestBefore].serialize_json(before)
+            params["before"] = Serializer[m.ListRequestBefore].serialize(before)
         if limit is not None:
-            params["limit"] = Serializer[m.ListRequestLimit].serialize_json(limit)
+            params["limit"] = Serializer[m.ListRequestLimit].serialize(limit)
         if offset is not None:
-            params["offset"] = Serializer[m.ListRequestOffset].serialize_json(offset)
+            params["offset"] = Serializer[m.ListRequestOffset].serialize(offset)
         if order is not None:
-            params["order"] = Serializer[m.ListRequestOrder].serialize_json(order)
+            params["order"] = Serializer[m.ListRequestOrder].serialize(order)
 
         res = await self.get(url, params=params)
 
@@ -79,7 +79,7 @@ class PrerecordingsNamespace(GracyNamespace[Endpoint]):
         event = request.event
         start = request.start
 
-        start = Serializer[m.DownloadRequestStart].serialize_json(start)
+        start = Serializer[m.DownloadRequestStart].serialize(start)
 
         url = f"{Endpoint.PRERECORDINGS}/{event}/{start}"
 

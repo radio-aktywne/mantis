@@ -40,9 +40,7 @@ class EventsNamespace(GracyNamespace[Endpoint]):
 
         params = {}
         if include is not None:
-            params["include"] = Serializer[m.EventsGetRequestInclude].serialize_json(
-                include
-            )
+            params["include"] = Serializer[m.EventsGetRequestInclude].serialize(include)
 
         path = f"{Endpoint.EVENTS}/{event_id}"
 
@@ -64,19 +62,17 @@ class EventsNamespace(GracyNamespace[Endpoint]):
 
         params = {}
         if limit is not None:
-            params["limit"] = Serializer[m.EventsListRequestLimit].serialize_json(limit)
+            params["limit"] = Serializer[m.EventsListRequestLimit].serialize(limit)
         if offset is not None:
-            params["offset"] = Serializer[m.EventsListRequestOffset].serialize_json(
-                offset
-            )
+            params["offset"] = Serializer[m.EventsListRequestOffset].serialize(offset)
         if where is not None:
-            params["where"] = Serializer[m.EventsListRequestWhere].serialize_json(where)
+            params["where"] = Serializer[m.EventsListRequestWhere].serialize(where)
         if include is not None:
-            params["include"] = Serializer[m.EventsListRequestInclude].serialize_json(
+            params["include"] = Serializer[m.EventsListRequestInclude].serialize(
                 include
             )
         if order is not None:
-            params["order"] = Serializer[m.EventsListRequestOrder].serialize_json(order)
+            params["order"] = Serializer[m.EventsListRequestOrder].serialize(order)
 
         res = await self.get(Endpoint.EVENTS, params=params)
 
@@ -102,31 +98,21 @@ class ScheduleNamespace(GracyNamespace[Endpoint]):
 
         params = {}
         if start is not None:
-            params["start"] = Serializer[m.ScheduleListRequestStart].serialize_json(
-                start
-            )
+            params["start"] = Serializer[m.ScheduleListRequestStart].serialize(start)
         if end is not None:
-            params["end"] = Serializer[m.ScheduleListRequestEnd].serialize_json(end)
+            params["end"] = Serializer[m.ScheduleListRequestEnd].serialize(end)
         if limit is not None:
-            params["limit"] = Serializer[m.ScheduleListRequestLimit].serialize_json(
-                limit
-            )
+            params["limit"] = Serializer[m.ScheduleListRequestLimit].serialize(limit)
         if offset is not None:
-            params["offset"] = Serializer[m.ScheduleListRequestOffset].serialize_json(
-                offset
-            )
+            params["offset"] = Serializer[m.ScheduleListRequestOffset].serialize(offset)
         if where is not None:
-            params["where"] = Serializer[m.ScheduleListRequestWhere].serialize_json(
-                where
-            )
+            params["where"] = Serializer[m.ScheduleListRequestWhere].serialize(where)
         if include is not None:
-            params["include"] = Serializer[m.ScheduleListRequestInclude].serialize_json(
+            params["include"] = Serializer[m.ScheduleListRequestInclude].serialize(
                 include
             )
         if order is not None:
-            params["order"] = Serializer[m.ScheduleListRequestOrder].serialize_json(
-                order
-            )
+            params["order"] = Serializer[m.ScheduleListRequestOrder].serialize(order)
 
         res = await self.get(Endpoint.SCHEDULE, params=params)
 
