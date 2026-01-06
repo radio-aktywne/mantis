@@ -3,4 +3,4 @@ from pyscheduler.protocols import lock as l
 
 
 class Lock(AsyncioLock, l.Lock):
-    pass
+    """Lock implementation for scheduler."""

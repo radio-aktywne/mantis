@@ -10,17 +10,17 @@ from mantis.services.synchronizer.service import SynchronizerService
 class State(LitestarState):
     """Use this class as a type hint for the state of the service."""
 
+    cleaner: CleanerService
+    """Service to remove finished tasks from scheduler's state."""
+
     config: Config
     """Configuration for the service."""
-
-    store: Store
-    """Store for scheduling state."""
 
     scheduler: SchedulerService
     """Service to manage the lifecycle of scheduled tasks."""
 
-    cleaner: CleanerService
-    """Service to remove finished tasks from scheduler's state."""
+    store: Store
+    """Store for scheduling state."""
 
     synchronizer: SynchronizerService
     """Service to synchronize scheduled tasks with expected ones."""

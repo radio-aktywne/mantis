@@ -25,6 +25,7 @@ class TaskIndex(SerializableModel):
 
     @staticmethod
     def map(index: sm.TaskIndex) -> "TaskIndex":
+        """Map to internal representation."""
         return TaskIndex(
             pending=index.pending,
             running=index.running,
@@ -45,6 +46,7 @@ class GenericTask(SerializableModel):
 
     @staticmethod
     def map(task: sm.GenericTask) -> "GenericTask":
+        """Map to internal representation."""
         return GenericTask(
             task=task.task,
             status=task.status,
@@ -62,6 +64,7 @@ class PendingTask(SerializableModel):
 
     @staticmethod
     def map(task: sm.PendingTask) -> "PendingTask":
+        """Map to internal representation."""
         return PendingTask(
             task=task.task,
             scheduled=task.scheduled,
@@ -82,6 +85,7 @@ class RunningTask(SerializableModel):
 
     @staticmethod
     def map(task: sm.RunningTask) -> "RunningTask":
+        """Map to internal representation."""
         return RunningTask(
             task=task.task,
             scheduled=task.scheduled,
@@ -106,6 +110,7 @@ class CancelledTask(SerializableModel):
 
     @staticmethod
     def map(task: sm.CancelledTask) -> "CancelledTask":
+        """Map to internal representation."""
         return CancelledTask(
             task=task.task,
             scheduled=task.scheduled,
@@ -134,6 +139,7 @@ class FailedTask(SerializableModel):
 
     @staticmethod
     def map(task: sm.FailedTask) -> "FailedTask":
+        """Map to internal representation."""
         return FailedTask(
             task=task.task,
             scheduled=task.scheduled,
@@ -163,6 +169,7 @@ class CompletedTask(SerializableModel):
 
     @staticmethod
     def map(task: sm.CompletedTask) -> "CompletedTask":
+        """Map to internal representation."""
         return CompletedTask(
             task=task.task,
             scheduled=task.scheduled,
@@ -185,6 +192,7 @@ class ScheduleRequestModel(SerializableModel):
     """Dependencies of the task."""
 
     def map(self) -> sm.ScheduleRequest:
+        """Map to external representation."""
         return sm.ScheduleRequest(
             operation=self.operation,
             condition=self.condition,
@@ -199,6 +207,7 @@ class CleanRequestModel(SerializableModel):
     """Cleaning strategy specification."""
 
     def map(self) -> sm.CleanRequest:
+        """Map to external representation."""
         return sm.CleanRequest(
             strategy=self.strategy,
         )
@@ -212,6 +221,7 @@ class CleaningResult(SerializableModel):
 
     @staticmethod
     def map(result: sm.CleaningResult) -> "CleaningResult":
+        """Map to internal representation."""
         return CleaningResult(
             removed=result.removed,
         )
@@ -259,8 +269,6 @@ CleanResponseResults = CleaningResult
 @datamodel
 class ListRequest:
     """Request to list tasks."""
-
-    pass
 
 
 @datamodel

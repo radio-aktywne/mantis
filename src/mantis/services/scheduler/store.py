@@ -1,4 +1,6 @@
 import json
+from types import TracebackType
+from typing import override
 
 from pyscheduler.models.data import runtime as r
 from pyscheduler.models.data import storage as s
@@ -9,14 +11,20 @@ from mantis.config.models import StoreConfig
 
 
 class Serializer(f.Serializer[s.State, str]):
-    async def serialize(self, state: s.State) -> str:
-        return json.dumps(state, separators=(",", ":"))
+    """Serializer for state to JSON string."""
 
-    async def deserialize(self, state: str) -> s.State:
-        return json.loads(state)
+    @override
+    async def serialize(self, value: s.State) -> str:
+        return json.dumps(value, separators=(",", ":"))
+
+    @override
+    async def deserialize(self, value: str) -> s.State:
+        return json.loads(value)
 
 
 class Store(f.FileStore[s.State, str], st.Store[s.State]):
+    """Store for scheduler state."""
+
     def __init__(self, config: StoreConfig) -> None:
         path = config.path
 
@@ -24,7 +32,7 @@ class Store(f.FileStore[s.State, str], st.Store[s.State]):
             path.touch()
 
         super().__init__(
-            file=open(path, "r+"),
+            file=path.open("r+"),
             serializer=Serializer(),
             default=self._build_default_state(),
         )
@@ -32,7 +40,12 @@ class Store(f.FileStore[s.State, str], st.Store[s.State]):
     async def __aenter__(self) -> "Store":
         return self
 
-    async def __aexit__(self, *args, **kwargs) -> None:
+    async def __aexit__(
+        self,
+        exception_type: type[BaseException] | None,
+        exception: BaseException | None,
+        traceback: TracebackType | None,
+    ) -> None:
         self._file.close()
 
     def _build_default_state(self) -> s.State:

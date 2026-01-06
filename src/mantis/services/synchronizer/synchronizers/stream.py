@@ -1,3 +1,5 @@
+from collections.abc import Collection, Sequence
+from contextlib import suppress
 from datetime import UTC, datetime, timedelta
 from uuid import UUID
 from zoneinfo import ZoneInfo
@@ -39,7 +41,7 @@ class StreamSynchronizer(Synchronizer):
 
     async def _fetch_schedules(
         self, start: datetime, end: datetime
-    ) -> list[bm.Schedule]:
+    ) -> Sequence[bm.Schedule]:
         schedules: list[bm.Schedule] = []
         offset = 0
 
@@ -68,7 +70,7 @@ class StreamSynchronizer(Synchronizer):
             new = res.results.schedules
             count = res.results.count
 
-            schedules = schedules + new
+            schedules = schedules + list(new)
             offset = offset + len(new)
 
             if offset >= count:
@@ -77,8 +79,8 @@ class StreamSynchronizer(Synchronizer):
         return schedules
 
     def _filter_schedules(
-        self, schedules: list[bm.Schedule], start: datetime, end: datetime
-    ) -> list[bm.Schedule]:
+        self, schedules: Sequence[bm.Schedule], start: datetime, end: datetime
+    ) -> Sequence[bm.Schedule]:
         out: list[bm.Schedule] = []
 
         for schedule in schedules:
@@ -93,22 +95,26 @@ class StreamSynchronizer(Synchronizer):
                 )
 
                 if istart >= start and istart < end:
-                    instances = instances + [instance]
+                    instances = [*instances, instance]
 
             if len(instances) > 0:
-                schedule = bm.Schedule(
-                    event=schedule.event,
-                    instances=instances,
-                )
-                out = out + [schedule]
+                out = [
+                    *out,
+                    bm.Schedule(
+                        event=schedule.event,
+                        instances=instances,
+                    ),
+                ]
 
         return out
 
-    async def _get_schedules(self, start: datetime, end: datetime) -> list[bm.Schedule]:
+    async def _get_schedules(
+        self, start: datetime, end: datetime
+    ) -> Sequence[bm.Schedule]:
         schedules = await self._fetch_schedules(start, end)
         return self._filter_schedules(schedules, start, end)
 
-    async def _fetch_tasks(self) -> list[t.GenericTask]:
+    async def _fetch_tasks(self) -> Sequence[t.GenericTask]:
         index = await self._scheduler.tasks.list()
         ids = (
             index.pending
@@ -120,14 +126,14 @@ class StreamSynchronizer(Synchronizer):
 
         tasks: list[t.GenericTask] = []
 
-        for id in ids:
-            task = await self._scheduler.tasks.get(id)
+        for task_id in ids:
+            task = await self._scheduler.tasks.get(task_id)
             if task is not None:
-                tasks = tasks + [task]
+                tasks = [*tasks, task]
 
         return tasks
 
-    async def _get_events(self, ids: set[UUID]) -> list[bm.Event]:
+    async def _get_events(self, ids: Collection[UUID]) -> Sequence[bm.Event]:
         if len(ids) == 0:
             return []
 
@@ -140,7 +146,7 @@ class StreamSynchronizer(Synchronizer):
                 offset=offset,
                 where={
                     "id": {
-                        "in": [str(id) for id in ids],
+                        "in": [str(event_id) for event_id in ids],
                     },
                 },
                 include=None,
@@ -152,7 +158,7 @@ class StreamSynchronizer(Synchronizer):
             new = res.results.events
             count = res.results.count
 
-            events = events + new
+            events = events + list(new)
             offset = offset + len(new)
 
             if offset >= count:
@@ -161,8 +167,8 @@ class StreamSynchronizer(Synchronizer):
         return events
 
     async def _filter_tasks(
-        self, tasks: list[t.GenericTask], start: datetime, end: datetime
-    ) -> tuple[list[tuple[t.GenericTask, Parameters]], list[t.GenericTask]]:
+        self, tasks: Sequence[t.GenericTask], start: datetime, end: datetime
+    ) -> tuple[Sequence[tuple[t.GenericTask, Parameters]], Sequence[t.GenericTask]]:
         invalid: list[t.GenericTask] = []
         withparams: list[tuple[t.GenericTask, Parameters]] = []
 
@@ -176,10 +182,10 @@ class StreamSynchronizer(Synchronizer):
             try:
                 params = Parameters.model_validate(task.task.operation.parameters)
             except ValidationError:
-                invalid = invalid + [task]
+                invalid = [*invalid, task]
                 continue
 
-            withparams = withparams + [(task, params)]
+            withparams = [*withparams, (task, params)]
 
         ids = {params.id for _, params in withparams}
         events = await self._get_events(ids)
@@ -190,7 +196,7 @@ class StreamSynchronizer(Synchronizer):
         for task, params in withparams:
             event = events.get(params.id)
             if event is None:
-                invalid = invalid + [task]
+                invalid = [*invalid, task]
                 continue
 
             tz = ZoneInfo(event.timezone)
@@ -199,30 +205,28 @@ class StreamSynchronizer(Synchronizer):
             )
 
             if istart >= start and istart < end:
-                valid = valid + [(task, params)]
+                valid = [*valid, (task, params)]
 
         return valid, invalid
 
     async def _get_tasks(
         self, start: datetime, end: datetime
-    ) -> tuple[list[tuple[t.GenericTask, Parameters]], list[t.GenericTask]]:
+    ) -> tuple[Sequence[tuple[t.GenericTask, Parameters]], Sequence[t.GenericTask]]:
         tasks = await self._fetch_tasks()
         return await self._filter_tasks(tasks, start, end)
 
-    async def _cancel(self, id: UUID) -> None:
+    async def _cancel(self, task_id: UUID) -> None:
         req = t.CancelRequest(
-            id=id,
+            id=task_id,
         )
 
-        try:
+        with suppress(se.ServiceError):
             await self._scheduler.cancel(req)
-        except se.ServiceError:
-            pass
 
     async def _cancel_extra_tasks(
         self,
-        schedules: list[bm.Schedule],
-        tasks: list[tuple[t.GenericTask, Parameters]],
+        schedules: Sequence[bm.Schedule],
+        tasks: Sequence[tuple[t.GenericTask, Parameters]],
     ) -> None:
         schedulemap = {schedule.event.id: schedule for schedule in schedules}
         cancel = set[UUID]()
@@ -246,8 +250,8 @@ class StreamSynchronizer(Synchronizer):
                 cancel = cancel | {task.task.id}
                 continue
 
-        for id in cancel:
-            await self._cancel(id)
+        for task_id in cancel:
+            await self._cancel(task_id)
 
     async def _add(self, event: bm.Event, instance: bm.EventInstance) -> None:
         tz = ZoneInfo(event.timezone)
@@ -273,15 +277,13 @@ class StreamSynchronizer(Synchronizer):
             dependencies={},
         )
 
-        try:
+        with suppress(se.ServiceError):
             await self._scheduler.schedule(req)
-        except se.ServiceError:
-            pass
 
     async def _add_new_tasks(
         self,
-        schedules: list[bm.Schedule],
-        tasks: list[tuple[t.GenericTask, Parameters]],
+        schedules: Sequence[bm.Schedule],
+        tasks: Sequence[tuple[t.GenericTask, Parameters]],
     ) -> None:
         add: list[tuple[bm.Event, bm.EventInstance]] = []
 
@@ -295,14 +297,13 @@ class StreamSynchronizer(Synchronizer):
                 )
 
                 if task is None:
-                    add = add + [(schedule.event, instance)]
+                    add = [*add, (schedule.event, instance)]
 
         for event, instance in add:
             await self._add(event, instance)
 
     async def synchronize(self) -> None:
         """Synchronize tasks."""
-
         start, end = self._get_time_window()
 
         schedules = await self._get_schedules(start, end)

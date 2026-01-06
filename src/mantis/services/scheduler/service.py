@@ -17,7 +17,7 @@ from mantis.services.scheduler.store import Store
 class SchedulerService(s.Scheduler):
     """Service to manage the lifecycle of scheduled tasks."""
 
-    def __init__(
+    def __init__(  # noqa: PLR0913
         self,
         config: Config,
         beaver: BeaverService,

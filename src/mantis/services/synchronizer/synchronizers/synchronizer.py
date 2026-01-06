@@ -7,5 +7,3 @@ class Synchronizer(ABC):
     @abstractmethod
     async def synchronize(self) -> None:
         """Synchronize tasks."""
-
-        pass

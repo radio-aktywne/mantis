@@ -1,4 +1,5 @@
 from collections.abc import AsyncIterator
+from typing import Any
 
 from gracy import BaseEndpoint, GracefulRetry, Gracy, GracyConfig, GracyNamespace
 from httpx import Response
@@ -18,21 +19,16 @@ class Endpoint(BaseEndpoint):
 class BaseService(Gracy[Endpoint]):
     """Base class for gecko service."""
 
-    def __init__(self, config: GeckoConfig, *args, **kwargs) -> None:
-        class Config:
-            BASE_URL = config.http.url
-            SETTINGS = GracyConfig(
-                retry=GracefulRetry(
-                    delay=1,
-                    max_attempts=3,
-                    delay_modifier=2,
-                ),
-            )
-
-        self.Config = Config
-
+    def __init__(self, config: GeckoConfig, *args: Any, **kwargs: Any) -> None:
+        self.Config.BASE_URL = config.http.url
+        self.Config.SETTINGS = GracyConfig(
+            retry=GracefulRetry(
+                delay=1,
+                max_attempts=3,
+                delay_modifier=2,
+            ),
+        )
         super().__init__(*args, **kwargs)
-
         self._config = config
 
 
@@ -41,7 +37,6 @@ class RecordsNamespace(GracyNamespace[Endpoint]):
 
     async def list(self, request: m.ListRequest) -> m.ListResponse:
         """List records."""
-
         event = request.event
         after = request.after
         before = request.before
@@ -53,15 +48,15 @@ class RecordsNamespace(GracyNamespace[Endpoint]):
 
         params = {}
         if after is not None:
-            params["after"] = Serializer(m.ListRequestAfter).json(after)
+            params["after"] = Serializer[m.ListRequestAfter].serialize_json(after)
         if before is not None:
-            params["before"] = Serializer(m.ListRequestBefore).json(before)
+            params["before"] = Serializer[m.ListRequestBefore].serialize_json(before)
         if limit is not None:
-            params["limit"] = Serializer(m.ListRequestLimit).json(limit)
+            params["limit"] = Serializer[m.ListRequestLimit].serialize_json(limit)
         if offset is not None:
-            params["offset"] = Serializer(m.ListRequestOffset).json(offset)
+            params["offset"] = Serializer[m.ListRequestOffset].serialize_json(offset)
         if order is not None:
-            params["order"] = Serializer(m.ListRequestOrder).json(order)
+            params["order"] = Serializer[m.ListRequestOrder].serialize_json(order)
 
         res = await self.get(url, params=params)
 
@@ -84,7 +79,7 @@ class RecordsNamespace(GracyNamespace[Endpoint]):
         event = request.event
         start = request.start
 
-        start = Serializer(m.DownloadRequestStart).json(start)
+        start = Serializer[m.DownloadRequestStart].serialize_json(start)
 
         url = f"{Endpoint.RECORDS}/{event}/{start}"
 
@@ -93,14 +88,14 @@ class RecordsNamespace(GracyNamespace[Endpoint]):
 
         headers = res.headers
 
-        type = headers.get("Content-Type")
+        content_type = headers.get("Content-Type")
         size = int(headers.get("Content-Length"))
         tag = headers.get("ETag")
         modified = httpparse(headers.get("Last-Modified"))
         data = _stream(res)
 
         return m.DownloadResponse(
-            type=type,
+            type=content_type,
             size=size,
             tag=tag,
             modified=modified,

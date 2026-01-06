@@ -1,3 +1,5 @@
+from typing import override
+
 from pyscheduler.protocols import cleaning as c
 
 from mantis.services.scheduler.cleaning.strategies.all import AllCleaningStrategy
@@ -7,8 +9,11 @@ from mantis.services.scheduler.cleaning.strategies.timedelta import (
 
 
 class CleaningStrategyFactory(c.CleaningStrategyFactory):
-    async def create(self, type: str) -> c.CleaningStrategy | None:
-        match type:
+    """Factory for creating cleaning strategies."""
+
+    @override
+    async def create(self, strategy_type: str) -> c.CleaningStrategy | None:
+        match strategy_type:
             case "all":
                 return AllCleaningStrategy()
             case "timedelta":

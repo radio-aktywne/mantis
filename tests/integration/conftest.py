@@ -1,6 +1,6 @@
 import asyncio
 import os
-from collections.abc import AsyncGenerator, Generator
+from collections.abc import AsyncGenerator, Generator, Mapping
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
@@ -21,16 +21,14 @@ from tests.utils.waiting.waiter import Waiter
 
 @pytest.fixture(scope="session")
 def path() -> Generator[Path]:
-    """Path to the store file."""
-
+    """Generate path to the store file."""
     with TemporaryDirectory() as directory:
         yield Path(directory) / "state.json"
 
 
 @pytest.fixture(scope="session")
-def env(path: Path) -> Generator[dict[str, str]]:
-    """Environment variables."""
-
+def env(path: Path) -> Generator[Mapping[str, str]]:
+    """Build environment variables."""
     old = os.environ.copy()
 
     try:
@@ -43,33 +41,28 @@ def env(path: Path) -> Generator[dict[str, str]]:
 
 
 @pytest.fixture(scope="session")
-def config(env: dict[str, str]) -> Config:
-    """Loaded configuration."""
-
+def config(env: Mapping[str, str]) -> Config:
+    """Build configuration."""
     return ConfigBuilder().build()
 
 
 @pytest.fixture(scope="session")
 def app(config: Config) -> Litestar:
-    """Reusable application."""
-
+    """Build application."""
     return AppBuilder(config).build()
 
 
 @pytest_asyncio.fixture(loop_scope="session", scope="session")
 async def quokka() -> AsyncGenerator[AsyncDockerContainer]:
-    """Quokka container."""
+    """Run quokka container."""
 
     async def _check() -> None:
-        auth = BasicAuth(username="admin", password="password")
-        async with AsyncClient(base_url="http://localhost:10000", auth=auth) as client:
-            response = await client.get("/admin/stats.json")
+        async with AsyncClient(base_url="http://localhost:10000") as client:
+            response = await client.get("/ping")
             response.raise_for_status()
 
-    container = AsyncDockerContainer(
-        "ghcr.io/radio-aktywne/services/quokka:latest",
-        network="host",
-    )
+    container = AsyncDockerContainer("ghcr.io/radio-aktywne/services/quokka:latest")
+    container = container.with_kwargs(network="host")
 
     waiter = Waiter(
         condition=CallableCondition(_check),
@@ -85,12 +78,9 @@ async def quokka() -> AsyncGenerator[AsyncDockerContainer]:
 async def dingo(
     quokka: AsyncDockerContainer,
 ) -> AsyncGenerator[AsyncDockerContainer]:
-    """Dingo container."""
-
-    container = AsyncDockerContainer(
-        "ghcr.io/radio-aktywne/services/dingo:latest",
-        network="host",
-    )
+    """Run dingo container."""
+    container = AsyncDockerContainer("ghcr.io/radio-aktywne/services/dingo:latest")
+    container = container.with_kwargs(network="host")
 
     async with container as container:
         await asyncio.sleep(5)
@@ -99,17 +89,15 @@ async def dingo(
 
 @pytest_asyncio.fixture(loop_scope="session", scope="session")
 async def amber() -> AsyncGenerator[AsyncDockerContainer]:
-    """Amber container."""
+    """Run amber container."""
 
     async def _check() -> None:
         async with AsyncClient(base_url="http://localhost:10610") as client:
             response = await client.get("/minio/health/ready")
             response.raise_for_status()
 
-    container = AsyncDockerContainer(
-        "ghcr.io/radio-aktywne/databases/amber:latest",
-        network="host",
-    )
+    container = AsyncDockerContainer("ghcr.io/radio-aktywne/databases/amber:latest")
+    container = container.with_kwargs(network="host")
 
     waiter = Waiter(
         condition=CallableCondition(_check),
@@ -125,17 +113,15 @@ async def amber() -> AsyncGenerator[AsyncDockerContainer]:
 async def numbat(
     amber: AsyncDockerContainer,
 ) -> AsyncGenerator[AsyncDockerContainer]:
-    """Numbat container."""
+    """Run numbat container."""
 
     async def _check() -> None:
         async with AsyncClient(base_url="http://localhost:10600") as client:
             response = await client.get("/ping")
             response.raise_for_status()
 
-    container = AsyncDockerContainer(
-        "ghcr.io/radio-aktywne/services/numbat:latest",
-        network="host",
-    )
+    container = AsyncDockerContainer("ghcr.io/radio-aktywne/services/numbat:latest")
+    container = container.with_kwargs(network="host")
 
     waiter = Waiter(
         condition=CallableCondition(_check),
@@ -149,17 +135,15 @@ async def numbat(
 
 @pytest_asyncio.fixture(loop_scope="session", scope="session")
 async def emerald() -> AsyncGenerator[AsyncDockerContainer]:
-    """Emerald container."""
+    """Run emerald container."""
 
     async def _check() -> None:
         async with AsyncClient(base_url="http://localhost:10710") as client:
             response = await client.get("/minio/health/ready")
             response.raise_for_status()
 
-    container = AsyncDockerContainer(
-        "ghcr.io/radio-aktywne/databases/emerald:latest",
-        network="host",
-    )
+    container = AsyncDockerContainer("ghcr.io/radio-aktywne/databases/emerald:latest")
+    container = container.with_kwargs(network="host")
 
     waiter = Waiter(
         condition=CallableCondition(_check),
@@ -175,17 +159,15 @@ async def emerald() -> AsyncGenerator[AsyncDockerContainer]:
 async def gecko(
     emerald: AsyncDockerContainer,
 ) -> AsyncGenerator[AsyncDockerContainer]:
-    """Gecko container."""
+    """Run gecko container."""
 
     async def _check() -> None:
         async with AsyncClient(base_url="http://localhost:10700") as client:
             response = await client.get("/ping")
             response.raise_for_status()
 
-    container = AsyncDockerContainer(
-        "ghcr.io/radio-aktywne/services/gecko:latest",
-        network="host",
-    )
+    container = AsyncDockerContainer("ghcr.io/radio-aktywne/services/gecko:latest")
+    container = container.with_kwargs(network="host")
 
     waiter = Waiter(
         condition=CallableCondition(_check),
@@ -201,17 +183,15 @@ async def gecko(
 async def octopus(
     dingo: AsyncDockerContainer,
 ) -> AsyncGenerator[AsyncDockerContainer]:
-    """Octopus container."""
+    """Run octopus container."""
 
     async def _check() -> None:
         async with AsyncClient(base_url="http://localhost:10300") as client:
             response = await client.get("/ping")
             response.raise_for_status()
 
-    container = AsyncDockerContainer(
-        "ghcr.io/radio-aktywne/services/octopus:latest",
-        network="host",
-    )
+    container = AsyncDockerContainer("ghcr.io/radio-aktywne/services/octopus:latest")
+    container = container.with_kwargs(network="host")
 
     waiter = Waiter(
         condition=CallableCondition(_check),
@@ -225,13 +205,9 @@ async def octopus(
 
 @pytest_asyncio.fixture(loop_scope="session", scope="session")
 async def sapphire() -> AsyncGenerator[AsyncDockerContainer]:
-    """Sapphire container."""
-
-    container = AsyncDockerContainer(
-        "ghcr.io/radio-aktywne/databases/sapphire:latest",
-        network="host",
-        privileged=True,
-    )
+    """Run sapphire container."""
+    container = AsyncDockerContainer("ghcr.io/radio-aktywne/databases/sapphire:latest")
+    container = container.with_kwargs(network="host", privileged=True)
 
     waiter = Waiter(
         condition=CommandCondition(
@@ -252,7 +228,7 @@ async def sapphire() -> AsyncGenerator[AsyncDockerContainer]:
 
 @pytest_asyncio.fixture(loop_scope="session", scope="session")
 async def howlite() -> AsyncGenerator[AsyncDockerContainer]:
-    """Howlite container."""
+    """Run howlite container."""
 
     async def _check() -> None:
         auth = BasicAuth(username="user", password="password")
@@ -260,10 +236,8 @@ async def howlite() -> AsyncGenerator[AsyncDockerContainer]:
             response = await client.get("/user/calendar")
             response.raise_for_status()
 
-    container = AsyncDockerContainer(
-        "ghcr.io/radio-aktywne/databases/howlite:latest",
-        network="host",
-    )
+    container = AsyncDockerContainer("ghcr.io/radio-aktywne/databases/howlite:latest")
+    container = container.with_kwargs(network="host")
 
     waiter = Waiter(
         condition=CallableCondition(_check),
@@ -279,17 +253,15 @@ async def howlite() -> AsyncGenerator[AsyncDockerContainer]:
 async def beaver(
     sapphire: AsyncDockerContainer, howlite: AsyncDockerContainer
 ) -> AsyncGenerator[AsyncDockerContainer]:
-    """Beaver container."""
+    """Run beaver container."""
 
     async def _check() -> None:
         async with AsyncClient(base_url="http://localhost:10500") as client:
             response = await client.get("/ping")
             response.raise_for_status()
 
-    container = AsyncDockerContainer(
-        "ghcr.io/radio-aktywne/services/beaver:latest",
-        network="host",
-    )
+    container = AsyncDockerContainer("ghcr.io/radio-aktywne/services/beaver:latest")
+    container = container.with_kwargs(network="host")
 
     waiter = Waiter(
         condition=CallableCondition(_check),
@@ -309,7 +281,6 @@ async def client(
     beaver: AsyncDockerContainer,
     octopus: AsyncDockerContainer,
 ) -> AsyncGenerator[AsyncTestClient]:
-    """Reusable test client."""
-
+    """Build test client."""
     async with AsyncTestClient(app=app) as client:
         yield client

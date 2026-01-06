@@ -1,3 +1,4 @@
+from collections.abc import Mapping
 from typing import Annotated
 
 from litestar import Controller as BaseController
@@ -23,7 +24,8 @@ class DependenciesBuilder:
             scheduler=state.scheduler,
         )
 
-    def build(self) -> dict[str, Provide]:
+    def build(self) -> Mapping[str, Provide]:
+        """Build the dependencies."""
         return {
             "service": Provide(self._build_service),
         }
@@ -39,7 +41,6 @@ class Controller(BaseController):
     )
     async def list(self, service: Service) -> Response[m.ListResponseTasks]:
         """List tasks."""
-
         req = m.ListRequest()
 
         req = await service.list(req)
@@ -58,7 +59,7 @@ class Controller(BaseController):
     async def get(
         self,
         service: Service,
-        id: Annotated[
+        id: Annotated[  # noqa: A002
             m.GetRequestId,
             Parameter(
                 description="Identifier of the task.",
@@ -66,7 +67,6 @@ class Controller(BaseController):
         ],
     ) -> Response[m.GetResponseTask]:
         """Get a task."""
-
         req = m.GetRequest(
             id=id,
         )
@@ -74,7 +74,7 @@ class Controller(BaseController):
         try:
             res = await service.get(req)
         except e.TaskNotFoundError as ex:
-            raise NotFoundException(extra=str(ex)) from ex
+            raise NotFoundException from ex
 
         task = res.task
 
@@ -90,7 +90,7 @@ class Controller(BaseController):
     async def get_pending(
         self,
         service: Service,
-        id: Annotated[
+        id: Annotated[  # noqa: A002
             m.GetPendingRequestId,
             Parameter(
                 description="Identifier of the task.",
@@ -98,7 +98,6 @@ class Controller(BaseController):
         ],
     ) -> Response[m.GetPendingResponseTask]:
         """Get a pending task."""
-
         req = m.GetPendingRequest(
             id=id,
         )
@@ -106,7 +105,7 @@ class Controller(BaseController):
         try:
             res = await service.get_pending(req)
         except e.TaskNotFoundError as ex:
-            raise NotFoundException(extra=str(ex)) from ex
+            raise NotFoundException from ex
 
         task = res.task
 
@@ -122,7 +121,7 @@ class Controller(BaseController):
     async def get_running(
         self,
         service: Service,
-        id: Annotated[
+        id: Annotated[  # noqa: A002
             m.GetRunningRequestId,
             Parameter(
                 description="Identifier of the task.",
@@ -130,7 +129,6 @@ class Controller(BaseController):
         ],
     ) -> Response[m.GetRunningResponseTask]:
         """Get a running task."""
-
         req = m.GetRunningRequest(
             id=id,
         )
@@ -138,7 +136,7 @@ class Controller(BaseController):
         try:
             res = await service.get_running(req)
         except e.TaskNotFoundError as ex:
-            raise NotFoundException(extra=str(ex)) from ex
+            raise NotFoundException from ex
 
         task = res.task
 
@@ -154,7 +152,7 @@ class Controller(BaseController):
     async def get_cancelled(
         self,
         service: Service,
-        id: Annotated[
+        id: Annotated[  # noqa: A002
             m.GetCancelledRequestId,
             Parameter(
                 description="Identifier of the task.",
@@ -162,7 +160,6 @@ class Controller(BaseController):
         ],
     ) -> Response[m.GetCancelledResponseTask]:
         """Get a cancelled task."""
-
         req = m.GetCancelledRequest(
             id=id,
         )
@@ -170,7 +167,7 @@ class Controller(BaseController):
         try:
             res = await service.get_cancelled(req)
         except e.TaskNotFoundError as ex:
-            raise NotFoundException(extra=str(ex)) from ex
+            raise NotFoundException from ex
 
         task = res.task
 
@@ -186,7 +183,7 @@ class Controller(BaseController):
     async def get_failed(
         self,
         service: Service,
-        id: Annotated[
+        id: Annotated[  # noqa: A002
             m.GetFailedRequestId,
             Parameter(
                 description="Identifier of the task.",
@@ -194,7 +191,6 @@ class Controller(BaseController):
         ],
     ) -> Response[m.GetFailedResponseTask]:
         """Get a failed task."""
-
         req = m.GetFailedRequest(
             id=id,
         )
@@ -202,7 +198,7 @@ class Controller(BaseController):
         try:
             res = await service.get_failed(req)
         except e.TaskNotFoundError as ex:
-            raise NotFoundException(extra=str(ex)) from ex
+            raise NotFoundException from ex
 
         task = res.task
 
@@ -218,7 +214,7 @@ class Controller(BaseController):
     async def get_completed(
         self,
         service: Service,
-        id: Annotated[
+        id: Annotated[  # noqa: A002
             m.GetCompletedRequestId,
             Parameter(
                 description="Identifier of the task.",
@@ -226,7 +222,6 @@ class Controller(BaseController):
         ],
     ) -> Response[m.GetCompletedResponseTask]:
         """Get a completed task."""
-
         req = m.GetCompletedRequest(
             id=id,
         )
@@ -234,7 +229,7 @@ class Controller(BaseController):
         try:
             res = await service.get_completed(req)
         except e.TaskNotFoundError as ex:
-            raise NotFoundException(extra=str(ex)) from ex
+            raise NotFoundException from ex
 
         task = res.task
 
@@ -257,17 +252,16 @@ class Controller(BaseController):
         ],
     ) -> Response[m.ScheduleResponseTask]:
         """Schedule a task."""
-
-        data = Validator(m.ScheduleRequestData).object(data)
+        parsed_data = Validator[m.ScheduleRequestData].validate_object(data)
 
         req = m.ScheduleRequest(
-            data=data,
+            data=parsed_data,
         )
 
         try:
             res = await service.schedule(req)
         except e.ValidationError as ex:
-            raise BadRequestException(extra=str(ex)) from ex
+            raise BadRequestException from ex
 
         task = res.task
 
@@ -284,7 +278,7 @@ class Controller(BaseController):
     async def cancel(
         self,
         service: Service,
-        id: Annotated[
+        id: Annotated[  # noqa: A002
             m.CancelRequestId,
             Parameter(
                 description="Identifier of the task.",
@@ -292,7 +286,6 @@ class Controller(BaseController):
         ],
     ) -> Response[m.CancelResponseTask]:
         """Cancel a task."""
-
         req = m.CancelRequest(
             id=id,
         )
@@ -300,7 +293,7 @@ class Controller(BaseController):
         try:
             res = await service.cancel(req)
         except e.TaskNotFoundError as ex:
-            raise NotFoundException(extra=str(ex)) from ex
+            raise NotFoundException from ex
 
         task = res.task
 
@@ -325,17 +318,16 @@ class Controller(BaseController):
         ],
     ) -> Response[m.CleanResponseResults]:
         """Clean tasks."""
-
-        data = Validator(m.CleanRequestData).object(data)
+        parsed_data = Validator[m.CleanRequestData].validate_object(data)
 
         req = m.CleanRequest(
-            data=data,
+            data=parsed_data,
         )
 
         try:
             res = await service.clean(req)
         except e.ValidationError as ex:
-            raise BadRequestException(extra=str(ex)) from ex
+            raise BadRequestException from ex
 
         results = res.results
 

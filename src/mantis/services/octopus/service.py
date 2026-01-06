@@ -1,4 +1,5 @@
 from collections.abc import AsyncGenerator
+from typing import Any
 
 from gracy import BaseEndpoint, GracefulRetry, Gracy, GracyConfig, GracyNamespace
 from httpx import AsyncClient
@@ -18,21 +19,16 @@ class Endpoint(BaseEndpoint):
 class BaseService(Gracy[Endpoint]):
     """Base class for octopus service."""
 
-    def __init__(self, config: OctopusConfig, *args, **kwargs) -> None:
-        class Config:
-            BASE_URL = config.http.url
-            SETTINGS = GracyConfig(
-                retry=GracefulRetry(
-                    delay=1,
-                    max_attempts=3,
-                    delay_modifier=2,
-                ),
-            )
-
-        self.Config = Config
-
+    def __init__(self, config: OctopusConfig, *args: Any, **kwargs: Any) -> None:
+        self.Config.BASE_URL = config.http.url
+        self.Config.SETTINGS = GracyConfig(
+            retry=GracefulRetry(
+                delay=1,
+                max_attempts=3,
+                delay_modifier=2,
+            ),
+        )
         super().__init__(*args, **kwargs)
-
         self._config = config
 
 
@@ -41,7 +37,6 @@ class CheckNamespace(GracyNamespace[Endpoint]):
 
     async def check(self, request: m.CheckRequest) -> m.CheckResponse:
         """Check the availability of the stream."""
-
         res = await self.get(Endpoint.CHECK)
 
         availability = m.Availability.model_validate_json(res.content)
@@ -56,7 +51,6 @@ class ReserveNamespace(GracyNamespace[Endpoint]):
 
     async def reserve(self, request: m.ReserveRequest) -> m.ReserveResponse:
         """Reserve a stream."""
-
         data = request.data
 
         json = data.model_dump(mode="json", by_alias=True)
@@ -83,16 +77,14 @@ class SSENamespace(GracyNamespace[Endpoint]):
 
     async def _subscribe(self) -> AsyncGenerator[m.Event]:
         url = f"{self.Config.BASE_URL}/{Endpoint.SSE}"
-        client = AsyncClient(timeout=None)
+        client = AsyncClient(timeout=None)  # noqa: S113
 
-        async with client as client:
-            async with client.stream("GET", url) as res:
-                async for data in res.aiter_lines():
-                    yield self._parse_event(data)
+        async with client as client, client.stream("GET", url) as res:
+            async for data in res.aiter_lines():
+                yield self._parse_event(data)
 
     async def subscribe(self, request: m.SubscribeRequest) -> m.SubscribeResponse:
         """Get a stream of Server-Sent Events."""
-
         events = self._subscribe()
 
         return m.SubscribeResponse(

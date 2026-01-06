@@ -1,17 +1,14 @@
 {
-  "version": "0.2.0",
   "configurations": [
     {
-      "name": "mantis",
-      "type": "debugpy",
-      "request": "launch",
-      "module": "mantis",
       "justMyCode": false,
-      "env": {
-        "PATH": "${workspaceFolder}/.venv/bin:${env:PATH}",
-        "PYTHONPATH": "${workspaceFolder}/.venv/lib/python3.12/site-packages:${env:EXTRAPYTHONPATH}",
-        "MANTIS__DEBUG": "true"
-      }
+      "module": "mantis",
+      "name": "mantis",
+      "python": "uv",
+      "pythonArgs": ["run", "python"],
+      "request": "launch",
+      "type": "debugpy"
     }
-  ]
+  ],
+  "version": "0.2.0"
 }
