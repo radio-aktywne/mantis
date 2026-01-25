@@ -190,10 +190,10 @@ class Event(SerializableModel):
     """Show that the event belongs to."""
 
     start: NaiveDatetime
-    """Start time of the event in event timezone."""
+    """Start datetime of the event in event timezone."""
 
     end: NaiveDatetime
-    """End time of the event in event timezone."""
+    """End datetime of the event in event timezone."""
 
     timezone: Timezone
     """Timezone of the event."""
@@ -384,10 +384,10 @@ class EventInstance(SerializableModel):
     """Event instance data."""
 
     start: NaiveDatetime
-    """Start time of the event instance in event timezone."""
+    """Start datetime of the event instance in event timezone."""
 
     end: NaiveDatetime
-    """End time of the event instance in event timezone."""
+    """End datetime of the event instance in event timezone."""
 
 
 class Schedule(SerializableModel):
@@ -519,10 +519,10 @@ class ScheduleListRequest:
     """Request to list schedules."""
 
     start: ScheduleListRequestStart
-    """Start time in UTC to filter events instances."""
+    """Start datetime in UTC to filter events instances."""
 
     end: ScheduleListRequestEnd
-    """End time in UTC to filter events instances."""
+    """End datetime in UTC to filter events instances."""
 
     limit: ScheduleListRequestLimit
     """Maximum number of schedules to return."""

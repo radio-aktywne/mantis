@@ -21,7 +21,7 @@ class Prerecording(SerializableModel):
     """Identifier of the event."""
 
     start: NaiveDatetime
-    """Start time of the event instance in event timezone."""
+    """Start datetime of the event instance in event timezone."""
 
 
 class PrerecordingList(SerializableModel):
@@ -77,10 +77,10 @@ class ListRequest:
     """Identifier of the event to list prerecordings for."""
 
     after: ListRequestAfter
-    """Only list prerecordings after this time (in event timezone)."""
+    """Only list prerecordings after this datetime (in event timezone)."""
 
     before: ListRequestBefore
-    """Only list prerecordings before this date (in event timezone)."""
+    """Only list prerecordings before this datetime (in event timezone)."""
 
     limit: ListRequestLimit
     """Maximum number of prerecordings to return."""
@@ -108,7 +108,7 @@ class DownloadRequest:
     """Identifier of the event."""
 
     start: DownloadRequestStart
-    """Start time of the event instance in event timezone."""
+    """Start datetime of the event instance in event timezone."""
 
 
 @datamodel
@@ -125,7 +125,7 @@ class DownloadResponse:
     """ETag of the prerecording data."""
 
     modified: DownloadResponseModified
-    """Date and time when the prerecording was last modified."""
+    """Datetime when the prerecording was last modified."""
 
     data: DownloadResponseData
     """Data of the prerecording."""
