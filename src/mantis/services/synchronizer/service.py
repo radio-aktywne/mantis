@@ -2,13 +2,12 @@ import asyncio
 import math
 from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
-from datetime import datetime
 
 from mantis.config.models import SynchronizerConfig
 from mantis.services.beaver.service import BeaverService
 from mantis.services.scheduler.service import SchedulerService
 from mantis.services.synchronizer.synchronizers.stream import StreamSynchronizer
-from mantis.utils.time import naiveutcnow
+from mantis.utils.time import NaiveDatetime, naiveutcnow
 
 
 class SynchronizerService:
@@ -29,7 +28,7 @@ class SynchronizerService:
             )
         ]
 
-    def _find_next_time(self, dt: datetime) -> datetime:
+    def _find_next_time(self, dt: NaiveDatetime) -> NaiveDatetime:
         reference = self._config.reference
         interval = self._config.interval
 

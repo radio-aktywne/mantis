@@ -1,6 +1,6 @@
 from collections.abc import Collection, Sequence
 from contextlib import suppress
-from datetime import UTC, datetime, timedelta
+from datetime import UTC, timedelta
 from uuid import UUID
 from zoneinfo import ZoneInfo
 
@@ -17,7 +17,7 @@ from mantis.services.scheduler.operations.operations.stream.models import (
 )
 from mantis.services.scheduler.service import SchedulerService
 from mantis.services.synchronizer.synchronizers.synchronizer import Synchronizer
-from mantis.utils.time import naiveutcnow
+from mantis.utils.time import NaiveDatetime, naiveutcnow
 
 
 class StreamSynchronizer(Synchronizer):
@@ -33,14 +33,14 @@ class StreamSynchronizer(Synchronizer):
         self._beaver = beaver
         self._scheduler = scheduler
 
-    def _get_time_window(self) -> tuple[datetime, datetime]:
+    def _get_time_window(self) -> tuple[NaiveDatetime, NaiveDatetime]:
         start = naiveutcnow()
         end = start + self._config.window
 
         return start, end
 
     async def _fetch_schedules(
-        self, start: datetime, end: datetime
+        self, start: NaiveDatetime, end: NaiveDatetime
     ) -> Sequence[bm.Schedule]:
         schedules: list[bm.Schedule] = []
         offset = 0
@@ -79,7 +79,7 @@ class StreamSynchronizer(Synchronizer):
         return schedules
 
     def _filter_schedules(
-        self, schedules: Sequence[bm.Schedule], start: datetime, end: datetime
+        self, schedules: Sequence[bm.Schedule], start: NaiveDatetime, end: NaiveDatetime
     ) -> Sequence[bm.Schedule]:
         out: list[bm.Schedule] = []
 
@@ -109,7 +109,7 @@ class StreamSynchronizer(Synchronizer):
         return out
 
     async def _get_schedules(
-        self, start: datetime, end: datetime
+        self, start: NaiveDatetime, end: NaiveDatetime
     ) -> Sequence[bm.Schedule]:
         schedules = await self._fetch_schedules(start, end)
         return self._filter_schedules(schedules, start, end)
@@ -167,7 +167,7 @@ class StreamSynchronizer(Synchronizer):
         return events
 
     async def _filter_tasks(
-        self, tasks: Sequence[t.GenericTask], start: datetime, end: datetime
+        self, tasks: Sequence[t.GenericTask], start: NaiveDatetime, end: NaiveDatetime
     ) -> tuple[Sequence[tuple[t.GenericTask, Parameters]], Sequence[t.GenericTask]]:
         invalid: list[t.GenericTask] = []
         withparams: list[tuple[t.GenericTask, Parameters]] = []
@@ -210,7 +210,7 @@ class StreamSynchronizer(Synchronizer):
         return valid, invalid
 
     async def _get_tasks(
-        self, start: datetime, end: datetime
+        self, start: NaiveDatetime, end: NaiveDatetime
     ) -> tuple[Sequence[tuple[t.GenericTask, Parameters]], Sequence[t.GenericTask]]:
         tasks = await self._fetch_tasks()
         return await self._filter_tasks(tasks, start, end)

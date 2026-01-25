@@ -1,7 +1,7 @@
-from datetime import datetime
 from uuid import UUID
 
 from mantis.services.beaver import models as bm
+from mantis.utils.time import NaiveDatetime, isostringify
 
 
 class EventNotFoundError(Exception):
@@ -21,18 +21,18 @@ class ScheduleNotFoundError(Exception):
 class InstanceNotFoundError(Exception):
     """Raised when an instance cannot be found."""
 
-    def __init__(self, event: UUID, start: datetime) -> None:
+    def __init__(self, event: UUID, start: NaiveDatetime) -> None:
         super().__init__(
-            f"No instance found for event {event} and start {start.isoformat()}."
+            f"No instance found for event {event} and start {isostringify(start)}."
         )
 
 
 class InstanceAlreadyEndedError(Exception):
     """Raised when an instance has already ended."""
 
-    def __init__(self, event: UUID, start: datetime, end: datetime) -> None:
+    def __init__(self, event: UUID, start: NaiveDatetime, end: NaiveDatetime) -> None:
         super().__init__(
-            f"Instance for event {event} and start {start.isoformat()} has already ended at {end.isoformat()}."
+            f"Instance for event {event} and start {isostringify(start)} has already ended at {isostringify(end)}."
         )
 
 
@@ -46,8 +46,10 @@ class UnexpectedEventTypeError(Exception):
 class DownloadUnavailableError(Exception):
     """Raised when a download is unavailable."""
 
-    def __init__(self, event: UUID, start: datetime) -> None:
-        super().__init__(f"No download available for event {event} and start {start}.")
+    def __init__(self, event: UUID, start: NaiveDatetime) -> None:
+        super().__init__(
+            f"No download available for event {event} and start {isostringify(start)}."
+        )
 
 
 class UnexpectedFormatError(Exception):

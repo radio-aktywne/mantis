@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import timedelta
 from pathlib import Path
 from tempfile import TemporaryDirectory
 from typing import override
@@ -26,7 +26,7 @@ from mantis.services.scheduler.operations.operations.stream.reserver import (
 )
 from mantis.services.scheduler.operations.operations.stream.runner import Runner
 from mantis.services.scheduler.operations.operations.stream.waiter import Waiter
-from mantis.utils.time import awareutcnow
+from mantis.utils.time import NaiveDatetime, awareutcnow
 
 
 class StreamOperation(o.Operation):
@@ -62,7 +62,7 @@ class StreamOperation(o.Operation):
         return m.Parameters.model_validate(parameters)
 
     async def _find_instance(
-        self, event: UUID, start: datetime
+        self, event: UUID, start: NaiveDatetime
     ) -> tuple[bm.Event, bm.EventInstance]:
         req = m.FindRequest(
             event=event,
