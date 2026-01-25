@@ -48,7 +48,7 @@ class CleanerConfig(BaseModel):
     """Configuration for the cleaner."""
 
     reference: NaiveDatetime = datetime(2000, 1, 1, 0, 0, 0, 0)
-    """Reference datetime for cleaning."""
+    """Reference datetime in UTC for cleaning."""
 
     interval: timedelta = timedelta(days=1)
     """Interval between cleanings."""
@@ -234,7 +234,7 @@ class SynchronizerConfig(BaseModel):
     """Configuration for the synchronizer."""
 
     reference: NaiveDatetime = datetime(2000, 1, 1, 0, 0, 0, 0)
-    """Reference datetime for synchronization."""
+    """Reference datetime in UTC for synchronization."""
 
     interval: timedelta = timedelta(minutes=1)
     """Interval between synchronizations."""

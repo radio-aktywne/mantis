@@ -29,7 +29,7 @@ dependencies = [
   # Queuing utilities
   "pyqueues @ https://github.com/radio-aktywne/pyqueues/archive/refs/tags/0.7.0.tar.gz",
   # Task scheduler
-  "pyscheduler @ https://github.com/radio-aktywne/pyscheduler/archive/refs/tags/0.8.0.tar.gz",
+  "pyscheduler @ https://github.com/radio-aktywne/pyscheduler/archive/refs/tags/0.9.0.tar.gz",
   # Helps building API clients
   "gracy ~= 1.34.0",
 ]

@@ -1,5 +1,5 @@
 from collections.abc import Sequence
-from datetime import UTC, datetime, timedelta
+from datetime import UTC, timedelta
 from http import HTTPStatus
 from typing import TYPE_CHECKING, cast
 from uuid import UUID
@@ -13,6 +13,7 @@ from mantis.services.beaver import models as bm
 from mantis.services.beaver.service import BeaverService
 from mantis.services.scheduler.operations.operations.stream import errors as e
 from mantis.services.scheduler.operations.operations.stream import models as m
+from mantis.utils.time import NaiveDatetime
 
 
 class Finder:
@@ -39,7 +40,7 @@ class Finder:
         return res.event
 
     async def _list_schedules(
-        self, event: UUID, start: datetime, end: datetime
+        self, event: UUID, start: NaiveDatetime, end: NaiveDatetime
     ) -> Sequence[bm.Schedule]:
         schedules: list[bm.Schedule] = []
         offset = 0
@@ -70,12 +71,15 @@ class Finder:
 
         return schedules
 
-    async def _get_schedule(self, event: UUID, start: datetime) -> bm.Schedule:
+    async def _get_schedule(self, event: UUID, start: NaiveDatetime) -> bm.Schedule:
         mevent = await self._get_event(event)
 
         tz = ZoneInfo(mevent.timezone)
-        utcstart = start.replace(hour=0, minute=0, second=0, microsecond=0, tzinfo=tz)
-        utcstart = utcstart.astimezone(UTC).replace(tzinfo=None)
+        utcstart = (
+            start.replace(hour=0, minute=0, second=0, microsecond=0, tzinfo=tz)
+            .astimezone(UTC)
+            .replace(tzinfo=None)
+        )
         utcend = utcstart + timedelta(days=1)
 
         schedules = await self._list_schedules(mevent.id, utcstart, utcend)
@@ -88,7 +92,7 @@ class Finder:
         return schedule
 
     async def _find_instance(
-        self, schedule: bm.Schedule, start: datetime
+        self, schedule: bm.Schedule, start: NaiveDatetime
     ) -> bm.EventInstance:
         instance = next(
             (instance for instance in schedule.instances if instance.start == start),

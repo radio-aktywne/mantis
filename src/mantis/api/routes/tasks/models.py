@@ -1,3 +1,4 @@
+from datetime import UTC
 from uuid import UUID
 
 from mantis.models.base import SerializableModel, datamodel
@@ -60,14 +61,14 @@ class PendingTask(SerializableModel):
     """Task data."""
 
     scheduled: NaiveDatetime
-    """Date and time when the task was scheduled."""
+    """Datetime in UTC when the task was scheduled."""
 
     @staticmethod
     def map(task: sm.PendingTask) -> "PendingTask":
         """Map to internal representation."""
         return PendingTask(
             task=task.task,
-            scheduled=task.scheduled,
+            scheduled=task.scheduled.astimezone(UTC).replace(tzinfo=None),
         )
 
 
@@ -78,18 +79,18 @@ class RunningTask(SerializableModel):
     """Task data."""
 
     scheduled: NaiveDatetime
-    """Date and time when the task was scheduled."""
+    """Datetime in UTC when the task was scheduled."""
 
     started: NaiveDatetime
-    """Date and time when the task was started."""
+    """Datetime in UTC when the task was started."""
 
     @staticmethod
     def map(task: sm.RunningTask) -> "RunningTask":
         """Map to internal representation."""
         return RunningTask(
             task=task.task,
-            scheduled=task.scheduled,
-            started=task.started,
+            scheduled=task.scheduled.astimezone(UTC).replace(tzinfo=None),
+            started=task.started.astimezone(UTC).replace(tzinfo=None),
         )
 
 
@@ -100,22 +101,24 @@ class CancelledTask(SerializableModel):
     """Task data."""
 
     scheduled: NaiveDatetime
-    """Date and time when the task was scheduled."""
+    """Datetime in UTC when the task was scheduled."""
 
     started: NaiveDatetime | None
-    """Date and time when the task was started."""
+    """Datetime in UTC when the task was started."""
 
     cancelled: NaiveDatetime
-    """Date and time when the task was cancelled."""
+    """Datetime in UTC when the task was cancelled."""
 
     @staticmethod
     def map(task: sm.CancelledTask) -> "CancelledTask":
         """Map to internal representation."""
         return CancelledTask(
             task=task.task,
-            scheduled=task.scheduled,
-            started=task.started,
-            cancelled=task.cancelled,
+            scheduled=task.scheduled.astimezone(UTC).replace(tzinfo=None),
+            started=task.started.astimezone(UTC).replace(tzinfo=None)
+            if task.started
+            else None,
+            cancelled=task.cancelled.astimezone(UTC).replace(tzinfo=None),
         )
 
 
@@ -126,13 +129,13 @@ class FailedTask(SerializableModel):
     """Task data."""
 
     scheduled: NaiveDatetime
-    """Date and time when the task was scheduled."""
+    """Datetime in UTC when the task was scheduled."""
 
     started: NaiveDatetime
-    """Date and time when the task was started."""
+    """Datetime in UTC when the task was started."""
 
     failed: NaiveDatetime
-    """Date and time when the task failed."""
+    """Datetime in UTC when the task failed."""
 
     error: str
     """Error message."""
@@ -142,9 +145,9 @@ class FailedTask(SerializableModel):
         """Map to internal representation."""
         return FailedTask(
             task=task.task,
-            scheduled=task.scheduled,
-            started=task.started,
-            failed=task.failed,
+            scheduled=task.scheduled.astimezone(UTC).replace(tzinfo=None),
+            started=task.started.astimezone(UTC).replace(tzinfo=None),
+            failed=task.failed.astimezone(UTC).replace(tzinfo=None),
             error=task.error,
         )
 
@@ -156,13 +159,13 @@ class CompletedTask(SerializableModel):
     """Task data."""
 
     scheduled: NaiveDatetime
-    """Date and time when the task was scheduled."""
+    """Datetime in UTC when the task was scheduled."""
 
     started: NaiveDatetime
-    """Date and time when the task was started."""
+    """Datetime in UTC when the task was started."""
 
     completed: NaiveDatetime
-    """Date and time when the task was completed."""
+    """Datetime in UTC when the task was completed."""
 
     result: sm.JSON
     """Result of the task."""
@@ -172,9 +175,9 @@ class CompletedTask(SerializableModel):
         """Map to internal representation."""
         return CompletedTask(
             task=task.task,
-            scheduled=task.scheduled,
-            started=task.started,
-            completed=task.completed,
+            scheduled=task.scheduled.astimezone(UTC).replace(tzinfo=None),
+            started=task.started.astimezone(UTC).replace(tzinfo=None),
+            completed=task.completed.astimezone(UTC).replace(tzinfo=None),
             result=task.result,
         )
 

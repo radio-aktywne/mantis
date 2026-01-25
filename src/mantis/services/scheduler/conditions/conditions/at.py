@@ -12,6 +12,7 @@ class Parameters(SerializableModel):
     """Parameters for the at condition."""
 
     datetime: NaiveDatetime
+    """Datetime in UTC to wait for."""
 
 
 class AtCondition(c.Condition):

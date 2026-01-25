@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from collections.abc import AsyncIterator, Sequence
-from datetime import datetime, timedelta
+from datetime import timedelta
 from pathlib import Path
 from uuid import UUID
 
@@ -14,6 +14,7 @@ from mantis.services.numbat.service import NumbatService
 from mantis.services.octopus import models as om
 from mantis.services.scheduler.operations.operations.stream import errors as e
 from mantis.services.scheduler.operations.operations.stream import models as m
+from mantis.utils.time import NaiveDatetime
 
 
 class EventDownloader(ABC):
@@ -34,7 +35,7 @@ class PrerecordedDownloader(EventDownloader):
         self._numbat = numbat
 
     async def _list_prerecordings(
-        self, event: UUID, after: datetime, before: datetime
+        self, event: UUID, after: NaiveDatetime, before: NaiveDatetime
     ) -> Sequence[nm.Prerecording]:
         prerecordings: list[nm.Prerecording] = []
         offset = 0
@@ -116,7 +117,7 @@ class ReplayDownloader(EventDownloader):
         self._gecko = gecko
 
     async def _list_live_schedules(
-        self, show: UUID, start: datetime, end: datetime
+        self, show: UUID, start: NaiveDatetime, end: NaiveDatetime
     ) -> Sequence[bm.Schedule]:
         schedules: list[bm.Schedule] = []
         offset = 0
@@ -149,7 +150,7 @@ class ReplayDownloader(EventDownloader):
         return schedules
 
     async def _find_past_live_schedules(
-        self, show: UUID, before: datetime
+        self, show: UUID, before: NaiveDatetime
     ) -> Sequence[bm.Schedule]:
         end = before
         start = end - self._config.operations.stream.window
@@ -157,7 +158,7 @@ class ReplayDownloader(EventDownloader):
         return await self._list_live_schedules(show, start, end)
 
     async def _list_records(
-        self, event: UUID, after: datetime, before: datetime
+        self, event: UUID, after: NaiveDatetime, before: NaiveDatetime
     ) -> Sequence[gm.Record]:
         records: list[gm.Record] = []
         offset = 0
@@ -186,14 +187,14 @@ class ReplayDownloader(EventDownloader):
         return records
 
     async def _list_last_records(
-        self, event: UUID, before: datetime
+        self, event: UUID, before: NaiveDatetime
     ) -> Sequence[gm.Record]:
         after = before - self._config.operations.stream.window
 
         return await self._list_records(event, after, before)
 
     async def _find_last_record(
-        self, schedules: Sequence[bm.Schedule], before: datetime
+        self, schedules: Sequence[bm.Schedule], before: NaiveDatetime
     ) -> gm.Record | None:
         records: list[gm.Record] = []
 

@@ -258,7 +258,7 @@ requires-dist = [
     { name = "pyevents", url = "https://github.com/radio-aktywne/pyevents/archive/refs/tags/0.7.0.tar.gz" },
     { name = "pylocks", url = "https://github.com/radio-aktywne/pylocks/archive/refs/tags/0.7.0.tar.gz" },
     { name = "pyqueues", url = "https://github.com/radio-aktywne/pyqueues/archive/refs/tags/0.7.0.tar.gz" },
-    { name = "pyscheduler", url = "https://github.com/radio-aktywne/pyscheduler/archive/refs/tags/0.8.0.tar.gz" },
+    { name = "pyscheduler", url = "https://github.com/radio-aktywne/pyscheduler/archive/refs/tags/0.9.0.tar.gz" },
     { name = "pystores", url = "https://github.com/radio-aktywne/pystores/archive/refs/tags/0.8.0.tar.gz" },
     { name = "pystreams", url = "https://github.com/radio-aktywne/pystreams/archive/refs/tags/0.13.0.tar.gz" },
     { name = "rich", specifier = "~=14.2.0" },
@@ -480,9 +480,9 @@ sdist = { hash = "sha256:89c8e861dc839f9a7f98b985a62ee93ce471ff674bf38e9829a4436
 
 [[package]]
 name = "pyscheduler"
-version = "0.8.0"
-source = { url = "https://github.com/radio-aktywne/pyscheduler/archive/refs/tags/0.8.0.tar.gz" }
-sdist = { hash = "sha256:2585e35cc4cf50e8e131abea5a5dce8da8dd99671a4b8f03ef3cc69f555f88fa" }
+version = "0.9.0"
+source = { url = "https://github.com/radio-aktywne/pyscheduler/archive/refs/tags/0.9.0.tar.gz" }
+sdist = { hash = "sha256:84970d1176c985302ca92dfa42dfb41e60b61f0ab780050b86558e2519a8d209" }
 
 [[package]]
 name = "pystores"
