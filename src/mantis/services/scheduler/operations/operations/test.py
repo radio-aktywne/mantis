@@ -11,7 +11,4 @@ class TestOperation(o.Operation):
     async def run(
         self, parameters: dict[str, t.JSON], dependencies: dict[str, t.JSON]
     ) -> t.JSON:
-        return {
-            "parameters": parameters,
-            "dependencies": dependencies,
-        }
+        return {"parameters": parameters, "dependencies": dependencies}

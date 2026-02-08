@@ -51,17 +51,10 @@ class Store(f.FileStore[s.State, str], st.Store[s.State]):
     def _build_default_state(self) -> s.State:
         state = r.State(
             tasks=r.Tasks(
-                pending={},
-                running={},
-                cancelled={},
-                failed={},
-                completed={},
+                pending={}, running={}, cancelled={}, failed={}, completed={}
             ),
             statuses={},
-            relationships=r.Relationships(
-                dependents={},
-                dependencies={},
-            ),
+            relationships=r.Relationships(dependents={}, dependencies={}),
         )
 
         return state.serialize()

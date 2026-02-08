@@ -1,4 +1,6 @@
+from collections.abc import Set as AbstractSet
 from datetime import UTC
+from typing import Self
 from uuid import UUID
 
 from mantis.models.base import SerializableModel, datamodel
@@ -9,25 +11,25 @@ from mantis.utils.time import NaiveDatetime
 class TaskIndex(SerializableModel):
     """Index of tasks by status."""
 
-    pending: set[UUID]
+    pending: AbstractSet[UUID]
     """Identifiers of pending tasks."""
 
-    running: set[UUID]
+    running: AbstractSet[UUID]
     """Identifiers of running tasks."""
 
-    cancelled: set[UUID]
+    cancelled: AbstractSet[UUID]
     """Identifiers of cancelled tasks."""
 
-    failed: set[UUID]
+    failed: AbstractSet[UUID]
     """Identifiers of failed tasks."""
 
-    completed: set[UUID]
+    completed: AbstractSet[UUID]
     """Identifiers of completed tasks."""
 
-    @staticmethod
-    def map(index: sm.TaskIndex) -> "TaskIndex":
+    @classmethod
+    def map(cls, index: sm.TaskIndex) -> Self:
         """Map to internal representation."""
-        return TaskIndex(
+        return cls(
             pending=index.pending,
             running=index.running,
             cancelled=index.cancelled,
@@ -45,13 +47,10 @@ class GenericTask(SerializableModel):
     status: sm.Status
     """Task status."""
 
-    @staticmethod
-    def map(task: sm.GenericTask) -> "GenericTask":
+    @classmethod
+    def map(cls, task: sm.GenericTask) -> Self:
         """Map to internal representation."""
-        return GenericTask(
-            task=task.task,
-            status=task.status,
-        )
+        return cls(task=task.task, status=task.status)
 
 
 class PendingTask(SerializableModel):
@@ -63,10 +62,10 @@ class PendingTask(SerializableModel):
     scheduled: NaiveDatetime
     """Datetime in UTC when the task was scheduled."""
 
-    @staticmethod
-    def map(task: sm.PendingTask) -> "PendingTask":
+    @classmethod
+    def map(cls, task: sm.PendingTask) -> Self:
         """Map to internal representation."""
-        return PendingTask(
+        return cls(
             task=task.task,
             scheduled=task.scheduled.astimezone(UTC).replace(tzinfo=None),
         )
@@ -84,10 +83,10 @@ class RunningTask(SerializableModel):
     started: NaiveDatetime
     """Datetime in UTC when the task was started."""
 
-    @staticmethod
-    def map(task: sm.RunningTask) -> "RunningTask":
+    @classmethod
+    def map(cls, task: sm.RunningTask) -> Self:
         """Map to internal representation."""
-        return RunningTask(
+        return cls(
             task=task.task,
             scheduled=task.scheduled.astimezone(UTC).replace(tzinfo=None),
             started=task.started.astimezone(UTC).replace(tzinfo=None),
@@ -109,10 +108,10 @@ class CancelledTask(SerializableModel):
     cancelled: NaiveDatetime
     """Datetime in UTC when the task was cancelled."""
 
-    @staticmethod
-    def map(task: sm.CancelledTask) -> "CancelledTask":
+    @classmethod
+    def map(cls, task: sm.CancelledTask) -> Self:
         """Map to internal representation."""
-        return CancelledTask(
+        return cls(
             task=task.task,
             scheduled=task.scheduled.astimezone(UTC).replace(tzinfo=None),
             started=task.started.astimezone(UTC).replace(tzinfo=None)
@@ -140,10 +139,10 @@ class FailedTask(SerializableModel):
     error: str
     """Error message."""
 
-    @staticmethod
-    def map(task: sm.FailedTask) -> "FailedTask":
+    @classmethod
+    def map(cls, task: sm.FailedTask) -> Self:
         """Map to internal representation."""
-        return FailedTask(
+        return cls(
             task=task.task,
             scheduled=task.scheduled.astimezone(UTC).replace(tzinfo=None),
             started=task.started.astimezone(UTC).replace(tzinfo=None),
@@ -170,10 +169,10 @@ class CompletedTask(SerializableModel):
     result: sm.JSON
     """Result of the task."""
 
-    @staticmethod
-    def map(task: sm.CompletedTask) -> "CompletedTask":
+    @classmethod
+    def map(cls, task: sm.CompletedTask) -> Self:
         """Map to internal representation."""
-        return CompletedTask(
+        return cls(
             task=task.task,
             scheduled=task.scheduled.astimezone(UTC).replace(tzinfo=None),
             started=task.started.astimezone(UTC).replace(tzinfo=None),
@@ -211,62 +210,58 @@ class CleanRequestModel(SerializableModel):
 
     def map(self) -> sm.CleanRequest:
         """Map to external representation."""
-        return sm.CleanRequest(
-            strategy=self.strategy,
-        )
+        return sm.CleanRequest(strategy=self.strategy)
 
 
 class CleaningResult(SerializableModel):
     """Result of cleaning."""
 
-    removed: set[UUID]
+    removed: AbstractSet[UUID]
     """Identifiers of removed tasks."""
 
-    @staticmethod
-    def map(result: sm.CleaningResult) -> "CleaningResult":
+    @classmethod
+    def map(cls, result: sm.CleaningResult) -> Self:
         """Map to internal representation."""
-        return CleaningResult(
-            removed=result.removed,
-        )
+        return cls(removed=result.removed)
 
 
-ListResponseTasks = TaskIndex
+type ListResponseTasks = TaskIndex
 
-GetRequestId = UUID
+type GetRequestId = UUID
 
-GetResponseTask = GenericTask
+type GetResponseTask = GenericTask
 
-GetPendingRequestId = UUID
+type GetPendingRequestId = UUID
 
-GetPendingResponseTask = PendingTask
+type GetPendingResponseTask = PendingTask
 
-GetRunningRequestId = UUID
+type GetRunningRequestId = UUID
 
-GetRunningResponseTask = RunningTask
+type GetRunningResponseTask = RunningTask
 
-GetCancelledRequestId = UUID
+type GetCancelledRequestId = UUID
 
-GetCancelledResponseTask = CancelledTask
+type GetCancelledResponseTask = CancelledTask
 
-GetFailedRequestId = UUID
+type GetFailedRequestId = UUID
 
-GetFailedResponseTask = FailedTask
+type GetFailedResponseTask = FailedTask
 
-GetCompletedRequestId = UUID
+type GetCompletedRequestId = UUID
 
-GetCompletedResponseTask = CompletedTask
+type GetCompletedResponseTask = CompletedTask
 
-ScheduleRequestData = ScheduleRequestModel
+type ScheduleRequestData = ScheduleRequestModel
 
-ScheduleResponseTask = PendingTask
+type ScheduleResponseTask = PendingTask
 
-CancelRequestId = UUID
+type CancelRequestId = UUID
 
-CancelResponseTask = CancelledTask
+type CancelResponseTask = CancelledTask
 
-CleanRequestData = CleanRequestModel
+type CleanRequestData = CleanRequestModel
 
-CleanResponseResults = CleaningResult
+type CleanResponseResults = CleaningResult
 
 
 @datamodel

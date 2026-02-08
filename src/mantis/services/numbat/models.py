@@ -1,17 +1,8 @@
 from collections.abc import AsyncIterator, Sequence
-from datetime import datetime
-from enum import StrEnum
 from uuid import UUID
 
 from mantis.models.base import SerializableModel, datamodel
 from mantis.utils.time import NaiveDatetime
-
-
-class ListOrder(StrEnum):
-    """Order to list prerecordings."""
-
-    ASCENDING = "asc"
-    DESCENDING = "desc"
 
 
 class Prerecording(SerializableModel):
@@ -30,102 +21,76 @@ class PrerecordingList(SerializableModel):
     count: int
     """Total number of prerecordings that match the request."""
 
-    limit: int | None
-    """Maximum number of returned prerecordings."""
-
-    offset: int | None
-    """Number of skipped prerecordings."""
-
     prerecordings: Sequence[Prerecording]
     """List of prerecordings."""
 
 
-ListRequestEvent = UUID
+type PrerecordingsListRequestEvent = UUID
 
-ListRequestAfter = NaiveDatetime | None
+type PrerecordingsListRequestAfter = NaiveDatetime | None
 
-ListRequestBefore = NaiveDatetime | None
+type PrerecordingsListRequestBefore = NaiveDatetime | None
 
-ListRequestLimit = int | None
+type PrerecordingsListRequestLimit = int | None
 
-ListRequestOffset = int | None
+type PrerecordingsListRequestOffset = int | None
 
-ListRequestOrder = ListOrder | None
+type PrerecordingsListResponseResults = PrerecordingList
 
-ListResponseResults = PrerecordingList
+type PrerecordingsDownloadRequestEvent = UUID
 
-DownloadRequestEvent = UUID
+type PrerecordingsDownloadRequestStart = NaiveDatetime
 
-DownloadRequestStart = NaiveDatetime
+type PrerecordingsDownloadResponseType = str
 
-DownloadResponseType = str
-
-DownloadResponseSize = int
-
-DownloadResponseTag = str
-
-DownloadResponseModified = datetime
-
-DownloadResponseData = AsyncIterator[bytes]
+type PrerecordingsDownloadResponseData = AsyncIterator[bytes]
 
 
 @datamodel
-class ListRequest:
+class PrerecordingsListRequest:
     """Request to list prerecordings."""
 
-    event: ListRequestEvent
+    event: PrerecordingsListRequestEvent
     """Identifier of the event to list prerecordings for."""
 
-    after: ListRequestAfter
+    after: PrerecordingsListRequestAfter
     """Only list prerecordings after this datetime (in event timezone)."""
 
-    before: ListRequestBefore
+    before: PrerecordingsListRequestBefore
     """Only list prerecordings before this datetime (in event timezone)."""
 
-    limit: ListRequestLimit
+    limit: PrerecordingsListRequestLimit
     """Maximum number of prerecordings to return."""
 
-    offset: ListRequestOffset
+    offset: PrerecordingsListRequestOffset
     """Number of prerecordings to skip."""
-
-    order: ListRequestOrder
-    """Order to apply to the results."""
 
 
 @datamodel
-class ListResponse:
+class PrerecordingsListResponse:
     """Response for listing prerecordings."""
 
-    results: ListResponseResults
+    results: PrerecordingsListResponseResults
     """List of prerecordings."""
 
 
 @datamodel
-class DownloadRequest:
+class PrerecordingsDownloadRequest:
     """Request to download a prerecording."""
 
-    event: DownloadRequestEvent
+    event: PrerecordingsDownloadRequestEvent
     """Identifier of the event."""
 
-    start: DownloadRequestStart
+    start: PrerecordingsDownloadRequestStart
     """Start datetime of the event instance in event timezone."""
 
 
 @datamodel
-class DownloadResponse:
+class PrerecordingsDownloadResponse:
     """Response for downloading a prerecording."""
 
-    type: DownloadResponseType
+    type: PrerecordingsDownloadResponseType
     """Type of the prerecording data."""
 
-    size: DownloadResponseSize
-    """Size of the prerecording in bytes."""
-
-    tag: DownloadResponseTag
-    """ETag of the prerecording data."""
-
-    modified: DownloadResponseModified
-    """Datetime when the prerecording was last modified."""
-
-    data: DownloadResponseData
+    data: PrerecordingsDownloadResponseData
     """Data of the prerecording."""

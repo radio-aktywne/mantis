@@ -7,9 +7,7 @@ from mantis.services.beaver.service import BeaverService
 from mantis.services.gecko.service import GeckoService
 from mantis.services.numbat.service import NumbatService
 from mantis.services.octopus.service import OctopusService
-from mantis.services.scheduler.operations.operations.stream import (
-    StreamOperation,
-)
+from mantis.services.scheduler.operations.operations.stream import StreamOperation
 from mantis.services.scheduler.operations.operations.test import TestOperation
 
 

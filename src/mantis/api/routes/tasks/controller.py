@@ -12,7 +12,7 @@ from mantis.api.exceptions import BadRequestException, NotFoundException
 from mantis.api.routes.tasks import errors as e
 from mantis.api.routes.tasks import models as m
 from mantis.api.routes.tasks.service import Service
-from mantis.api.validator import Validator
+from mantis.models.base import Serializable
 from mantis.state import State
 
 
@@ -20,9 +20,7 @@ class DependenciesBuilder:
     """Builder for the dependencies of the controller."""
 
     async def _build_service(self, state: State) -> Service:
-        return Service(
-            scheduler=state.scheduler,
-        )
+        return Service(scheduler=state.scheduler)
 
     def build(self) -> Mapping[str, Provide]:
         """Build the dependencies."""
@@ -39,18 +37,18 @@ class Controller(BaseController):
     @handlers.get(
         summary="Get index",
     )
-    async def list(self, service: Service) -> Response[m.ListResponseTasks]:
+    async def list(
+        self, service: Service
+    ) -> Response[Serializable[m.ListResponseTasks]]:
         """List tasks."""
-        req = m.ListRequest()
+        request = m.ListRequest()
 
-        req = await service.list(req)
+        response = await service.list(request)
 
-        tasks = req.tasks
-
-        return Response(tasks)
+        return Response(Serializable(response.tasks))
 
     @handlers.get(
-        "/{id:uuid}",
+        "/{id:str}",
         summary="Get task",
         raises=[
             NotFoundException,
@@ -60,28 +58,24 @@ class Controller(BaseController):
         self,
         service: Service,
         id: Annotated[  # noqa: A002
-            m.GetRequestId,
+            Serializable[m.GetRequestId],
             Parameter(
                 description="Identifier of the task.",
             ),
         ],
-    ) -> Response[m.GetResponseTask]:
+    ) -> Response[Serializable[m.GetResponseTask]]:
         """Get a task."""
-        req = m.GetRequest(
-            id=id,
-        )
+        request = m.GetRequest(id=id.root)
 
         try:
-            res = await service.get(req)
+            response = await service.get(request)
         except e.TaskNotFoundError as ex:
             raise NotFoundException from ex
 
-        task = res.task
-
-        return Response(task)
+        return Response(Serializable(response.task))
 
     @handlers.get(
-        "/pending/{id:uuid}",
+        "/pending/{id:str}",
         summary="Get pending task",
         raises=[
             NotFoundException,
@@ -91,28 +85,24 @@ class Controller(BaseController):
         self,
         service: Service,
         id: Annotated[  # noqa: A002
-            m.GetPendingRequestId,
+            Serializable[m.GetPendingRequestId],
             Parameter(
                 description="Identifier of the task.",
             ),
         ],
-    ) -> Response[m.GetPendingResponseTask]:
+    ) -> Response[Serializable[m.GetPendingResponseTask]]:
         """Get a pending task."""
-        req = m.GetPendingRequest(
-            id=id,
-        )
+        request = m.GetPendingRequest(id=id.root)
 
         try:
-            res = await service.get_pending(req)
+            response = await service.get_pending(request)
         except e.TaskNotFoundError as ex:
             raise NotFoundException from ex
 
-        task = res.task
-
-        return Response(task)
+        return Response(Serializable(response.task))
 
     @handlers.get(
-        "/running/{id:uuid}",
+        "/running/{id:str}",
         summary="Get running task",
         raises=[
             NotFoundException,
@@ -122,28 +112,24 @@ class Controller(BaseController):
         self,
         service: Service,
         id: Annotated[  # noqa: A002
-            m.GetRunningRequestId,
+            Serializable[m.GetRunningRequestId],
             Parameter(
                 description="Identifier of the task.",
             ),
         ],
-    ) -> Response[m.GetRunningResponseTask]:
+    ) -> Response[Serializable[m.GetRunningResponseTask]]:
         """Get a running task."""
-        req = m.GetRunningRequest(
-            id=id,
-        )
+        request = m.GetRunningRequest(id=id.root)
 
         try:
-            res = await service.get_running(req)
+            response = await service.get_running(request)
         except e.TaskNotFoundError as ex:
             raise NotFoundException from ex
 
-        task = res.task
-
-        return Response(task)
+        return Response(Serializable(response.task))
 
     @handlers.get(
-        "/cancelled/{id:uuid}",
+        "/cancelled/{id:str}",
         summary="Get cancelled task",
         raises=[
             NotFoundException,
@@ -153,28 +139,24 @@ class Controller(BaseController):
         self,
         service: Service,
         id: Annotated[  # noqa: A002
-            m.GetCancelledRequestId,
+            Serializable[m.GetCancelledRequestId],
             Parameter(
                 description="Identifier of the task.",
             ),
         ],
-    ) -> Response[m.GetCancelledResponseTask]:
+    ) -> Response[Serializable[m.GetCancelledResponseTask]]:
         """Get a cancelled task."""
-        req = m.GetCancelledRequest(
-            id=id,
-        )
+        request = m.GetCancelledRequest(id=id.root)
 
         try:
-            res = await service.get_cancelled(req)
+            response = await service.get_cancelled(request)
         except e.TaskNotFoundError as ex:
             raise NotFoundException from ex
 
-        task = res.task
-
-        return Response(task)
+        return Response(Serializable(response.task))
 
     @handlers.get(
-        "/failed/{id:uuid}",
+        "/failed/{id:str}",
         summary="Get failed task",
         raises=[
             NotFoundException,
@@ -184,28 +166,24 @@ class Controller(BaseController):
         self,
         service: Service,
         id: Annotated[  # noqa: A002
-            m.GetFailedRequestId,
+            Serializable[m.GetFailedRequestId],
             Parameter(
                 description="Identifier of the task.",
             ),
         ],
-    ) -> Response[m.GetFailedResponseTask]:
+    ) -> Response[Serializable[m.GetFailedResponseTask]]:
         """Get a failed task."""
-        req = m.GetFailedRequest(
-            id=id,
-        )
+        request = m.GetFailedRequest(id=id.root)
 
         try:
-            res = await service.get_failed(req)
+            response = await service.get_failed(request)
         except e.TaskNotFoundError as ex:
             raise NotFoundException from ex
 
-        task = res.task
-
-        return Response(task)
+        return Response(Serializable(response.task))
 
     @handlers.get(
-        "/completed/{id:uuid}",
+        "/completed/{id:str}",
         summary="Get completed task",
         raises=[
             NotFoundException,
@@ -215,25 +193,21 @@ class Controller(BaseController):
         self,
         service: Service,
         id: Annotated[  # noqa: A002
-            m.GetCompletedRequestId,
+            Serializable[m.GetCompletedRequestId],
             Parameter(
                 description="Identifier of the task.",
             ),
         ],
-    ) -> Response[m.GetCompletedResponseTask]:
+    ) -> Response[Serializable[m.GetCompletedResponseTask]]:
         """Get a completed task."""
-        req = m.GetCompletedRequest(
-            id=id,
-        )
+        request = m.GetCompletedRequest(id=id.root)
 
         try:
-            res = await service.get_completed(req)
+            response = await service.get_completed(request)
         except e.TaskNotFoundError as ex:
             raise NotFoundException from ex
 
-        task = res.task
-
-        return Response(task)
+        return Response(Serializable(response.task))
 
     @handlers.post(
         summary="Schedule task",
@@ -245,30 +219,24 @@ class Controller(BaseController):
         self,
         service: Service,
         data: Annotated[
-            m.ScheduleRequestData,
+            Serializable[m.ScheduleRequestData],
             Body(
                 description="Data to schedule a task.",
             ),
         ],
-    ) -> Response[m.ScheduleResponseTask]:
+    ) -> Response[Serializable[m.ScheduleResponseTask]]:
         """Schedule a task."""
-        parsed_data = Validator[m.ScheduleRequestData].validate_object(data)
-
-        req = m.ScheduleRequest(
-            data=parsed_data,
-        )
+        request = m.ScheduleRequest(data=data.root)
 
         try:
-            res = await service.schedule(req)
+            response = await service.schedule(request)
         except e.ValidationError as ex:
             raise BadRequestException from ex
 
-        task = res.task
-
-        return Response(task)
+        return Response(Serializable(response.task))
 
     @handlers.delete(
-        "/{id:uuid}",
+        "/{id:str}",
         summary="Cancel task",
         status_code=HTTP_200_OK,
         raises=[
@@ -279,25 +247,21 @@ class Controller(BaseController):
         self,
         service: Service,
         id: Annotated[  # noqa: A002
-            m.CancelRequestId,
+            Serializable[m.CancelRequestId],
             Parameter(
                 description="Identifier of the task.",
             ),
         ],
-    ) -> Response[m.CancelResponseTask]:
+    ) -> Response[Serializable[m.CancelResponseTask]]:
         """Cancel a task."""
-        req = m.CancelRequest(
-            id=id,
-        )
+        request = m.CancelRequest(id=id.root)
 
         try:
-            res = await service.cancel(req)
+            response = await service.cancel(request)
         except e.TaskNotFoundError as ex:
             raise NotFoundException from ex
 
-        task = res.task
-
-        return Response(task)
+        return Response(Serializable(response.task))
 
     @handlers.post(
         "/clean",
@@ -311,24 +275,18 @@ class Controller(BaseController):
         self,
         service: Service,
         data: Annotated[
-            m.CleanRequestData,
+            Serializable[m.CleanRequestData],
             Body(
                 description="Data to clean tasks.",
             ),
         ],
-    ) -> Response[m.CleanResponseResults]:
+    ) -> Response[Serializable[m.CleanResponseResults]]:
         """Clean tasks."""
-        parsed_data = Validator[m.CleanRequestData].validate_object(data)
-
-        req = m.CleanRequest(
-            data=parsed_data,
-        )
+        request = m.CleanRequest(data=data.root)
 
         try:
-            res = await service.clean(req)
+            response = await service.clean(request)
         except e.ValidationError as ex:
             raise BadRequestException from ex
 
-        results = res.results
-
-        return Response(results)
+        return Response(Serializable(response.results))

@@ -2,12 +2,13 @@ import asyncio
 import math
 from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
+from datetime import datetime
 
 from mantis.config.models import SynchronizerConfig
 from mantis.services.beaver.service import BeaverService
 from mantis.services.scheduler.service import SchedulerService
 from mantis.services.synchronizer.synchronizers.stream import StreamSynchronizer
-from mantis.utils.time import NaiveDatetime, naiveutcnow
+from mantis.utils.time import naiveutcnow
 
 
 class SynchronizerService:
@@ -22,13 +23,11 @@ class SynchronizerService:
         self._config = config
         self._synchronizers = [
             StreamSynchronizer(
-                config=config.synchronizers.stream,
-                beaver=beaver,
-                scheduler=scheduler,
+                config=config.synchronizers.stream, beaver=beaver, scheduler=scheduler
             )
         ]
 
-    def _find_next_time(self, dt: NaiveDatetime) -> NaiveDatetime:
+    def _find_next_time(self, dt: datetime) -> datetime:
         reference = self._config.reference
         interval = self._config.interval
 

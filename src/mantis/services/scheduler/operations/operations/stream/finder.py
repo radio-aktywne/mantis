@@ -1,19 +1,13 @@
 from collections.abc import Sequence
-from datetime import UTC, timedelta
+from datetime import UTC, datetime, timedelta
 from http import HTTPStatus
-from typing import TYPE_CHECKING, cast
 from uuid import UUID
-from zoneinfo import ZoneInfo
-
-if TYPE_CHECKING:
-    from httpx import Response
 
 from mantis.services.beaver import errors as be
 from mantis.services.beaver import models as bm
 from mantis.services.beaver.service import BeaverService
 from mantis.services.scheduler.operations.operations.stream import errors as e
 from mantis.services.scheduler.operations.operations.stream import models as m
-from mantis.utils.time import NaiveDatetime
 
 
 class Finder:
@@ -23,76 +17,71 @@ class Finder:
         self._beaver = beaver
 
     async def _get_event(self, event_id: UUID) -> bm.Event:
-        req = bm.EventsGetRequest(
-            id=event_id,
-            include=None,
-        )
+        events_get_request = bm.EventsGetRequest(id=event_id)
 
         try:
-            res = await self._beaver.events.mget(req)
-        except be.ServiceError as ex:
-            if hasattr(ex, "response"):
-                response = cast("Response", ex.response)  # type: ignore[attr-defined]
-                if response.status_code == HTTPStatus.NOT_FOUND:
-                    raise e.EventNotFoundError(event_id) from ex
+            events_get_response = await self._beaver.events.get_by_id(
+                events_get_request
+            )
+        except be.ResponseError as ex:
+            if ex.response.status_code == HTTPStatus.NOT_FOUND:
+                raise e.EventNotFoundError(event_id) from ex
             raise
 
-        return res.event
+        return events_get_response.event
 
     async def _list_schedules(
-        self, event: UUID, start: NaiveDatetime, end: NaiveDatetime
+        self, event_id: UUID, start: datetime, end: datetime
     ) -> Sequence[bm.Schedule]:
         schedules: list[bm.Schedule] = []
         offset = 0
 
         while True:
-            req = bm.ScheduleListRequest(
+            schedule_list_request = bm.ScheduleListRequest(
                 start=start,
                 end=end,
                 limit=None,
                 offset=offset,
-                where={
-                    "id": str(event),
-                },
-                include=None,
-                order=None,
+                where={"id": str(event_id)},
             )
 
-            res = await self._beaver.schedule.list(req)
+            schedule_list_response = await self._beaver.schedule.list(
+                schedule_list_request
+            )
 
-            new = res.results.schedules
-            count = res.results.count
+            new = schedule_list_response.results.schedules
 
             schedules = schedules + list(new)
             offset = offset + len(new)
 
-            if offset >= count:
+            if offset >= schedule_list_response.results.count:
                 break
 
         return schedules
 
-    async def _get_schedule(self, event: UUID, start: NaiveDatetime) -> bm.Schedule:
-        mevent = await self._get_event(event)
+    async def _get_schedule(self, event_id: UUID, start: datetime) -> bm.Schedule:
+        event = await self._get_event(event_id)
 
-        tz = ZoneInfo(mevent.timezone)
         utcstart = (
-            start.replace(hour=0, minute=0, second=0, microsecond=0, tzinfo=tz)
+            start.replace(
+                hour=0, minute=0, second=0, microsecond=0, tzinfo=event.timezone
+            )
             .astimezone(UTC)
             .replace(tzinfo=None)
         )
         utcend = utcstart + timedelta(days=1)
 
-        schedules = await self._list_schedules(mevent.id, utcstart, utcend)
+        schedules = await self._list_schedules(event.id, utcstart, utcend)
 
         schedule = next(iter(schedules), None)
 
         if schedule is None:
-            raise e.ScheduleNotFoundError(mevent.id)
+            raise e.ScheduleNotFoundError(event.id)
 
         return schedule
 
     async def _find_instance(
-        self, schedule: bm.Schedule, start: NaiveDatetime
+        self, schedule: bm.Schedule, start: datetime
     ) -> bm.EventInstance:
         instance = next(
             (instance for instance in schedule.instances if instance.start == start),
@@ -109,7 +98,4 @@ class Finder:
         schedule = await self._get_schedule(request.event, request.start)
         instance = await self._find_instance(schedule, request.start)
 
-        return m.FindResponse(
-            event=schedule.event,
-            instance=instance,
-        )
+        return m.FindResponse(event=schedule.event, instance=instance)

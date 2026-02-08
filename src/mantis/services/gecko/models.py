@@ -1,17 +1,8 @@
 from collections.abc import AsyncIterator, Sequence
-from datetime import datetime
-from enum import StrEnum
 from uuid import UUID
 
 from mantis.models.base import SerializableModel, datamodel
 from mantis.utils.time import NaiveDatetime
-
-
-class ListOrder(StrEnum):
-    """Order to list records."""
-
-    ASCENDING = "asc"
-    DESCENDING = "desc"
 
 
 class Record(SerializableModel):
@@ -30,102 +21,76 @@ class RecordList(SerializableModel):
     count: int
     """Total number of records that match the request."""
 
-    limit: int | None
-    """Maximum number of returned records."""
-
-    offset: int | None
-    """Number of skipped records."""
-
     records: Sequence[Record]
     """List of records."""
 
 
-ListRequestEvent = UUID
+type RecordsListRequestEvent = UUID
 
-ListRequestAfter = NaiveDatetime | None
+type RecordsListRequestAfter = NaiveDatetime | None
 
-ListRequestBefore = NaiveDatetime | None
+type RecordsListRequestBefore = NaiveDatetime | None
 
-ListRequestLimit = int | None
+type RecordsListRequestLimit = int | None
 
-ListRequestOffset = int | None
+type RecordsListRequestOffset = int | None
 
-ListRequestOrder = ListOrder | None
+type RecordsListResponseResults = RecordList
 
-ListResponseResults = RecordList
+type RecordsDownloadRequestEvent = UUID
 
-DownloadRequestEvent = UUID
+type RecordsDownloadRequestStart = NaiveDatetime
 
-DownloadRequestStart = NaiveDatetime
+type RecordsDownloadResponseType = str
 
-DownloadResponseType = str
-
-DownloadResponseSize = int
-
-DownloadResponseTag = str
-
-DownloadResponseModified = datetime
-
-DownloadResponseData = AsyncIterator[bytes]
+type RecordsDownloadResponseData = AsyncIterator[bytes]
 
 
 @datamodel
-class ListRequest:
+class RecordsListRequest:
     """Request to list records."""
 
-    event: ListRequestEvent
+    event: RecordsListRequestEvent
     """Identifier of the event to list records for."""
 
-    after: ListRequestAfter
+    after: RecordsListRequestAfter
     """Only list records after this datetime (in event timezone)."""
 
-    before: ListRequestBefore
+    before: RecordsListRequestBefore
     """Only list records before this datetime (in event timezone)."""
 
-    limit: ListRequestLimit
+    limit: RecordsListRequestLimit
     """Maximum number of records to return."""
 
-    offset: ListRequestOffset
+    offset: RecordsListRequestOffset
     """Number of records to skip."""
-
-    order: ListRequestOrder
-    """Order to apply to the results."""
 
 
 @datamodel
-class ListResponse:
+class RecordsListResponse:
     """Response for listing records."""
 
-    results: ListResponseResults
+    results: RecordsListResponseResults
     """List of records."""
 
 
 @datamodel
-class DownloadRequest:
+class RecordsDownloadRequest:
     """Request to download a record."""
 
-    event: DownloadRequestEvent
+    event: RecordsDownloadRequestEvent
     """Identifier of the event."""
 
-    start: DownloadRequestStart
+    start: RecordsDownloadRequestStart
     """Start datetime of the event instance in event timezone."""
 
 
 @datamodel
-class DownloadResponse:
+class RecordsDownloadResponse:
     """Response for downloading a record."""
 
-    type: DownloadResponseType
+    type: RecordsDownloadResponseType
     """Type of the record data."""
 
-    size: DownloadResponseSize
-    """Size of the record in bytes."""
-
-    tag: DownloadResponseTag
-    """ETag of the record data."""
-
-    modified: DownloadResponseModified
-    """Datetime when the record was last modified."""
-
-    data: DownloadResponseData
+    data: RecordsDownloadResponseData
     """Data of the record."""
