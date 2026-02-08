@@ -1,9 +1,5 @@
 import asyncio
 from http import HTTPStatus
-from typing import TYPE_CHECKING, cast
-
-if TYPE_CHECKING:
-    from httpx import Response
 
 from mantis.config.models import Config
 from mantis.services.octopus import errors as oe
@@ -24,40 +20,32 @@ class Reserver:
 
     async def reserve(self, request: m.ReserveRequest) -> m.ReserveResponse:
         """Reserve a stream."""
-        data = om.ReserveRequestData(
-            event=request.event,
-            format=request.format,
-            record=False,
+        data = om.ReservationInput(
+            event=request.event, format=request.format, record=False
         )
 
         deadline = naiveutcnow() + self._config.operations.stream.timeout
 
         while naiveutcnow() < deadline:
-            req = om.SubscribeRequest()
-            res = await self._octopus.sse.subscribe(req)
-            sse = asyncio.create_task(coroutine(anext(res.events)))
+            subscribe_request = om.SubscribeRequest()
+            subscribe_response = await self._octopus.sse.subscribe(subscribe_request)
+            sse = asyncio.create_task(coroutine(anext(subscribe_response.messages)))
 
-            req = om.ReserveRequest(
-                data=data,
-            )
+            reserve_request = om.ReserveRequest(data=data)
 
             try:
-                res = await self._octopus.reserve.reserve(req)
-            except oe.ServiceError as ex:
-                if hasattr(ex, "response"):
-                    response = cast("Response", ex.response)  # type: ignore[attr-defined]
-                    if response.status_code == HTTPStatus.CONFLICT:
-                        timeout = deadline - naiveutcnow()
-                        await asyncio.wait_for(sse, timeout=timeout.total_seconds())
-                        continue
+                reserve_response = await self._octopus.reserve.reserve(reserve_request)
+            except oe.ResponseError as ex:
+                if ex.response.status_code == HTTPStatus.CONFLICT:
+                    timeout = deadline - naiveutcnow()
+                    await asyncio.wait_for(sse, timeout=timeout.total_seconds())
+                    continue
 
                 raise
             else:
-                credentials = res.data.credentials
+                credentials = reserve_response.reservation.credentials
 
-                return m.ReserveResponse(
-                    credentials=credentials,
-                )
+                return m.ReserveResponse(credentials=credentials)
             finally:
                 sse.cancel()
 

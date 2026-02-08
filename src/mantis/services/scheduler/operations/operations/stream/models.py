@@ -1,3 +1,4 @@
+from datetime import datetime
 from pathlib import Path
 from uuid import UUID
 
@@ -24,7 +25,7 @@ class FindRequest:
     event: UUID
     """Identifier of the event."""
 
-    start: NaiveDatetime
+    start: datetime
     """Start datetime of the event instance in event timezone."""
 
 

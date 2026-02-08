@@ -44,7 +44,6 @@
         trunk = pkgs.trunk-io;
         uv = pkgs.uv;
         cacert = pkgs.cacert;
-        copier = pkgs.python313.withPackages (ps: [ps.copier]);
         ffmpeg = pkgs.ffmpeg;
         usql = pkgs.usql;
         tini = pkgs.tini;
@@ -81,7 +80,6 @@
               trunk
               uv
               cacert
-              copier
               ffmpeg
               usql
             ];

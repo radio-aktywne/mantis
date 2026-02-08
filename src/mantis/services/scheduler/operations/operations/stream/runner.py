@@ -22,10 +22,7 @@ class Runner:
     def _build_stream_input(self, path: Path, fmt: om.Format) -> FFmpegNode:
         return FFmpegNode(
             target=str(path),
-            options={
-                "f": self._map_format(fmt),
-                "re": True,
-            },
+            options={"f": self._map_format(fmt), "re": True},
         )
 
     def _build_stream_output(

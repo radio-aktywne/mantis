@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from collections.abc import AsyncIterator, Sequence
-from datetime import timedelta
+from datetime import datetime, timedelta
 from pathlib import Path
 from uuid import UUID
 
@@ -14,7 +14,7 @@ from mantis.services.numbat.service import NumbatService
 from mantis.services.octopus import models as om
 from mantis.services.scheduler.operations.operations.stream import errors as e
 from mantis.services.scheduler.operations.operations.stream import models as m
-from mantis.utils.time import NaiveDatetime
+from mantis.utils.time import isostringify
 
 
 class EventDownloader(ABC):
@@ -35,30 +35,26 @@ class PrerecordedDownloader(EventDownloader):
         self._numbat = numbat
 
     async def _list_prerecordings(
-        self, event: UUID, after: NaiveDatetime, before: NaiveDatetime
+        self, event: UUID, after: datetime, before: datetime
     ) -> Sequence[nm.Prerecording]:
         prerecordings: list[nm.Prerecording] = []
         offset = 0
 
         while True:
-            req = nm.ListRequest(
-                event=event,
-                after=after,
-                before=before,
-                limit=None,
-                offset=offset,
-                order=None,
+            prerecordings_list_request = nm.PrerecordingsListRequest(
+                event=event, after=after, before=before, limit=None, offset=offset
             )
 
-            res = await self._numbat.prerecordings.list(req)
+            prerecordings_list_response = await self._numbat.prerecordings.list(
+                prerecordings_list_request
+            )
 
-            new = res.results.prerecordings
-            count = res.results.count
+            new = prerecordings_list_response.results.prerecordings
 
             prerecordings = prerecordings + list(new)
             offset = offset + len(new)
 
-            if offset >= count:
+            if offset >= prerecordings_list_response.results.count:
                 break
 
         return prerecordings
@@ -82,17 +78,18 @@ class PrerecordedDownloader(EventDownloader):
     async def _download_prerecording(
         self, prerecording: nm.Prerecording
     ) -> tuple[AsyncIterator[bytes], str]:
-        req = nm.DownloadRequest(
-            event=prerecording.event,
-            start=prerecording.start,
+        prerecordings_download_request = nm.PrerecordingsDownloadRequest(
+            event=prerecording.event, start=prerecording.start
         )
 
-        res = await self._numbat.prerecordings.download(req)
+        prerecordings_download_response = await self._numbat.prerecordings.download(
+            prerecordings_download_request
+        )
 
-        content_type = res.type
-        data = res.data
-
-        return data, content_type
+        return (
+            prerecordings_download_response.data,
+            prerecordings_download_response.type,
+        )
 
     async def download(
         self, event: bm.Event, instance: bm.EventInstance
@@ -117,40 +114,36 @@ class ReplayDownloader(EventDownloader):
         self._gecko = gecko
 
     async def _list_live_schedules(
-        self, show: UUID, start: NaiveDatetime, end: NaiveDatetime
+        self, show: UUID, start: datetime, end: datetime
     ) -> Sequence[bm.Schedule]:
         schedules: list[bm.Schedule] = []
         offset = 0
 
         while True:
-            req = bm.ScheduleListRequest(
+            schedule_list_request = bm.ScheduleListRequest(
                 start=start,
                 end=end,
                 limit=None,
                 offset=offset,
-                where={
-                    "show_id": str(show),
-                    "type": bm.EventType.live,
-                },
-                include=None,
-                order=None,
+                where={"show_id": str(show), "type": bm.EventType.live},
             )
 
-            res = await self._beaver.schedule.list(req)
+            schedule_list_response = await self._beaver.schedule.list(
+                schedule_list_request
+            )
 
-            new = res.results.schedules
-            count = res.results.count
+            new = schedule_list_response.results.schedules
 
             schedules = schedules + list(new)
             offset = offset + len(new)
 
-            if offset >= count:
+            if offset >= schedule_list_response.results.count:
                 break
 
         return schedules
 
     async def _find_past_live_schedules(
-        self, show: UUID, before: NaiveDatetime
+        self, show: UUID, before: datetime
     ) -> Sequence[bm.Schedule]:
         end = before
         start = end - self._config.operations.stream.window
@@ -158,43 +151,37 @@ class ReplayDownloader(EventDownloader):
         return await self._list_live_schedules(show, start, end)
 
     async def _list_records(
-        self, event: UUID, after: NaiveDatetime, before: NaiveDatetime
+        self, event: UUID, after: datetime, before: datetime
     ) -> Sequence[gm.Record]:
         records: list[gm.Record] = []
         offset = 0
 
         while True:
-            req = gm.ListRequest(
-                event=event,
-                after=after,
-                before=before,
-                limit=None,
-                offset=offset,
-                order=None,
+            records_list_request = gm.RecordsListRequest(
+                event=event, after=after, before=before, limit=None, offset=offset
             )
 
-            res = await self._gecko.records.list(req)
+            records_list_response = await self._gecko.records.list(records_list_request)
 
-            new = res.results.records
-            count = res.results.count
+            new = records_list_response.results.records
 
             records = records + list(new)
             offset = offset + len(new)
 
-            if offset >= count:
+            if offset >= records_list_response.results.count:
                 break
 
         return records
 
     async def _list_last_records(
-        self, event: UUID, before: NaiveDatetime
+        self, event: UUID, before: datetime
     ) -> Sequence[gm.Record]:
         after = before - self._config.operations.stream.window
 
         return await self._list_records(event, after, before)
 
     async def _find_last_record(
-        self, schedules: Sequence[bm.Schedule], before: NaiveDatetime
+        self, schedules: Sequence[bm.Schedule], before: datetime
     ) -> gm.Record | None:
         records: list[gm.Record] = []
 
@@ -211,26 +198,21 @@ class ReplayDownloader(EventDownloader):
     async def _find_record(
         self, event: bm.Event, instance: bm.EventInstance
     ) -> gm.Record | None:
-        show = event.show_id
-        before = instance.start
-
-        schedules = await self._find_past_live_schedules(show, before)
-        return await self._find_last_record(schedules, before)
+        schedules = await self._find_past_live_schedules(event.show_id, instance.start)
+        return await self._find_last_record(schedules, instance.start)
 
     async def _download_record(
         self, record: gm.Record
     ) -> tuple[AsyncIterator[bytes], str]:
-        req = gm.DownloadRequest(
-            event=record.event,
-            start=record.start,
+        records_download_request = gm.RecordsDownloadRequest(
+            event=record.event, start=record.start
         )
 
-        res = await self._gecko.records.download(req)
+        records_download_response = await self._gecko.records.download(
+            records_download_request
+        )
 
-        content_type = res.type
-        data = res.data
-
-        return data, content_type
+        return records_download_response.data, records_download_response.type
 
     async def download(
         self, event: bm.Event, instance: bm.EventInstance
@@ -262,15 +244,10 @@ class Downloader:
     def _create_downloader(self, event: bm.Event) -> EventDownloader:
         match event.type:
             case bm.EventType.prerecorded:
-                return PrerecordedDownloader(
-                    beaver=self._beaver,
-                    numbat=self._numbat,
-                )
+                return PrerecordedDownloader(beaver=self._beaver, numbat=self._numbat)
             case bm.EventType.replay:
                 return ReplayDownloader(
-                    config=self._config,
-                    beaver=self._beaver,
-                    gecko=self._gecko,
+                    config=self._config, beaver=self._beaver, gecko=self._gecko
                 )
             case _:
                 raise e.UnexpectedEventTypeError(event.id, event.type)
@@ -281,7 +258,7 @@ class Downloader:
         directory = directory / str(event.id)
         directory.mkdir(parents=True, exist_ok=True)
 
-        return directory / instance.start.isoformat()
+        return directory / isostringify(instance.start)
 
     def _map_format(self, content_type: str) -> om.Format:
         match content_type:
@@ -309,13 +286,8 @@ class Downloader:
 
     async def download(self, request: m.DownloadRequest) -> m.DownloadResponse:
         """Download a replay record."""
-        event = request.event
-        instance = request.instance
-        directory = Path(request.directory)
-
-        path, fmt = await self._download_record(event, instance, directory)
-
-        return m.DownloadResponse(
-            path=path,
-            format=fmt,
+        path, fmt = await self._download_record(
+            request.event, request.instance, Path(request.directory)
         )
+
+        return m.DownloadResponse(path=path, format=fmt)

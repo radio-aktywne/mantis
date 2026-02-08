@@ -1,17 +1,22 @@
-import logging
-from collections.abc import AsyncGenerator, Callable, Sequence
-from contextlib import AbstractAsyncContextManager, asynccontextmanager
-from importlib import metadata
-from typing import cast
+from collections.abc import Callable, Sequence
+from contextlib import AbstractAsyncContextManager
 
-from litestar import Litestar, Router
+from litestar import Litestar
 from litestar.channels import ChannelsPlugin
 from litestar.channels.backends.memory import MemoryChannelsBackend
 from litestar.openapi import OpenAPIConfig
-from litestar.openapi.plugins import ScalarRenderPlugin
 from litestar.plugins import PluginProtocol
-from litestar.plugins.pydantic import PydanticPlugin
 
+from mantis.api.lifespans import (
+    CleanerLifespan,
+    SchedulerLifespan,
+    StoreLifespan,
+    SuppressHTTPXLoggingLifespan,
+    SynchronizerLifespan,
+    TestLifespan,
+)
+from mantis.api.openapi import OpenAPIConfigBuilder
+from mantis.api.plugins.pydantic import PydanticPlugin
 from mantis.api.routes.router import router
 from mantis.config.models import Config
 from mantis.services.beaver.service import BeaverService
@@ -36,139 +41,35 @@ class AppBuilder:
     def __init__(self, config: Config) -> None:
         self._config = config
 
-    def _get_route_handlers(self) -> Sequence[Router]:
-        return [router]
-
-    def _get_debug(self) -> bool:
-        return self._config.debug
-
-    @asynccontextmanager
-    async def _suppress_httpx_logging_lifespan(
-        self, app: Litestar
-    ) -> AsyncGenerator[None]:
-        logger = logging.getLogger("httpx")
-        disabled = logger.disabled
-        logger.disabled = True
-
-        try:
-            yield
-        finally:
-            logger.disabled = disabled
-
-    @asynccontextmanager
-    async def _store_lifespan(self, app: Litestar) -> AsyncGenerator[None]:
-        state = cast("State", app.state)
-
-        async with state.store:
-            yield
-
-    @asynccontextmanager
-    async def _scheduler_lifespan(self, app: Litestar) -> AsyncGenerator[None]:
-        state = cast("State", app.state)
-
-        async with state.scheduler.run():
-            yield
-
-    @asynccontextmanager
-    async def _cleaner_lifespan(self, app: Litestar) -> AsyncGenerator[None]:
-        state = cast("State", app.state)
-
-        async with state.cleaner.run():
-            yield
-
-    @asynccontextmanager
-    async def _synchronizer_lifespan(self, app: Litestar) -> AsyncGenerator[None]:
-        state = cast("State", app.state)
-
-        async with state.synchronizer.run():
-            yield
-
     def _build_lifespan(
         self,
     ) -> Sequence[Callable[[Litestar], AbstractAsyncContextManager]]:
         return [
-            self._suppress_httpx_logging_lifespan,
-            self._store_lifespan,
-            self._scheduler_lifespan,
-            self._cleaner_lifespan,
-            self._synchronizer_lifespan,
+            TestLifespan,
+            SuppressHTTPXLoggingLifespan,
+            StoreLifespan,
+            SchedulerLifespan,
+            CleanerLifespan,
+            SynchronizerLifespan,
         ]
 
     def _build_openapi_config(self) -> OpenAPIConfig:
-        return OpenAPIConfig(
-            title="mantis",
-            version=metadata.version("mantis"),
-            description="Broadcast scheduling service 📅",
-            use_handler_docstrings=True,
-            path="/openapi",
-            render_plugins=[
-                ScalarRenderPlugin(
-                    path="/openapi",
-                    options={
-                        "hideClientButton": True,
-                    },
-                ),
-            ],
-        )
-
-    def _build_channels_plugin(self) -> ChannelsPlugin:
-        return ChannelsPlugin(
-            # Store events in memory (good only for single instance services)
-            backend=MemoryChannelsBackend(),
-            # Channels to handle
-            channels=["events"],
-            # Don't allow channels outside of the list above
-            arbitrary_channels_allowed=False,
-        )
-
-    def _build_pydantic_plugin(self) -> PydanticPlugin:
-        return PydanticPlugin(
-            # Use aliases for serialization
-            prefer_alias=True,
-            # Allow type coercion
-            validate_strict=False,
-        )
+        return OpenAPIConfigBuilder().build()
 
     def _build_plugins(self) -> Sequence[PluginProtocol]:
         return [
-            self._build_channels_plugin(),
-            self._build_pydantic_plugin(),
+            ChannelsPlugin(backend=MemoryChannelsBackend(), channels=["events"]),
+            PydanticPlugin(),
         ]
 
-    def _build_beaver(self) -> BeaverService:
-        return BeaverService(
-            config=self._config.beaver,
-        )
+    def _build_initial_state(self) -> State:
+        beaver = BeaverService(config=self._config.beaver)
+        gecko = GeckoService(config=self._config.gecko)
+        numbat = NumbatService(config=self._config.numbat)
+        octopus = OctopusService(config=self._config.octopus)
 
-    def _build_gecko(self) -> GeckoService:
-        return GeckoService(
-            config=self._config.gecko,
-        )
-
-    def _build_numbat(self) -> NumbatService:
-        return NumbatService(
-            config=self._config.numbat,
-        )
-
-    def _build_octopus(self) -> OctopusService:
-        return OctopusService(
-            config=self._config.octopus,
-        )
-
-    def _build_store(self) -> Store:
-        return Store(
-            config=self._config.store,
-        )
-
-    def _build_scheduler(
-        self,
-        beaver: BeaverService,
-        gecko: GeckoService,
-        numbat: NumbatService,
-        octopus: OctopusService,
-        store: Store,
-    ) -> SchedulerService:
-        return SchedulerService(
+        store = Store(config=self._config.store)
+        scheduler = SchedulerService(
             config=self._config,
             beaver=beaver,
             gecko=gecko,
@@ -176,37 +77,14 @@ class AppBuilder:
             octopus=octopus,
             store=store,
         )
-
-    def _build_cleaner(self, scheduler: SchedulerService) -> CleanerService:
-        return CleanerService(
-            config=self._config.cleaner,
-            scheduler=scheduler,
+        cleaner = CleanerService(config=self._config.cleaner, scheduler=scheduler)
+        synchronizer = SynchronizerService(
+            config=self._config.synchronizer, beaver=beaver, scheduler=scheduler
         )
-
-    def _build_synchronizer(
-        self, beaver: BeaverService, scheduler: SchedulerService
-    ) -> SynchronizerService:
-        return SynchronizerService(
-            config=self._config.synchronizer,
-            beaver=beaver,
-            scheduler=scheduler,
-        )
-
-    def _build_initial_state(self) -> State:
-        beaver = self._build_beaver()
-        gecko = self._build_gecko()
-        numbat = self._build_numbat()
-        octopus = self._build_octopus()
-
-        config = self._config
-        store = self._build_store()
-        scheduler = self._build_scheduler(beaver, gecko, numbat, octopus, store)
-        cleaner = self._build_cleaner(scheduler)
-        synchronizer = self._build_synchronizer(beaver, scheduler)
 
         return State(
             {
-                "config": config,
+                "config": self._config,
                 "store": store,
                 "scheduler": scheduler,
                 "cleaner": cleaner,
@@ -217,8 +95,8 @@ class AppBuilder:
     def build(self) -> Litestar:
         """Build the app."""
         return Litestar(
-            route_handlers=self._get_route_handlers(),
-            debug=self._get_debug(),
+            route_handlers=[router],
+            debug=self._config.debug,
             lifespan=self._build_lifespan(),
             openapi_config=self._build_openapi_config(),
             plugins=self._build_plugins(),

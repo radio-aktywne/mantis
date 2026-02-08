@@ -1,8 +1,7 @@
 from collections.abc import Collection, Sequence
 from contextlib import suppress
-from datetime import UTC, timedelta
+from datetime import UTC, datetime, timedelta
 from uuid import UUID
-from zoneinfo import ZoneInfo
 
 from pydantic import ValidationError
 
@@ -12,12 +11,10 @@ from mantis.services.beaver.service import BeaverService
 from mantis.services.scheduler import errors as se
 from mantis.services.scheduler.models import enums as e
 from mantis.services.scheduler.models import transfer as t
-from mantis.services.scheduler.operations.operations.stream.models import (
-    Parameters,
-)
+from mantis.services.scheduler.operations.operations.stream.models import Parameters
 from mantis.services.scheduler.service import SchedulerService
 from mantis.services.synchronizer.synchronizers.synchronizer import Synchronizer
-from mantis.utils.time import NaiveDatetime, naiveutcnow
+from mantis.utils.time import isostringify, naiveutcnow
 
 
 class StreamSynchronizer(Synchronizer):
@@ -33,20 +30,20 @@ class StreamSynchronizer(Synchronizer):
         self._beaver = beaver
         self._scheduler = scheduler
 
-    def _get_time_window(self) -> tuple[NaiveDatetime, NaiveDatetime]:
+    def _get_time_window(self) -> tuple[datetime, datetime]:
         start = naiveutcnow()
         end = start + self._config.window
 
         return start, end
 
     async def _fetch_schedules(
-        self, start: NaiveDatetime, end: NaiveDatetime
+        self, start: datetime, end: datetime
     ) -> Sequence[bm.Schedule]:
         schedules: list[bm.Schedule] = []
         offset = 0
 
         while True:
-            req = bm.ScheduleListRequest(
+            schedule_list_request = bm.ScheduleListRequest(
                 start=start,
                 end=end,
                 limit=None,
@@ -59,37 +56,35 @@ class StreamSynchronizer(Synchronizer):
                         {
                             "type": bm.EventType.prerecorded,
                         },
-                    ],
+                    ]
                 },
-                include=None,
-                order=None,
             )
 
-            res = await self._beaver.schedule.list(req)
+            schedule_list_response = await self._beaver.schedule.list(
+                schedule_list_request
+            )
 
-            new = res.results.schedules
-            count = res.results.count
+            new = schedule_list_response.results.schedules
 
             schedules = schedules + list(new)
             offset = offset + len(new)
 
-            if offset >= count:
+            if offset >= schedule_list_response.results.count:
                 break
 
         return schedules
 
     def _filter_schedules(
-        self, schedules: Sequence[bm.Schedule], start: NaiveDatetime, end: NaiveDatetime
+        self, schedules: Sequence[bm.Schedule], start: datetime, end: datetime
     ) -> Sequence[bm.Schedule]:
         out: list[bm.Schedule] = []
 
         for schedule in schedules:
             instances: list[bm.EventInstance] = []
-            tz = ZoneInfo(schedule.event.timezone)
 
             for instance in schedule.instances:
                 istart = (
-                    instance.start.replace(tzinfo=tz)
+                    instance.start.replace(tzinfo=schedule.event.timezone)
                     .astimezone(UTC)
                     .replace(tzinfo=None)
                 )
@@ -98,18 +93,12 @@ class StreamSynchronizer(Synchronizer):
                     instances = [*instances, instance]
 
             if len(instances) > 0:
-                out = [
-                    *out,
-                    bm.Schedule(
-                        event=schedule.event,
-                        instances=instances,
-                    ),
-                ]
+                out = [*out, bm.Schedule(event=schedule.event, instances=instances)]
 
         return out
 
     async def _get_schedules(
-        self, start: NaiveDatetime, end: NaiveDatetime
+        self, start: datetime, end: datetime
     ) -> Sequence[bm.Schedule]:
         schedules = await self._fetch_schedules(start, end)
         return self._filter_schedules(schedules, start, end)
@@ -141,33 +130,26 @@ class StreamSynchronizer(Synchronizer):
         offset = 0
 
         while True:
-            req = bm.EventsListRequest(
+            events_list_request = bm.EventsListRequest(
                 limit=None,
                 offset=offset,
-                where={
-                    "id": {
-                        "in": [str(event_id) for event_id in ids],
-                    },
-                },
-                include=None,
-                order=None,
+                where={"id": {"in": [str(event_id) for event_id in ids]}},
             )
 
-            res = await self._beaver.events.list(req)
+            events_list_response = await self._beaver.events.list(events_list_request)
 
-            new = res.results.events
-            count = res.results.count
+            new = events_list_response.results.events
 
             events = events + list(new)
             offset = offset + len(new)
 
-            if offset >= count:
+            if offset >= events_list_response.results.count:
                 break
 
         return events
 
     async def _filter_tasks(
-        self, tasks: Sequence[t.GenericTask], start: NaiveDatetime, end: NaiveDatetime
+        self, tasks: Sequence[t.GenericTask], start: datetime, end: datetime
     ) -> tuple[Sequence[tuple[t.GenericTask, Parameters]], Sequence[t.GenericTask]]:
         invalid: list[t.GenericTask] = []
         withparams: list[tuple[t.GenericTask, Parameters]] = []
@@ -199,9 +181,10 @@ class StreamSynchronizer(Synchronizer):
                 invalid = [*invalid, task]
                 continue
 
-            tz = ZoneInfo(event.timezone)
             istart = (
-                params.start.replace(tzinfo=tz).astimezone(UTC).replace(tzinfo=None)
+                params.start.replace(tzinfo=event.timezone)
+                .astimezone(UTC)
+                .replace(tzinfo=None)
             )
 
             if istart >= start and istart < end:
@@ -210,18 +193,16 @@ class StreamSynchronizer(Synchronizer):
         return valid, invalid
 
     async def _get_tasks(
-        self, start: NaiveDatetime, end: NaiveDatetime
+        self, start: datetime, end: datetime
     ) -> tuple[Sequence[tuple[t.GenericTask, Parameters]], Sequence[t.GenericTask]]:
         tasks = await self._fetch_tasks()
         return await self._filter_tasks(tasks, start, end)
 
     async def _cancel(self, task_id: UUID) -> None:
-        req = t.CancelRequest(
-            id=task_id,
-        )
+        cancel_request = t.CancelRequest(id=task_id)
 
         with suppress(se.ServiceError):
-            await self._scheduler.cancel(req)
+            await self._scheduler.cancel(cancel_request)
 
     async def _cancel_extra_tasks(
         self,
@@ -254,31 +235,26 @@ class StreamSynchronizer(Synchronizer):
             await self._cancel(task_id)
 
     async def _add(self, event: bm.Event, instance: bm.EventInstance) -> None:
-        tz = ZoneInfo(event.timezone)
         utcstart = (
-            instance.start.replace(tzinfo=tz).astimezone(UTC).replace(tzinfo=None)
+            instance.start.replace(tzinfo=event.timezone)
+            .astimezone(UTC)
+            .replace(tzinfo=None)
         )
         at = utcstart - timedelta(minutes=15)
 
-        req = t.ScheduleRequest(
+        schedule_request = t.ScheduleRequest(
             operation=t.Specification(
                 type="stream",
-                parameters={
-                    "id": str(event.id),
-                    "start": instance.start.isoformat(),
-                },
+                parameters={"id": str(event.id), "start": isostringify(instance.start)},
             ),
             condition=t.Specification(
-                type="at",
-                parameters={
-                    "datetime": at.isoformat(),
-                },
+                type="at", parameters={"datetime": isostringify(at)}
             ),
             dependencies={},
         )
 
         with suppress(se.ServiceError):
-            await self._scheduler.schedule(req)
+            await self._scheduler.schedule(schedule_request)
 
     async def _add_new_tasks(
         self,

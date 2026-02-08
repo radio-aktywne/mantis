@@ -1,6 +1,5 @@
 import asyncio
 from datetime import UTC, timedelta
-from zoneinfo import ZoneInfo
 
 from mantis.services.beaver import models as bm
 from mantis.utils.time import naiveutcnow
@@ -15,10 +14,12 @@ class Waiter:
 
     async def wait(self, delta: timedelta) -> None:
         """Wait for a time before event start."""
-        tz = ZoneInfo(self._event.timezone)
-
         start = self._instance.start
-        start = start.replace(tzinfo=tz).astimezone(UTC).replace(tzinfo=None)
+        start = (
+            start.replace(tzinfo=self._event.timezone)
+            .astimezone(UTC)
+            .replace(tzinfo=None)
+        )
 
         target = start - delta
         now = naiveutcnow()
