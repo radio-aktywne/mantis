@@ -50,9 +50,7 @@ class Controller(BaseController):
     @handlers.get(
         "/{id:str}",
         summary="Get task",
-        raises=[
-            NotFoundException,
-        ],
+        raises=[NotFoundException],
     )
     async def get(
         self,
@@ -77,9 +75,7 @@ class Controller(BaseController):
     @handlers.get(
         "/pending/{id:str}",
         summary="Get pending task",
-        raises=[
-            NotFoundException,
-        ],
+        raises=[NotFoundException],
     )
     async def get_pending(
         self,
@@ -104,9 +100,7 @@ class Controller(BaseController):
     @handlers.get(
         "/running/{id:str}",
         summary="Get running task",
-        raises=[
-            NotFoundException,
-        ],
+        raises=[NotFoundException],
     )
     async def get_running(
         self,
@@ -131,9 +125,7 @@ class Controller(BaseController):
     @handlers.get(
         "/cancelled/{id:str}",
         summary="Get cancelled task",
-        raises=[
-            NotFoundException,
-        ],
+        raises=[NotFoundException],
     )
     async def get_cancelled(
         self,
@@ -158,9 +150,7 @@ class Controller(BaseController):
     @handlers.get(
         "/failed/{id:str}",
         summary="Get failed task",
-        raises=[
-            NotFoundException,
-        ],
+        raises=[NotFoundException],
     )
     async def get_failed(
         self,
@@ -185,9 +175,7 @@ class Controller(BaseController):
     @handlers.get(
         "/completed/{id:str}",
         summary="Get completed task",
-        raises=[
-            NotFoundException,
-        ],
+        raises=[NotFoundException],
     )
     async def get_completed(
         self,
@@ -211,9 +199,7 @@ class Controller(BaseController):
 
     @handlers.post(
         summary="Schedule task",
-        raises=[
-            BadRequestException,
-        ],
+        raises=[BadRequestException],
     )
     async def schedule(
         self,
@@ -239,9 +225,7 @@ class Controller(BaseController):
         "/{id:str}",
         summary="Cancel task",
         status_code=HTTP_200_OK,
-        raises=[
-            NotFoundException,
-        ],
+        raises=[NotFoundException],
     )
     async def cancel(
         self,
@@ -267,9 +251,7 @@ class Controller(BaseController):
         "/clean",
         summary="Clean tasks",
         status_code=HTTP_200_OK,
-        raises=[
-            BadRequestException,
-        ],
+        raises=[BadRequestException],
     )
     async def clean(
         self,

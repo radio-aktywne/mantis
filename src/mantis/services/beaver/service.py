@@ -32,7 +32,7 @@ class EventsNamespace(GracyNamespace[Endpoint]):
     async def get_by_id(self, request: m.EventsGetRequest) -> m.EventsGetResponse:
         """Get an event by ID."""
         response = await self.get(
-            f"{Endpoint.EVENTS}/{Serializable(request.id).model_dump()}"
+            f"{Endpoint.EVENTS}/{Serializable(request.id).model_dump(round_trip=True)}"
         )
 
         return m.EventsGetResponse(
@@ -45,11 +45,11 @@ class EventsNamespace(GracyNamespace[Endpoint]):
         """List events that match the request."""
         params = {}
         if request.limit is not None:
-            params["limit"] = Jsonable(request.limit).model_dump_json()
+            params["limit"] = Jsonable(request.limit).model_dump_json(round_trip=True)
         if request.offset is not None:
-            params["offset"] = Jsonable(request.offset).model_dump_json()
+            params["offset"] = Jsonable(request.offset).model_dump_json(round_trip=True)
         if request.where is not None:
-            params["where"] = Jsonable(request.where).model_dump_json()
+            params["where"] = Jsonable(request.where).model_dump_json(round_trip=True)
 
         response = await self.get(Endpoint.EVENTS, params=params)
 
@@ -67,15 +67,15 @@ class ScheduleNamespace(GracyNamespace[Endpoint]):
         """List event schedules with instances between two dates."""
         params = {}
         if request.start is not None:
-            params["start"] = Jsonable(request.start).model_dump_json()
+            params["start"] = Jsonable(request.start).model_dump_json(round_trip=True)
         if request.end is not None:
-            params["end"] = Jsonable(request.end).model_dump_json()
+            params["end"] = Jsonable(request.end).model_dump_json(round_trip=True)
         if request.limit is not None:
-            params["limit"] = Jsonable(request.limit).model_dump_json()
+            params["limit"] = Jsonable(request.limit).model_dump_json(round_trip=True)
         if request.offset is not None:
-            params["offset"] = Jsonable(request.offset).model_dump_json()
+            params["offset"] = Jsonable(request.offset).model_dump_json(round_trip=True)
         if request.where is not None:
-            params["where"] = Jsonable(request.where).model_dump_json()
+            params["where"] = Jsonable(request.where).model_dump_json(round_trip=True)
 
         response = await self.get(Endpoint.SCHEDULE, params=params)
 

@@ -5,7 +5,7 @@ from gracy import BaseEndpoint, GracefulRetry, Gracy, GracyConfig, GracyNamespac
 from httpx import AsyncClient
 
 from mantis.config.models import OctopusConfig
-from mantis.models.base import Serializable
+from mantis.models.base import Jsonable, Serializable
 from mantis.services.octopus import models as m
 
 
@@ -34,7 +34,8 @@ class ReserveNamespace(GracyNamespace[Endpoint]):
     async def reserve(self, request: m.ReserveRequest) -> m.ReserveResponse:
         """Reserve a stream."""
         response = await self.post(
-            Endpoint.RESERVE, json=Serializable(request.data).model_dump(mode="json")
+            Endpoint.RESERVE,
+            json=Serializable(request.data).model_dump(mode="json", round_trip=True),
         )
 
         return m.ReserveResponse(
@@ -47,17 +48,27 @@ class ReserveNamespace(GracyNamespace[Endpoint]):
 class SSENamespace(GracyNamespace[Endpoint]):
     """Namespace for octopus sse endpoint."""
 
-    async def _subscribe(self) -> AsyncGenerator[str]:
-        url = f"{self.Config.BASE_URL}/{Endpoint.SSE}"
+    async def _subscribe(
+        self, types: m.SubscribeRequestTypes
+    ) -> AsyncGenerator[m.EventMessage]:
         client = AsyncClient(timeout=None)  # noqa: S113
+        url = f"{self.Config.BASE_URL}/{Endpoint.SSE}"
 
-        async with client as client, client.stream("GET", url) as response:
+        params = {}
+        if types is not None:
+            params["types"] = Jsonable(types).model_dump_json(round_trip=True)
+
+        async with (
+            client as client,
+            client.stream("GET", url, params=params) as response,
+        ):
             async for data in response.aiter_lines():
-                yield data.removeprefix("data: ")
+                if data.startswith("data:"):
+                    yield m.EventMessage()
 
     async def subscribe(self, request: m.SubscribeRequest) -> m.SubscribeResponse:
         """Get a stream of Server-Sent Events."""
-        return m.SubscribeResponse(messages=self._subscribe())
+        return m.SubscribeResponse(messages=self._subscribe(request.types))
 
 
 class OctopusService(BaseService):

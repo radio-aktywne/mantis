@@ -36,16 +36,17 @@ class PrerecordingsNamespace(GracyNamespace[Endpoint]):
         """List prerecordings."""
         params = {}
         if request.after is not None:
-            params["after"] = Jsonable(request.after).model_dump_json()
+            params["after"] = Jsonable(request.after).model_dump_json(round_trip=True)
         if request.before is not None:
-            params["before"] = Jsonable(request.before).model_dump_json()
+            params["before"] = Jsonable(request.before).model_dump_json(round_trip=True)
         if request.limit is not None:
-            params["limit"] = Jsonable(request.limit).model_dump_json()
+            params["limit"] = Jsonable(request.limit).model_dump_json(round_trip=True)
         if request.offset is not None:
-            params["offset"] = Jsonable(request.offset).model_dump_json()
+            params["offset"] = Jsonable(request.offset).model_dump_json(round_trip=True)
 
         response = await self.get(
-            f"{Endpoint.PRERECORDINGS}/{Serializable(request.event).model_dump()}",
+            f"{Endpoint.PRERECORDINGS}/"
+            f"{Serializable(request.event).model_dump(round_trip=True)}",
             params=params,
         )
 
@@ -70,7 +71,9 @@ class PrerecordingsNamespace(GracyNamespace[Endpoint]):
         response = await self._client.send(
             self._client.build_request(
                 "GET",
-                f"{Endpoint.PRERECORDINGS}/{Serializable(request.event).model_dump()}/{Serializable(request.start).model_dump()}",
+                f"{Endpoint.PRERECORDINGS}/"
+                f"{Serializable(request.event).model_dump(round_trip=True)}/"
+                f"{Serializable(request.start).model_dump(round_trip=True)}",
             ),
             stream=True,
         )
