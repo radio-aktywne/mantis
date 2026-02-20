@@ -1,4 +1,5 @@
 from collections.abc import AsyncIterator
+from collections.abc import Set as AbstractSet
 from enum import StrEnum
 from uuid import UUID
 
@@ -9,6 +10,12 @@ class Format(StrEnum):
     """Audio format."""
 
     OGG = "ogg"
+
+
+class EventType(StrEnum):
+    """Event types."""
+
+    AVAILABILITY_CHANGED = "availability-changed"
 
 
 class Credentials(SerializableModel):
@@ -38,9 +45,18 @@ class Reservation(SerializableModel):
     """Credentials to use to connect to the stream."""
 
 
+@datamodel
+class EventMessage:
+    """Event message data."""
+
+
 type ReserveRequestData = ReservationInput
 
 type ReserveResponseReservation = Reservation
+
+type SubscribeRequestTypes = AbstractSet[EventType] | None
+
+type SubscribeResponseMessages = AsyncIterator[EventMessage]
 
 
 @datamodel
@@ -63,10 +79,13 @@ class ReserveResponse:
 class SubscribeRequest:
     """Request to subscribe."""
 
+    types: SubscribeRequestTypes
+    """Types of events to subscribe to."""
+
 
 @datamodel
 class SubscribeResponse:
     """Response for subscribe."""
 
-    messages: AsyncIterator[str]
-    """Stream of messages."""
+    messages: SubscribeResponseMessages
+    """Stream of event messages."""

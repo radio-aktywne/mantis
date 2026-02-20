@@ -27,9 +27,13 @@ class Reserver:
         deadline = naiveutcnow() + self._config.operations.stream.timeout
 
         while naiveutcnow() < deadline:
-            subscribe_request = om.SubscribeRequest()
+            subscribe_request = om.SubscribeRequest(
+                types={om.EventType.AVAILABILITY_CHANGED}
+            )
             subscribe_response = await self._octopus.sse.subscribe(subscribe_request)
-            sse = asyncio.create_task(coroutine(anext(subscribe_response.messages)))
+            message_task = asyncio.create_task(
+                coroutine(anext(subscribe_response.messages))
+            )
 
             reserve_request = om.ReserveRequest(data=data)
 
@@ -38,7 +42,9 @@ class Reserver:
             except oe.ResponseError as ex:
                 if ex.response.status_code == HTTPStatus.CONFLICT:
                     timeout = deadline - naiveutcnow()
-                    await asyncio.wait_for(sse, timeout=timeout.total_seconds())
+                    await asyncio.wait_for(
+                        message_task, timeout=timeout.total_seconds()
+                    )
                     continue
 
                 raise
@@ -47,6 +53,7 @@ class Reserver:
 
                 return m.ReserveResponse(credentials=credentials)
             finally:
-                sse.cancel()
+                message_task.cancel()
+                await asyncio.wait([message_task])
 
         raise e.ReservationFailedError(request.event)
