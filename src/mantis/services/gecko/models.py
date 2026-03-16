@@ -5,8 +5,8 @@ from mantis.models.base import SerializableModel, datamodel
 from mantis.utils.time import NaiveDatetime
 
 
-class Record(SerializableModel):
-    """Record data."""
+class Recording(SerializableModel):
+    """Recording data."""
 
     event: UUID
     """Identifier of the event."""
@@ -15,82 +15,82 @@ class Record(SerializableModel):
     """Start datetime of the event instance in event timezone."""
 
 
-class RecordList(SerializableModel):
-    """List of records."""
+class RecordingList(SerializableModel):
+    """List of recordings."""
 
     count: int
-    """Total number of records that match the request."""
+    """Total number of recordings that match the request."""
 
-    records: Sequence[Record]
-    """List of records."""
-
-
-type RecordsListRequestEvent = UUID
-
-type RecordsListRequestAfter = NaiveDatetime | None
-
-type RecordsListRequestBefore = NaiveDatetime | None
-
-type RecordsListRequestLimit = int | None
-
-type RecordsListRequestOffset = int | None
-
-type RecordsListResponseResults = RecordList
-
-type RecordsDownloadRequestEvent = UUID
-
-type RecordsDownloadRequestStart = NaiveDatetime
-
-type RecordsDownloadResponseType = str
-
-type RecordsDownloadResponseData = AsyncIterator[bytes]
+    recordings: Sequence[Recording]
+    """List of recordings."""
 
 
-@datamodel
-class RecordsListRequest:
-    """Request to list records."""
+type RecordingsListRequestEvent = UUID
 
-    event: RecordsListRequestEvent
-    """Identifier of the event to list records for."""
+type RecordingsListRequestAfter = NaiveDatetime | None
 
-    after: RecordsListRequestAfter
-    """Only list records after this datetime (in event timezone)."""
+type RecordingsListRequestBefore = NaiveDatetime | None
 
-    before: RecordsListRequestBefore
-    """Only list records before this datetime (in event timezone)."""
+type RecordingsListRequestLimit = int | None
 
-    limit: RecordsListRequestLimit
-    """Maximum number of records to return."""
+type RecordingsListRequestOffset = int | None
 
-    offset: RecordsListRequestOffset
-    """Number of records to skip."""
+type RecordingsListResponseResults = RecordingList
+
+type RecordingsDownloadRequestEvent = UUID
+
+type RecordingsDownloadRequestStart = NaiveDatetime
+
+type RecordingsDownloadResponseType = str
+
+type RecordingsDownloadResponseData = AsyncIterator[bytes]
 
 
 @datamodel
-class RecordsListResponse:
-    """Response for listing records."""
+class RecordingsListRequest:
+    """Request to list recordings."""
 
-    results: RecordsListResponseResults
-    """List of records."""
+    event: RecordingsListRequestEvent
+    """Identifier of the event to list recordings for."""
+
+    after: RecordingsListRequestAfter
+    """Only list recordings after this datetime (in event timezone)."""
+
+    before: RecordingsListRequestBefore
+    """Only list recordings before this datetime (in event timezone)."""
+
+    limit: RecordingsListRequestLimit
+    """Maximum number of recordings to return."""
+
+    offset: RecordingsListRequestOffset
+    """Number of recordings to skip."""
 
 
 @datamodel
-class RecordsDownloadRequest:
-    """Request to download a record."""
+class RecordingsListResponse:
+    """Response for listing recordings."""
 
-    event: RecordsDownloadRequestEvent
+    results: RecordingsListResponseResults
+    """List of recordings."""
+
+
+@datamodel
+class RecordingsDownloadRequest:
+    """Request to download a recording."""
+
+    event: RecordingsDownloadRequestEvent
     """Identifier of the event."""
 
-    start: RecordsDownloadRequestStart
+    start: RecordingsDownloadRequestStart
     """Start datetime of the event instance in event timezone."""
 
 
 @datamodel
-class RecordsDownloadResponse:
-    """Response for downloading a record."""
+class RecordingsDownloadResponse:
+    """Response for downloading a recording."""
 
-    type: RecordsDownloadResponseType
-    """Type of the record data."""
+    type: RecordingsDownloadResponseType
+    """Type of the recording data."""
 
-    data: RecordsDownloadResponseData
-    """Data of the record."""
+    data: RecordingsDownloadResponseData
+    """Data of the recording."""

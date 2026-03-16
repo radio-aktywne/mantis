@@ -12,7 +12,7 @@ from mantis.services.gecko import models as m
 class Endpoint(BaseEndpoint):
     """Endpoints for gecko service."""
 
-    RECORDS = "/records"
+    RECORDINGS = "/recordings"
 
 
 class BaseService(Gracy[Endpoint]):
@@ -27,11 +27,11 @@ class BaseService(Gracy[Endpoint]):
         self._config = config
 
 
-class RecordsNamespace(GracyNamespace[Endpoint]):
-    """Namespace for gecko records endpoint."""
+class RecordingsNamespace(GracyNamespace[Endpoint]):
+    """Namespace for gecko recordings endpoint."""
 
-    async def list(self, request: m.RecordsListRequest) -> m.RecordsListResponse:
-        """List records."""
+    async def list(self, request: m.RecordingsListRequest) -> m.RecordingsListResponse:
+        """List recordings."""
         params = {}
         if request.after is not None:
             params["after"] = Jsonable(request.after).model_dump_json(round_trip=True)
@@ -43,21 +43,21 @@ class RecordsNamespace(GracyNamespace[Endpoint]):
             params["offset"] = Jsonable(request.offset).model_dump_json(round_trip=True)
 
         response = await self.get(
-            f"{Endpoint.RECORDS}/"
+            f"{Endpoint.RECORDINGS}/"
             f"{Serializable(request.event).model_dump(round_trip=True)}",
             params=params,
         )
 
-        return m.RecordsListResponse(
-            results=Serializable[m.RecordsListResponseResults]
+        return m.RecordingsListResponse(
+            results=Serializable[m.RecordingsListResponseResults]
             .model_validate_json(response.content)
             .root
         )
 
     async def download(
-        self, request: m.RecordsDownloadRequest
-    ) -> m.RecordsDownloadResponse:
-        """Download a record."""
+        self, request: m.RecordingsDownloadRequest
+    ) -> m.RecordingsDownloadResponse:
+        """Download a recording."""
 
         async def stream(response: Response) -> AsyncIterator[bytes]:
             try:
@@ -69,14 +69,14 @@ class RecordsNamespace(GracyNamespace[Endpoint]):
         response = await self._client.send(
             self._client.build_request(
                 "GET",
-                f"{Endpoint.RECORDS}/"
+                f"{Endpoint.RECORDINGS}/"
                 f"{Serializable(request.event).model_dump(round_trip=True)}/"
                 f"{Serializable(request.start).model_dump(round_trip=True)}",
             ),
             stream=True,
         )
 
-        return m.RecordsDownloadResponse(
+        return m.RecordingsDownloadResponse(
             type=response.headers["Content-Type"], data=stream(response)
         )
 
@@ -84,4 +84,4 @@ class RecordsNamespace(GracyNamespace[Endpoint]):
 class GeckoService(BaseService):
     """Service for gecko service."""
 
-    records: RecordsNamespace
+    recordings: RecordingsNamespace
