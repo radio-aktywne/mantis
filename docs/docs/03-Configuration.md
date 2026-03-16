@@ -74,7 +74,7 @@ You can configure the service at runtime using various environment variables:
   timeout for trying to reserve a stream
   (default: `PT1H`)
 - `MANTIS__OPERATIONS__STREAM__WINDOW` -
-  duration of the time window for searching for past records
+  duration of the time window for searching for past recordings
   (default: `P60D`)
 - `MANTIS__SERVER__HOST` -
   host to run the server on

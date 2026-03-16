@@ -2,6 +2,7 @@ from abc import ABC, abstractmethod
 from collections.abc import AsyncIterator, Sequence
 from datetime import datetime, timedelta
 from pathlib import Path
+from typing import override
 from uuid import UUID
 
 from mantis.config.models import Config
@@ -24,7 +25,7 @@ class EventDownloader(ABC):
     async def download(
         self, event: bm.Event, instance: bm.EventInstance
     ) -> tuple[AsyncIterator[bytes], str]:
-        """Download media for an event."""
+        """Download media for an event instance."""
 
 
 class PrerecordedDownloader(EventDownloader):
@@ -91,10 +92,10 @@ class PrerecordedDownloader(EventDownloader):
             prerecordings_download_response.type,
         )
 
+    @override
     async def download(
         self, event: bm.Event, instance: bm.EventInstance
     ) -> tuple[AsyncIterator[bytes], str]:
-        """Download media for a prerecorded event."""
         prerecording = await self._find_prerecording(event, instance)
 
         if prerecording is None:
@@ -150,80 +151,84 @@ class ReplayDownloader(EventDownloader):
 
         return await self._list_live_schedules(show, start, end)
 
-    async def _list_records(
+    async def _list_recordings(
         self, event: UUID, after: datetime, before: datetime
-    ) -> Sequence[gm.Record]:
-        records: list[gm.Record] = []
+    ) -> Sequence[gm.Recording]:
+        recordings: list[gm.Recording] = []
         offset = 0
 
         while True:
-            records_list_request = gm.RecordsListRequest(
+            recordings_list_request = gm.RecordingsListRequest(
                 event=event, after=after, before=before, limit=None, offset=offset
             )
 
-            records_list_response = await self._gecko.records.list(records_list_request)
+            recordings_list_response = await self._gecko.recordings.list(
+                recordings_list_request
+            )
 
-            new = records_list_response.results.records
+            new = recordings_list_response.results.recordings
 
-            records = records + list(new)
+            recordings = recordings + list(new)
             offset = offset + len(new)
 
-            if offset >= records_list_response.results.count:
+            if offset >= recordings_list_response.results.count:
                 break
 
-        return records
+        return recordings
 
-    async def _list_last_records(
+    async def _list_last_recordings(
         self, event: UUID, before: datetime
-    ) -> Sequence[gm.Record]:
+    ) -> Sequence[gm.Recording]:
         after = before - self._config.operations.stream.window
 
-        return await self._list_records(event, after, before)
+        return await self._list_recordings(event, after, before)
 
-    async def _find_last_record(
+    async def _find_last_recording(
         self, schedules: Sequence[bm.Schedule], before: datetime
-    ) -> gm.Record | None:
-        records: list[gm.Record] = []
+    ) -> gm.Recording | None:
+        recordings: list[gm.Recording] = []
 
         for schedule in schedules:
             times = {instance.start for instance in schedule.instances}
-            last = await self._list_last_records(schedule.event.id, before)
-            records.extend(record for record in last if record.start in times)
+            last = await self._list_last_recordings(schedule.event.id, before)
+            recordings.extend(
+                recording for recording in last if recording.start in times
+            )
 
-        if not records:
+        if not recordings:
             return None
 
-        return max(records, key=lambda record: record.start)
+        return max(recordings, key=lambda recording: recording.start)
 
-    async def _find_record(
+    async def _find_recording(
         self, event: bm.Event, instance: bm.EventInstance
-    ) -> gm.Record | None:
+    ) -> gm.Recording | None:
         schedules = await self._find_past_live_schedules(event.show_id, instance.start)
-        return await self._find_last_record(schedules, instance.start)
+        return await self._find_last_recording(schedules, instance.start)
 
-    async def _download_record(
-        self, record: gm.Record
+    async def _download_recording(
+        self, recording: gm.Recording
     ) -> tuple[AsyncIterator[bytes], str]:
-        records_download_request = gm.RecordsDownloadRequest(
-            event=record.event, start=record.start
+        recordings_download_request = gm.RecordingsDownloadRequest(
+            event=recording.event, start=recording.start
         )
 
-        records_download_response = await self._gecko.records.download(
-            records_download_request
+        recordings_download_response = await self._gecko.recordings.download(
+            recordings_download_request
         )
 
-        return records_download_response.data, records_download_response.type
+        return recordings_download_response.data, recordings_download_response.type
 
+    @override
     async def download(
         self, event: bm.Event, instance: bm.EventInstance
     ) -> tuple[AsyncIterator[bytes], str]:
-        """Download media for a replay event."""
-        record = await self._find_record(event, instance)
+        recording = await self._find_recording(event, instance)
 
-        if record is None:
+        if recording is None:
             raise e.DownloadUnavailableError(event.id, instance.start)
 
-        return await self._download_record(record)
+        return await self._download_recording(recording)
 
 
 class Downloader:
@@ -267,7 +272,7 @@ class Downloader:
             case _:
                 raise e.UnexpectedFormatError(content_type)
 
-    async def _download_record(
+    async def _download_media(
         self, event: bm.Event, instance: bm.EventInstance, directory: Path
     ) -> tuple[Path, om.Format]:
         downloader = self._create_downloader(event)
@@ -285,8 +290,8 @@ class Downloader:
         return path, fmt
 
     async def download(self, request: m.DownloadRequest) -> m.DownloadResponse:
-        """Download a replay record."""
-        path, fmt = await self._download_record(
+        """Download media for an event instance."""
+        path, fmt = await self._download_media(
             request.event, request.instance, Path(request.directory)
         )
 

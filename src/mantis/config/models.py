@@ -186,7 +186,7 @@ class StreamConfig(BaseModel):
     """Timeout for trying to reserve a stream."""
 
     window: timedelta = timedelta(days=60)
-    """Duration of the time window for searching for past records."""
+    """Duration of the time window for searching for past recordings."""
 
 
 class OperationsConfig(BaseModel):

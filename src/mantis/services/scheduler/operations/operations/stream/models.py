@@ -42,16 +42,16 @@ class FindResponse:
 
 @dataclass
 class DownloadRequest:
-    """Request to download a replay record."""
+    """Request to download media for an event instance."""
 
     event: bm.Event
-    """Event to download the replay record for."""
+    """Event to download the media for."""
 
     instance: bm.EventInstance
-    """Instance of the event to download the replay record for."""
+    """Instance of the event to download the media for."""
 
     directory: Path
-    """Directory to download the replay record to."""
+    """Directory to download the media to."""
 
 
 @dataclass
@@ -59,10 +59,10 @@ class DownloadResponse:
     """Results of the download operation."""
 
     path: Path
-    """Path to the downloaded replay record."""
+    """Path to the downloaded media."""
 
     format: om.Format
-    """Audio format of the downloaded replay record."""
+    """Audio format of the downloaded media."""
 
 
 @dataclass
