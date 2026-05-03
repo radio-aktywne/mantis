@@ -2,6 +2,7 @@ from datetime import datetime
 from uuid import UUID
 
 from mantis.services.beaver import models as bm
+from mantis.utils.mime import MimeType
 from mantis.utils.time import isostringify
 
 
@@ -56,8 +57,8 @@ class DownloadUnavailableError(Exception):
 class UnexpectedFormatError(Exception):
     """Raised when an unexpected format is encountered."""
 
-    def __init__(self, fmt: str) -> None:
-        super().__init__(f"Unexpected format {fmt}.")
+    def __init__(self, fmt: MimeType) -> None:
+        super().__init__(f"Unexpected format {fmt!s}.")
 
 
 class ReservationFailedError(Exception):

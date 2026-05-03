@@ -1,7 +1,8 @@
-from collections.abc import AsyncIterator, Sequence
+from collections.abc import AsyncGenerator, Sequence
 from uuid import UUID
 
 from mantis.models.base import SerializableModel, datamodel
+from mantis.utils.mime import MimeType
 from mantis.utils.time import NaiveDatetime
 
 
@@ -41,9 +42,9 @@ type RecordingsDownloadRequestEvent = UUID
 
 type RecordingsDownloadRequestStart = NaiveDatetime
 
-type RecordingsDownloadResponseType = str
+type RecordingsDownloadResponseType = MimeType
 
-type RecordingsDownloadResponseData = AsyncIterator[bytes]
+type RecordingsDownloadResponseData = AsyncGenerator[bytes]
 
 
 @datamodel

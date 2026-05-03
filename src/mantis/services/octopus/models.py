@@ -1,4 +1,4 @@
-from collections.abc import AsyncIterator
+from collections.abc import AsyncGenerator
 from collections.abc import Set as AbstractSet
 from enum import StrEnum
 from uuid import UUID
@@ -34,9 +34,6 @@ class ReservationInput(SerializableModel):
     format: Format = Format.OGG
     """Format of the audio in the stream."""
 
-    record: bool = False
-    """Whether to record the stream."""
-
 
 class Reservation(SerializableModel):
     """Reservation of a stream."""
@@ -56,7 +53,7 @@ type ReserveResponseReservation = Reservation
 
 type SubscribeRequestTypes = AbstractSet[EventType] | None
 
-type SubscribeResponseMessages = AsyncIterator[EventMessage]
+type SubscribeResponseMessages = AsyncGenerator[EventMessage]
 
 
 @datamodel

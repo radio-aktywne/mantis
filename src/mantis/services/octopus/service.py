@@ -1,8 +1,8 @@
 from collections.abc import AsyncGenerator
-from typing import Any
+from typing import Any, Never, override
 
 from gracy import BaseEndpoint, GracefulRetry, Gracy, GracyConfig, GracyNamespace
-from httpx import AsyncClient
+from httpx import Response
 
 from mantis.config.models import OctopusConfig
 from mantis.models.base import Jsonable, Serializable
@@ -48,27 +48,42 @@ class ReserveNamespace(GracyNamespace[Endpoint]):
 class SSENamespace(GracyNamespace[Endpoint]):
     """Namespace for octopus sse endpoint."""
 
-    async def _subscribe(
-        self, types: m.SubscribeRequestTypes
-    ) -> AsyncGenerator[m.EventMessage]:
-        client = AsyncClient(timeout=None)  # noqa: S113
-        url = f"{self.Config.BASE_URL}/{Endpoint.SSE}"
-
-        params = {}
-        if types is not None:
-            params["types"] = Jsonable(types).model_dump_json(round_trip=True)
-
-        async with (
-            client as client,
-            client.stream("GET", url, params=params) as response,
-        ):
-            async for data in response.aiter_lines():
-                if data.startswith("data:"):
-                    yield m.EventMessage()
-
     async def subscribe(self, request: m.SubscribeRequest) -> m.SubscribeResponse:
         """Get a stream of Server-Sent Events."""
-        return m.SubscribeResponse(messages=self._subscribe(request.types))
+
+        class Stream(AsyncGenerator[m.EventMessage]):
+            def __init__(self, response: Response) -> None:
+                self.response = response
+                self.iterator = response.aiter_lines()
+
+            @override
+            async def asend(self, *args: Any, **kwargs: Any) -> m.EventMessage:
+                try:
+                    while True:
+                        data = await anext(self.iterator)
+                        if data.startswith("data:"):
+                            return m.EventMessage()
+                except:
+                    await self.response.aclose()
+                    raise
+
+            @override
+            async def athrow(self, *args: Any, **kwargs: Any) -> Never:
+                await self.response.aclose()
+                raise StopAsyncIteration
+
+        params = {}
+        if request.types is not None:
+            params["types"] = Jsonable(request.types).model_dump_json(round_trip=True)
+
+        response = await self._client.send(
+            self._client.build_request(
+                "GET", Endpoint.SSE, params=params, timeout=None
+            ),
+            stream=True,
+        )
+
+        return m.SubscribeResponse(messages=Stream(response))
 
 
 class OctopusService(BaseService):
