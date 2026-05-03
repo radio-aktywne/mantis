@@ -182,6 +182,13 @@ class OctopusConfig(BaseModel):
 class StreamConfig(BaseModel):
     """Configuration for the stream operation."""
 
+    latency: timedelta = Field(
+        default=timedelta(milliseconds=200),
+        ge=timedelta(milliseconds=20),
+        le=timedelta(milliseconds=8000),
+    )
+    """Target latency for buffering outgoing stream."""
+
     timeout: timedelta = timedelta(hours=1)
     """Timeout for trying to reserve a stream."""
 
