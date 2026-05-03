@@ -70,6 +70,9 @@ You can configure the service at runtime using various environment variables:
 - `MANTIS__OCTOPUS__SRT__PORT` -
   port of the SRT stream of the octopus service
   (default: `10300`)
+- `MANTIS__OPERATIONS__STREAM__LATENCY` -
+  target latency for buffering outgoing stream
+  (default: `PT0.2S`)
 - `MANTIS__OPERATIONS__STREAM__TIMEOUT` -
   timeout for trying to reserve a stream
   (default: `PT1H`)

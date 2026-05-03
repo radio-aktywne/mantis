@@ -1,4 +1,5 @@
 from collections.abc import Mapping, Sequence
+from math import ceil
 from pathlib import Path
 
 from pystreams.base import Stream
@@ -37,11 +38,14 @@ class Runner:
         credentials: om.Credentials,
         metadata: Mapping[str, str] | None,
     ) -> FFmpegNode:
+        latency = ceil(self._config.operations.stream.latency.total_seconds() * 1000000)
+
         return FFmpegNode(
             target=self._config.octopus.srt.url,
             options={
                 "acodec": "copy",
                 "f": self._map_format(fmt),
+                "latency": latency,
                 "map": "0:a",
                 "metadata": self._build_ffmpeg_metadata_options(metadata),
                 "mode": "caller",
