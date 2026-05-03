@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from collections.abc import AsyncIterator, Sequence
+from collections.abc import AsyncGenerator, Sequence
 from datetime import datetime, timedelta
 from pathlib import Path
 from typing import override
@@ -15,6 +15,7 @@ from mantis.services.numbat.service import NumbatService
 from mantis.services.octopus import models as om
 from mantis.services.scheduler.operations.operations.stream import errors as e
 from mantis.services.scheduler.operations.operations.stream import models as m
+from mantis.utils.mime import MimeType
 from mantis.utils.time import isostringify
 
 
@@ -24,7 +25,7 @@ class EventDownloader(ABC):
     @abstractmethod
     async def download(
         self, event: bm.Event, instance: bm.EventInstance
-    ) -> tuple[AsyncIterator[bytes], str]:
+    ) -> tuple[AsyncGenerator[bytes], MimeType]:
         """Download media for an event instance."""
 
 
@@ -78,7 +79,7 @@ class PrerecordedDownloader(EventDownloader):
 
     async def _download_prerecording(
         self, prerecording: nm.Prerecording
-    ) -> tuple[AsyncIterator[bytes], str]:
+    ) -> tuple[AsyncGenerator[bytes], MimeType]:
         prerecordings_download_request = nm.PrerecordingsDownloadRequest(
             event=prerecording.event, start=prerecording.start
         )
@@ -95,7 +96,7 @@ class PrerecordedDownloader(EventDownloader):
     @override
     async def download(
         self, event: bm.Event, instance: bm.EventInstance
-    ) -> tuple[AsyncIterator[bytes], str]:
+    ) -> tuple[AsyncGenerator[bytes], MimeType]:
         prerecording = await self._find_prerecording(event, instance)
 
         if prerecording is None:
@@ -208,7 +209,7 @@ class ReplayDownloader(EventDownloader):
 
     async def _download_recording(
         self, recording: gm.Recording
-    ) -> tuple[AsyncIterator[bytes], str]:
+    ) -> tuple[AsyncGenerator[bytes], MimeType]:
         recordings_download_request = gm.RecordingsDownloadRequest(
             event=recording.event, start=recording.start
         )
@@ -222,7 +223,7 @@ class ReplayDownloader(EventDownloader):
     @override
     async def download(
         self, event: bm.Event, instance: bm.EventInstance
-    ) -> tuple[AsyncIterator[bytes], str]:
+    ) -> tuple[AsyncGenerator[bytes], MimeType]:
         recording = await self._find_recording(event, instance)
 
         if recording is None:
@@ -265,9 +266,9 @@ class Downloader:
 
         return directory / isostringify(instance.start)
 
-    def _map_format(self, content_type: str) -> om.Format:
+    def _map_format(self, content_type: MimeType) -> om.Format:
         match content_type:
-            case "audio/ogg":
+            case MimeType(type="audio", subtype="ogg"):
                 return om.Format.OGG
             case _:
                 raise e.UnexpectedFormatError(content_type)
@@ -279,11 +280,14 @@ class Downloader:
 
         data, content_type = await downloader.download(event, instance)
 
-        path = self._get_path(event, instance, directory)
+        try:
+            path = self._get_path(event, instance, directory)
 
-        with path.open("wb") as file:
-            async for chunk in data:
-                file.write(chunk)
+            with path.open("wb") as file:
+                async for chunk in data:
+                    file.write(chunk)
+        finally:
+            await data.aclose()
 
         fmt = self._map_format(content_type)
 

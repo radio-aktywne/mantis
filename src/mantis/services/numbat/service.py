@@ -1,5 +1,5 @@
-from collections.abc import AsyncIterator
-from typing import Any
+from collections.abc import AsyncGenerator
+from typing import Any, Never, override
 
 from gracy import BaseEndpoint, GracefulRetry, Gracy, GracyConfig, GracyNamespace
 from httpx import Response
@@ -7,6 +7,7 @@ from httpx import Response
 from mantis.config.models import NumbatConfig
 from mantis.models.base import Jsonable, Serializable
 from mantis.services.numbat import models as m
+from mantis.utils.mime import MimeType
 
 
 class Endpoint(BaseEndpoint):
@@ -61,12 +62,23 @@ class PrerecordingsNamespace(GracyNamespace[Endpoint]):
     ) -> m.PrerecordingsDownloadResponse:
         """Download a prerecording."""
 
-        async def stream(response: Response) -> AsyncIterator[bytes]:
-            try:
-                async for chunk in response.aiter_bytes():
-                    yield chunk
-            finally:
-                await response.aclose()
+        class Stream(AsyncGenerator[bytes]):
+            def __init__(self, response: Response) -> None:
+                self.response = response
+                self.iterator = response.aiter_bytes()
+
+            @override
+            async def asend(self, *args: Any, **kwargs: Any) -> bytes:
+                try:
+                    return await anext(self.iterator)
+                except:
+                    await self.response.aclose()
+                    raise
+
+            @override
+            async def athrow(self, *args: Any, **kwargs: Any) -> Never:
+                await self.response.aclose()
+                raise StopAsyncIteration
 
         response = await self._client.send(
             self._client.build_request(
@@ -79,7 +91,7 @@ class PrerecordingsNamespace(GracyNamespace[Endpoint]):
         )
 
         return m.PrerecordingsDownloadResponse(
-            type=response.headers["Content-Type"], data=stream(response)
+            type=MimeType.parse(response.headers["Content-Type"]), data=Stream(response)
         )
 
 
