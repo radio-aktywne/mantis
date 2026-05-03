@@ -1,3 +1,4 @@
+from collections.abc import Mapping
 from datetime import datetime, timedelta
 from pathlib import Path
 from tempfile import TemporaryDirectory
@@ -81,9 +82,13 @@ class StreamOperation(o.Operation):
         return reserve_response.credentials
 
     async def _stream(
-        self, path: Path, fmt: om.Format, credentials: om.Credentials
+        self,
+        path: Path,
+        fmt: om.Format,
+        credentials: om.Credentials,
+        metadata: Mapping[str, str] | None,
     ) -> None:
-        stream = await self._runner.run(path, fmt, credentials)
+        stream = await self._runner.run(path, fmt, credentials, metadata)
         await stream.wait()
 
     @override
@@ -104,6 +109,6 @@ class StreamOperation(o.Operation):
             credentials = await self._reserve(event, fmt)
 
             await waiter.wait(timedelta(seconds=1))
-            await self._stream(path, fmt, credentials)
+            await self._stream(path, fmt, credentials, params.metadata)
 
         return None

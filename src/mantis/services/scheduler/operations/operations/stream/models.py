@@ -1,3 +1,4 @@
+from collections.abc import Mapping
 from datetime import datetime
 from pathlib import Path
 from uuid import UUID
@@ -16,6 +17,9 @@ class Parameters(SerializableModel):
 
     start: NaiveDatetime
     """Start datetime of the event instance in event timezone."""
+
+    metadata: Mapping[str, str] | None = None
+    """Metadata to attach to the stream."""
 
 
 @dataclass
