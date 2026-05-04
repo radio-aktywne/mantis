@@ -46,15 +46,37 @@ class Service:
 
         return m.GetResponse(task=m.GenericTask.map(task))
 
-    async def get_pending(self, request: m.GetPendingRequest) -> m.GetPendingResponse:
-        """Get a pending task."""
+    async def get_queued(self, request: m.GetQueuedRequest) -> m.GetQueuedResponse:
+        """Get a queued task."""
         with self._handle_errors():
-            task = await self._scheduler.tasks.pending.get(request.id)
+            task = await self._scheduler.tasks.queued.get(request.id)
 
         if task is None:
             raise e.TaskNotFoundError(request.id)
 
-        return m.GetPendingResponse(task=m.PendingTask.map(task))
+        return m.GetQueuedResponse(task=m.QueuedTask.map(task))
+
+    async def get_waiting(self, request: m.GetWaitingRequest) -> m.GetWaitingResponse:
+        """Get a waiting task."""
+        with self._handle_errors():
+            task = await self._scheduler.tasks.waiting.get(request.id)
+
+        if task is None:
+            raise e.TaskNotFoundError(request.id)
+
+        return m.GetWaitingResponse(task=m.WaitingTask.map(task))
+
+    async def get_sleeping(
+        self, request: m.GetSleepingRequest
+    ) -> m.GetSleepingResponse:
+        """Get a sleeping task."""
+        with self._handle_errors():
+            task = await self._scheduler.tasks.sleeping.get(request.id)
+
+        if task is None:
+            raise e.TaskNotFoundError(request.id)
+
+        return m.GetSleepingResponse(task=m.SleepingTask.map(task))
 
     async def get_running(self, request: m.GetRunningRequest) -> m.GetRunningResponse:
         """Get a running task."""
@@ -105,7 +127,7 @@ class Service:
         with self._handle_errors():
             task = await self._scheduler.schedule(request.data.map())
 
-        return m.ScheduleResponse(task=m.PendingTask.map(task))
+        return m.ScheduleResponse(task=m.QueuedTask.map(task))
 
     async def cancel(self, request: m.CancelRequest) -> m.CancelResponse:
         """Cancel a task."""

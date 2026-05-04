@@ -27,7 +27,7 @@ async def test_post(client: AsyncTestClient) -> None:
 
     data = response.json()
     assert "task" in data
-    assert "scheduled" in data
+    assert "enqueued" in data
 
     task = data["task"]
     assert isinstance(task, dict)
@@ -52,9 +52,9 @@ async def test_post(client: AsyncTestClient) -> None:
     assert isinstance(tdependencies, dict)
     assert tdependencies == dependencies
 
-    scheduled = data["scheduled"]
-    assert isinstance(scheduled, str)
-    assert datetime.fromisoformat(scheduled)
+    enqueued = data["enqueued"]
+    assert isinstance(enqueued, str)
+    assert datetime.fromisoformat(enqueued)
 
 
 @pytest.mark.asyncio(loop_scope="session")
@@ -76,14 +76,22 @@ async def test_get(client: AsyncTestClient) -> None:
     assert status == HTTP_200_OK
 
     data = response.json()
-    assert "pending" in data
+    assert "queued" in data
+    assert "waiting" in data
+    assert "sleeping" in data
     assert "running" in data
     assert "cancelled" in data
     assert "failed" in data
     assert "completed" in data
 
-    pending = data["pending"]
-    assert isinstance(pending, list)
+    queued = data["queued"]
+    assert isinstance(queued, list)
+
+    waiting = data["waiting"]
+    assert isinstance(waiting, list)
+
+    sleeping = data["sleeping"]
+    assert isinstance(sleeping, list)
 
     running = data["running"]
     assert isinstance(running, list)
@@ -97,7 +105,7 @@ async def test_get(client: AsyncTestClient) -> None:
     completed = data["completed"]
     assert isinstance(completed, list)
 
-    all_tasks = pending + running + cancelled + failed + completed
+    all_tasks = queued + waiting + sleeping + running + cancelled + failed + completed
     assert task_id in all_tasks
 
 
@@ -153,4 +161,12 @@ async def test_get_by_id(client: AsyncTestClient) -> None:
 
     status = data["status"]
     assert isinstance(status, str)
-    assert status in {"pending", "running", "cancelled", "failed", "completed"}
+    assert status in {
+        "queued",
+        "waiting",
+        "sleeping",
+        "running",
+        "cancelled",
+        "failed",
+        "completed",
+    }
