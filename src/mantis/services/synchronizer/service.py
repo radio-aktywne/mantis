@@ -44,8 +44,9 @@ class SynchronizerService:
         await asyncio.sleep(delta)
 
     async def _synchronize(self) -> None:
-        for synchronizer in self._synchronizers:
-            await synchronizer.synchronize()
+        await asyncio.gather(
+            *(synchronizer.synchronize() for synchronizer in self._synchronizers)
+        )
 
     async def _run(self) -> None:
         try:

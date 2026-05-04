@@ -73,25 +73,75 @@ class Controller(BaseController):
         return Response(Serializable(response.task))
 
     @handlers.get(
-        "/pending/{id:str}",
-        summary="Get pending task",
+        "/queued/{id:str}",
+        summary="Get queued task",
         raises=[NotFoundException],
     )
-    async def get_pending(
+    async def get_queued(
         self,
         service: Service,
         id: Annotated[  # noqa: A002
-            Serializable[m.GetPendingRequestId],
+            Serializable[m.GetQueuedRequestId],
             Parameter(
                 description="Identifier of the task.",
             ),
         ],
-    ) -> Response[Serializable[m.GetPendingResponseTask]]:
-        """Get a pending task."""
-        request = m.GetPendingRequest(id=id.root)
+    ) -> Response[Serializable[m.GetQueuedResponseTask]]:
+        """Get a queued task."""
+        request = m.GetQueuedRequest(id=id.root)
 
         try:
-            response = await service.get_pending(request)
+            response = await service.get_queued(request)
+        except e.TaskNotFoundError as ex:
+            raise NotFoundException from ex
+
+        return Response(Serializable(response.task))
+
+    @handlers.get(
+        "/waiting/{id:str}",
+        summary="Get waiting task",
+        raises=[NotFoundException],
+    )
+    async def get_waiting(
+        self,
+        service: Service,
+        id: Annotated[  # noqa: A002
+            Serializable[m.GetWaitingRequestId],
+            Parameter(
+                description="Identifier of the task.",
+            ),
+        ],
+    ) -> Response[Serializable[m.GetWaitingResponseTask]]:
+        """Get a waiting task."""
+        request = m.GetWaitingRequest(id=id.root)
+
+        try:
+            response = await service.get_waiting(request)
+        except e.TaskNotFoundError as ex:
+            raise NotFoundException from ex
+
+        return Response(Serializable(response.task))
+
+    @handlers.get(
+        "/sleeping/{id:str}",
+        summary="Get sleeping task",
+        raises=[NotFoundException],
+    )
+    async def get_sleeping(
+        self,
+        service: Service,
+        id: Annotated[  # noqa: A002
+            Serializable[m.GetSleepingRequestId],
+            Parameter(
+                description="Identifier of the task.",
+            ),
+        ],
+    ) -> Response[Serializable[m.GetSleepingResponseTask]]:
+        """Get a sleeping task."""
+        request = m.GetSleepingRequest(id=id.root)
+
+        try:
+            response = await service.get_sleeping(request)
         except e.TaskNotFoundError as ex:
             raise NotFoundException from ex
 

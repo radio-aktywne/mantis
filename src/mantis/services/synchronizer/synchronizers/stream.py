@@ -1,6 +1,8 @@
+import asyncio
 from collections.abc import Collection, Sequence
 from contextlib import suppress
 from datetime import UTC, datetime, timedelta
+from typing import override
 from uuid import UUID
 
 from pydantic import ValidationError
@@ -106,21 +108,19 @@ class StreamSynchronizer(Synchronizer):
     async def _fetch_tasks(self) -> Sequence[t.GenericTask]:
         index = await self._scheduler.tasks.list()
         ids = (
-            index.pending
+            index.queued
+            | index.waiting
+            | index.sleeping
             | index.running
             | index.cancelled
             | index.failed
             | index.completed
         )
 
-        tasks: list[t.GenericTask] = []
-
-        for task_id in ids:
-            task = await self._scheduler.tasks.get(task_id)
-            if task is not None:
-                tasks = [*tasks, task]
-
-        return tasks
+        tasks = await asyncio.gather(
+            *(self._scheduler.tasks.get(task_id) for task_id in ids)
+        )
+        return [task for task in tasks if task is not None]
 
     async def _get_events(self, ids: Collection[UUID]) -> Sequence[bm.Event]:
         if len(ids) == 0:
@@ -155,10 +155,10 @@ class StreamSynchronizer(Synchronizer):
         withparams: list[tuple[t.GenericTask, Parameters]] = []
 
         for task in tasks:
-            if task.status not in {e.Status.PENDING, e.Status.RUNNING}:
+            if task.task.operation.type != "stream":
                 continue
 
-            if task.task.operation.type != "stream":
+            if task.status in {e.Status.CANCELLED, e.Status.FAILED, e.Status.COMPLETED}:
                 continue
 
             try:
@@ -192,7 +192,7 @@ class StreamSynchronizer(Synchronizer):
 
         return valid, invalid
 
-    async def _get_tasks(
+    async def _get_unfinished_tasks(
         self, start: datetime, end: datetime
     ) -> tuple[Sequence[tuple[t.GenericTask, Parameters]], Sequence[t.GenericTask]]:
         tasks = await self._fetch_tasks()
@@ -203,6 +203,9 @@ class StreamSynchronizer(Synchronizer):
 
         with suppress(se.ServiceError):
             await self._scheduler.cancel(cancel_request)
+
+    async def _cancel_invalid_tasks(self, tasks: Sequence[t.GenericTask]) -> None:
+        await asyncio.gather(*(self._cancel(task.task.id) for task in tasks))
 
     async def _cancel_extra_tasks(
         self,
@@ -231,8 +234,7 @@ class StreamSynchronizer(Synchronizer):
                 cancel = cancel | {task.task.id}
                 continue
 
-        for task_id in cancel:
-            await self._cancel(task_id)
+        await asyncio.gather(*(self._cancel(task_id) for task_id in cancel))
 
     async def _add(self, event: bm.Event, instance: bm.EventInstance) -> None:
         utcstart = (
@@ -264,29 +266,27 @@ class StreamSynchronizer(Synchronizer):
         add: list[tuple[bm.Event, bm.EventInstance]] = []
 
         for schedule in schedules:
-            ft = filter(lambda tp: tp[1].id == schedule.event.id, tasks)
+            filtered = [
+                (task, params)
+                for task, params in tasks
+                if params.id == schedule.event.id
+            ]
 
             for instance in schedule.instances:
-                task = next(
-                    (task for task, params in ft if params.start == instance.start),
-                    None,
-                )
+                exists = any(params.start == instance.start for _, params in filtered)
 
-                if task is None:
+                if not exists:
                     add = [*add, (schedule.event, instance)]
 
-        for event, instance in add:
-            await self._add(event, instance)
+        await asyncio.gather(*(self._add(event, instance) for event, instance in add))
 
+    @override
     async def synchronize(self) -> None:
-        """Synchronize tasks."""
         start, end = self._get_time_window()
 
         schedules = await self._get_schedules(start, end)
-        valid, invalid = await self._get_tasks(start, end)
+        valid, invalid = await self._get_unfinished_tasks(start, end)
 
-        for task in invalid:
-            await self._cancel(task.task.id)
-
+        await self._cancel_invalid_tasks(invalid)
         await self._cancel_extra_tasks(schedules, valid)
         await self._add_new_tasks(schedules, valid)

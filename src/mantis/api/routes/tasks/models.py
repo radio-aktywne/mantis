@@ -11,8 +11,14 @@ from mantis.utils.time import NaiveDatetime
 class TaskIndex(SerializableModel):
     """Index of tasks by status."""
 
-    pending: AbstractSet[UUID]
-    """Identifiers of pending tasks."""
+    queued: AbstractSet[UUID]
+    """Identifiers of queued tasks."""
+
+    waiting: AbstractSet[UUID]
+    """Identifiers of waiting tasks."""
+
+    sleeping: AbstractSet[UUID]
+    """Identifiers of sleeping tasks."""
 
     running: AbstractSet[UUID]
     """Identifiers of running tasks."""
@@ -30,7 +36,9 @@ class TaskIndex(SerializableModel):
     def map(cls, index: sm.TaskIndex) -> Self:
         """Map to internal representation."""
         return cls(
-            pending=index.pending,
+            queued=index.queued,
+            waiting=index.waiting,
+            sleeping=index.sleeping,
             running=index.running,
             cancelled=index.cancelled,
             failed=index.failed,
@@ -53,21 +61,71 @@ class GenericTask(SerializableModel):
         return cls(task=task.task, status=task.status)
 
 
-class PendingTask(SerializableModel):
-    """Data of a pending task."""
+class QueuedTask(SerializableModel):
+    """Data of a queued task."""
 
     task: sm.Task
     """Task data."""
 
-    scheduled: NaiveDatetime
-    """Datetime in UTC when the task was scheduled."""
+    enqueued: NaiveDatetime
+    """Datetime in UTC when the task was enqueued."""
 
     @classmethod
-    def map(cls, task: sm.PendingTask) -> Self:
+    def map(cls, task: sm.QueuedTask) -> Self:
         """Map to internal representation."""
         return cls(
             task=task.task,
-            scheduled=task.scheduled.astimezone(UTC).replace(tzinfo=None),
+            enqueued=task.enqueued.astimezone(UTC).replace(tzinfo=None),
+        )
+
+
+class WaitingTask(SerializableModel):
+    """Data of a waiting task."""
+
+    task: sm.Task
+    """Task data."""
+
+    enqueued: NaiveDatetime
+    """Datetime in UTC when the task was enqueued."""
+
+    dequeued: NaiveDatetime
+    """Datetime in UTC when the task was dequeued."""
+
+    @classmethod
+    def map(cls, task: sm.WaitingTask) -> Self:
+        """Map to internal representation."""
+        return cls(
+            task=task.task,
+            enqueued=task.enqueued.astimezone(UTC).replace(tzinfo=None),
+            dequeued=task.dequeued.astimezone(UTC).replace(tzinfo=None),
+        )
+
+
+class SleepingTask(SerializableModel):
+    """Data of a sleeping task."""
+
+    task: sm.Task
+    """Task data."""
+
+    enqueued: NaiveDatetime
+    """Datetime in UTC when the task was enqueued."""
+
+    dequeued: NaiveDatetime | None
+    """Datetime in UTC when the task was dequeued."""
+
+    slept: NaiveDatetime
+    """Datetime in UTC when the task was slept."""
+
+    @classmethod
+    def map(cls, task: sm.SleepingTask) -> Self:
+        """Map to internal representation."""
+        return cls(
+            task=task.task,
+            enqueued=task.enqueued.astimezone(UTC).replace(tzinfo=None),
+            dequeued=task.dequeued.astimezone(UTC).replace(tzinfo=None)
+            if task.dequeued
+            else None,
+            slept=task.slept.astimezone(UTC).replace(tzinfo=None),
         )
 
 
@@ -77,8 +135,11 @@ class RunningTask(SerializableModel):
     task: sm.Task
     """Task data."""
 
-    scheduled: NaiveDatetime
-    """Datetime in UTC when the task was scheduled."""
+    enqueued: NaiveDatetime
+    """Datetime in UTC when the task was enqueued."""
+
+    dequeued: NaiveDatetime
+    """Datetime in UTC when the task was dequeued."""
 
     started: NaiveDatetime
     """Datetime in UTC when the task was started."""
@@ -88,7 +149,8 @@ class RunningTask(SerializableModel):
         """Map to internal representation."""
         return cls(
             task=task.task,
-            scheduled=task.scheduled.astimezone(UTC).replace(tzinfo=None),
+            enqueued=task.enqueued.astimezone(UTC).replace(tzinfo=None),
+            dequeued=task.dequeued.astimezone(UTC).replace(tzinfo=None),
             started=task.started.astimezone(UTC).replace(tzinfo=None),
         )
 
@@ -99,8 +161,11 @@ class CancelledTask(SerializableModel):
     task: sm.Task
     """Task data."""
 
-    scheduled: NaiveDatetime
-    """Datetime in UTC when the task was scheduled."""
+    enqueued: NaiveDatetime
+    """Datetime in UTC when the task was enqueued."""
+
+    dequeued: NaiveDatetime
+    """Datetime in UTC when the task was dequeued."""
 
     started: NaiveDatetime | None
     """Datetime in UTC when the task was started."""
@@ -113,7 +178,8 @@ class CancelledTask(SerializableModel):
         """Map to internal representation."""
         return cls(
             task=task.task,
-            scheduled=task.scheduled.astimezone(UTC).replace(tzinfo=None),
+            enqueued=task.enqueued.astimezone(UTC).replace(tzinfo=None),
+            dequeued=task.dequeued.astimezone(UTC).replace(tzinfo=None),
             started=task.started.astimezone(UTC).replace(tzinfo=None)
             if task.started
             else None,
@@ -127,10 +193,13 @@ class FailedTask(SerializableModel):
     task: sm.Task
     """Task data."""
 
-    scheduled: NaiveDatetime
-    """Datetime in UTC when the task was scheduled."""
+    enqueued: NaiveDatetime
+    """Datetime in UTC when the task was enqueued."""
 
-    started: NaiveDatetime
+    dequeued: NaiveDatetime
+    """Datetime in UTC when the task was dequeued."""
+
+    started: NaiveDatetime | None
     """Datetime in UTC when the task was started."""
 
     failed: NaiveDatetime
@@ -144,8 +213,11 @@ class FailedTask(SerializableModel):
         """Map to internal representation."""
         return cls(
             task=task.task,
-            scheduled=task.scheduled.astimezone(UTC).replace(tzinfo=None),
-            started=task.started.astimezone(UTC).replace(tzinfo=None),
+            enqueued=task.enqueued.astimezone(UTC).replace(tzinfo=None),
+            dequeued=task.dequeued.astimezone(UTC).replace(tzinfo=None),
+            started=task.started.astimezone(UTC).replace(tzinfo=None)
+            if task.started
+            else None,
             failed=task.failed.astimezone(UTC).replace(tzinfo=None),
             error=task.error,
         )
@@ -157,8 +229,11 @@ class CompletedTask(SerializableModel):
     task: sm.Task
     """Task data."""
 
-    scheduled: NaiveDatetime
-    """Datetime in UTC when the task was scheduled."""
+    enqueued: NaiveDatetime
+    """Datetime in UTC when the task was enqueued."""
+
+    dequeued: NaiveDatetime
+    """Datetime in UTC when the task was dequeued."""
 
     started: NaiveDatetime
     """Datetime in UTC when the task was started."""
@@ -174,7 +249,8 @@ class CompletedTask(SerializableModel):
         """Map to internal representation."""
         return cls(
             task=task.task,
-            scheduled=task.scheduled.astimezone(UTC).replace(tzinfo=None),
+            enqueued=task.enqueued.astimezone(UTC).replace(tzinfo=None),
+            dequeued=task.dequeued.astimezone(UTC).replace(tzinfo=None),
             started=task.started.astimezone(UTC).replace(tzinfo=None),
             completed=task.completed.astimezone(UTC).replace(tzinfo=None),
             result=task.result,
@@ -231,9 +307,17 @@ type GetRequestId = UUID
 
 type GetResponseTask = GenericTask
 
-type GetPendingRequestId = UUID
+type GetQueuedRequestId = UUID
 
-type GetPendingResponseTask = PendingTask
+type GetQueuedResponseTask = QueuedTask
+
+type GetWaitingRequestId = UUID
+
+type GetWaitingResponseTask = WaitingTask
+
+type GetSleepingRequestId = UUID
+
+type GetSleepingResponseTask = SleepingTask
 
 type GetRunningRequestId = UUID
 
@@ -253,7 +337,7 @@ type GetCompletedResponseTask = CompletedTask
 
 type ScheduleRequestData = ScheduleRequestModel
 
-type ScheduleResponseTask = PendingTask
+type ScheduleResponseTask = QueuedTask
 
 type CancelRequestId = UUID
 
@@ -294,19 +378,51 @@ class GetResponse:
 
 
 @datamodel
-class GetPendingRequest:
-    """Request to get a pending task."""
+class GetQueuedRequest:
+    """Request to get a queued task."""
 
-    id: GetPendingRequestId
+    id: GetQueuedRequestId
     """Identifier of the task."""
 
 
 @datamodel
-class GetPendingResponse:
-    """Response for getting a pending task."""
+class GetQueuedResponse:
+    """Response for getting a queued task."""
 
-    task: GetPendingResponseTask
-    """Retrieved pending task."""
+    task: GetQueuedResponseTask
+    """Retrieved queued task."""
+
+
+@datamodel
+class GetWaitingRequest:
+    """Request to get a waiting task."""
+
+    id: GetWaitingRequestId
+    """Identifier of the task."""
+
+
+@datamodel
+class GetWaitingResponse:
+    """Response for getting a waiting task."""
+
+    task: GetWaitingResponseTask
+    """Retrieved waiting task."""
+
+
+@datamodel
+class GetSleepingRequest:
+    """Request to get a sleeping task."""
+
+    id: GetSleepingRequestId
+    """Identifier of the task."""
+
+
+@datamodel
+class GetSleepingResponse:
+    """Response for getting a sleeping task."""
+
+    task: GetSleepingResponseTask
+    """Retrieved sleeping task."""
 
 
 @datamodel
@@ -386,7 +502,7 @@ class ScheduleResponse:
     """Response for scheduling a task."""
 
     task: ScheduleResponseTask
-    """Scheduled pending task."""
+    """Scheduled queued task."""
 
 
 @datamodel
