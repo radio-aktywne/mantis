@@ -1,10 +1,8 @@
 from collections.abc import AsyncGenerator, Generator
 from contextlib import contextmanager
 
-from mantis.api.routes.sse import errors as e
-from mantis.api.routes.sse import models as m
-from mantis.services.events import errors as ee
-from mantis.services.events import models as em
+from mantis.api.routes.sse import errors as e, models as m
+from mantis.services.events import errors as ee, models as em
 from mantis.services.events.service import EventsService
 
 

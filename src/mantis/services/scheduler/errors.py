@@ -3,12 +3,13 @@ from pyscheduler.errors import (
     InvalidCleaningStrategyError,
     InvalidConditionError,
     InvalidOperationError,
+    SchedulerError as ServiceError,
     TaskNotFoundError,
     TaskStatusError,
     UnexpectedTaskStatusError,
     UnsuccessfulDependencyError,
 )
-from pyscheduler.errors import SchedulerError as ServiceError
+
 
 __all__ = [
     "DependencyNotFoundError",

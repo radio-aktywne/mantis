@@ -2,8 +2,7 @@ from litestar.channels import ChannelsPlugin
 
 from mantis.models.events import test as ev
 from mantis.models.events.types import Event
-from mantis.services.test import errors as e
-from mantis.services.test import models as m
+from mantis.services.test import errors as e, models as m
 
 
 class TestService:

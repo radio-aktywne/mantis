@@ -56,7 +56,7 @@ class SynchronizerService:
                     await self._synchronize()
                 except asyncio.CancelledError:
                     raise
-                except Exception:  # noqa: S110
+                except Exception:  # noqa: BLE001, S110
                     pass
         except asyncio.CancelledError:
             pass

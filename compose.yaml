@@ -1,0 +1,11 @@
+services:
+  mantis:
+    build:
+      context: ./
+      network: host
+    environment:
+      - "MANTIS__DEBUG=${MANTIS__DEBUG:-true}"
+      - "MANTIS__SERVER__HOST=${MANTIS__SERVER__HOST:-0.0.0.0}"
+      - "MANTIS__SERVER__PORT=${MANTIS__SERVER__PORT:-10800}"
+      - "MANTIS__SERVER__TRUSTED=${MANTIS__SERVER__TRUSTED:-*}"
+    network_mode: host

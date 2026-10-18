@@ -8,15 +8,15 @@ from uuid import UUID
 from mantis.config.models import Config
 from mantis.services.apis.beaver import models as bm
 from mantis.services.apis.beaver.service import BeaverService
-from mantis.services.apis.gecko import errors as ge
-from mantis.services.apis.gecko import models as gm
+from mantis.services.apis.gecko import errors as ge, models as gm
 from mantis.services.apis.gecko.service import GeckoService
-from mantis.services.apis.numbat import errors as ne
-from mantis.services.apis.numbat import models as nm
+from mantis.services.apis.numbat import errors as ne, models as nm
 from mantis.services.apis.numbat.service import NumbatService
 from mantis.services.apis.octopus import models as om
-from mantis.services.scheduler.operations.operations.stream import errors as e
-from mantis.services.scheduler.operations.operations.stream import models as m
+from mantis.services.scheduler.operations.operations.stream import (
+    errors as e,
+    models as m,
+)
 from mantis.utils.mime import MimeType
 from mantis.utils.time import isostringify
 

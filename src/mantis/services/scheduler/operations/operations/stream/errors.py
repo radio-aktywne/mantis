@@ -24,7 +24,9 @@ class InstanceAlreadyEndedError(OperationError):
 
     def __init__(self, instance: bm.InstanceWithEvent) -> None:
         super().__init__(
-            f"Instance for event {instance.event.id} and start {isostringify(instance.start)} has already ended at {isostringify(instance.start + instance.duration)}."
+            f"Instance for event {instance.event.id} "
+            f"and start {isostringify(instance.start)} has already ended "
+            f"at {isostringify(instance.start + instance.duration)}."
         )
 
 
@@ -40,7 +42,8 @@ class DownloadUnavailableError(OperationError):
 
     def __init__(self, instance: bm.InstanceWithEvent) -> None:
         super().__init__(
-            f"No download available for instance for event {instance.event.id} and start {isostringify(instance.start)}."
+            f"No download available for instance for event {instance.event.id} "
+            f"and start {isostringify(instance.start)}."
         )
 
 
@@ -56,5 +59,6 @@ class ReservationFailedError(OperationError):
 
     def __init__(self, instance: bm.InstanceWithEvent) -> None:
         super().__init__(
-            f"Failed to reserve stream for instance for event {instance.event.id} and start {isostringify(instance.start)}."
+            f"Failed to reserve stream for instance for event {instance.event.id} "
+            f"and start {isostringify(instance.start)}."
         )

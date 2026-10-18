@@ -1,7 +1,6 @@
 from typing import override
 
-from pyscheduler.models import transfer as t
-from pyscheduler.models import types
+from pyscheduler.models import transfer as t, types
 from pyscheduler.protocols import cleaning as c
 
 

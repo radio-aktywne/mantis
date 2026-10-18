@@ -7,6 +7,7 @@ from mantis.config.errors import ConfigError
 from mantis.console import FallbackConsoleBuilder
 from mantis.server import Server
 
+
 cli = CliBuilder().build()
 
 

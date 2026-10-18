@@ -11,6 +11,7 @@ from mantis.api.lifespans import (
     CleanerLifespan,
     SchedulerLifespan,
     StoreLifespan,
+    SuppressHTTPX2LoggingLifespan,
     SuppressHTTPXLoggingLifespan,
     SynchronizerLifespan,
     TestLifespan,
@@ -47,6 +48,7 @@ class AppBuilder:
         return [
             TestLifespan,
             SuppressHTTPXLoggingLifespan,
+            SuppressHTTPX2LoggingLifespan,
             StoreLifespan,
             SchedulerLifespan,
             CleanerLifespan,
