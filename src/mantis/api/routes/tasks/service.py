@@ -1,8 +1,7 @@
 from collections.abc import Generator
 from contextlib import contextmanager
 
-from mantis.api.routes.tasks import errors as e
-from mantis.api.routes.tasks import models as m
+from mantis.api.routes.tasks import errors as e, models as m
 from mantis.services.scheduler import errors as se
 from mantis.services.scheduler.models import transfer as sm
 from mantis.services.scheduler.service import SchedulerService

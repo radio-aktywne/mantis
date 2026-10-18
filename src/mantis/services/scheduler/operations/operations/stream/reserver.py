@@ -1,11 +1,12 @@
 import asyncio
 
 from mantis.config.models import Config
-from mantis.services.apis.octopus import errors as oe
-from mantis.services.apis.octopus import models as om
+from mantis.services.apis.octopus import errors as oe, models as om
 from mantis.services.apis.octopus.service import OctopusService
-from mantis.services.scheduler.operations.operations.stream import errors as e
-from mantis.services.scheduler.operations.operations.stream import models as m
+from mantis.services.scheduler.operations.operations.stream import (
+    errors as e,
+    models as m,
+)
 from mantis.utils.time import awareutcnow
 
 

@@ -1,10 +1,8 @@
 from collections.abc import Generator
 from contextlib import contextmanager
 
-from mantis.api.routes.ping import errors as e
-from mantis.api.routes.ping import models as m
-from mantis.services.ping import errors as pe
-from mantis.services.ping import models as pm
+from mantis.api.routes.ping import errors as e, models as m
+from mantis.services.ping import errors as pe, models as pm
 from mantis.services.ping.service import PingService
 
 

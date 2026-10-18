@@ -3,12 +3,11 @@ from contextlib import asynccontextmanager
 from http import HTTPMethod, HTTPStatus
 from typing import Any
 
-from httpx import AsyncClient, HTTPError, HTTPStatusError, Response
+from httpx2 import AsyncClient, HTTPError, HTTPStatusError, Response
 
 from mantis.config.models import OctopusConfig, OctopusHTTPConfig
 from mantis.models.base import Jsonable, Serializable
-from mantis.services.apis.octopus import errors as e
-from mantis.services.apis.octopus import models as m
+from mantis.services.apis.octopus import errors as e, models as m
 
 
 class OctopusClient:
@@ -52,7 +51,7 @@ class OctopusClient:
         """Make a request and stream the response."""
         try:
             async with (
-                AsyncClient(timeout=None, base_url=self.config.url) as client,  # noqa: S113
+                AsyncClient(timeout=None, base_url=self.config.url) as client,
                 client.stream(
                     method,
                     path,

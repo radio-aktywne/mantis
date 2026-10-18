@@ -1,8 +1,9 @@
-from mantis.services.apis.beaver import errors as be
-from mantis.services.apis.beaver import models as bm
+from mantis.services.apis.beaver import errors as be, models as bm
 from mantis.services.apis.beaver.service import BeaverService
-from mantis.services.scheduler.operations.operations.stream import errors as e
-from mantis.services.scheduler.operations.operations.stream import models as m
+from mantis.services.scheduler.operations.operations.stream import (
+    errors as e,
+    models as m,
+)
 
 
 class Finder:

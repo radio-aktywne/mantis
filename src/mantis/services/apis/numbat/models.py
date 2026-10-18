@@ -5,6 +5,7 @@ from mantis.models.base import datamodel
 from mantis.utils.mime import MimeType
 from mantis.utils.time import NaiveDatetime
 
+
 type PrerecordingsDownloadRequestEvent = UUID
 
 type PrerecordingsDownloadRequestStart = NaiveDatetime

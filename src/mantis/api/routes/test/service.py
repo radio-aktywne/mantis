@@ -1,10 +1,8 @@
 from collections.abc import Generator
 from contextlib import contextmanager
 
-from mantis.api.routes.test import errors as e
-from mantis.api.routes.test import models as m
-from mantis.services.test import errors as te
-from mantis.services.test import models as tm
+from mantis.api.routes.test import errors as e, models as m
+from mantis.services.test import errors as te, models as tm
 from mantis.services.test.service import TestService
 
 

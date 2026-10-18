@@ -5,6 +5,7 @@ from pydantic import Field
 from mantis.models.base import SerializableModel
 from mantis.utils.time import UTCDatetime
 
+
 type TypeField[T] = Annotated[
     T,
     Field(description="Type of the event."),

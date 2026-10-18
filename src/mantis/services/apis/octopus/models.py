@@ -1,5 +1,4 @@
-from collections.abc import AsyncGenerator
-from collections.abc import Set as AbstractSet
+from collections.abc import AsyncGenerator, Set as AbstractSet
 from enum import StrEnum
 from typing import Annotated
 from uuid import UUID

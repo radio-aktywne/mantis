@@ -6,7 +6,7 @@ from tempfile import TemporaryDirectory
 
 import pytest
 import pytest_asyncio
-from httpx import AsyncClient, BasicAuth
+from httpx2 import AsyncClient, BasicAuth
 from litestar import Litestar
 from litestar.testing import AsyncTestClient
 
@@ -231,7 +231,7 @@ async def howlite() -> AsyncGenerator[AsyncDockerContainer]:
     """Run howlite container."""
 
     async def _check() -> None:
-        auth = BasicAuth(username="user", password="password")
+        auth = BasicAuth(username="user", password="password")  # noqa: S106
         async with AsyncClient(base_url="http://localhost:10520", auth=auth) as client:
             response = await client.get("/user/calendar")
             response.raise_for_status()

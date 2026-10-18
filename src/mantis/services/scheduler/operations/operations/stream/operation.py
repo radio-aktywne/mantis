@@ -14,8 +14,10 @@ from mantis.services.apis.gecko.service import GeckoService
 from mantis.services.apis.numbat.service import NumbatService
 from mantis.services.apis.octopus import models as om
 from mantis.services.apis.octopus.service import OctopusService
-from mantis.services.scheduler.operations.operations.stream import errors as e
-from mantis.services.scheduler.operations.operations.stream import models as m
+from mantis.services.scheduler.operations.operations.stream import (
+    errors as e,
+    models as m,
+)
 from mantis.services.scheduler.operations.operations.stream.downloader import Downloader
 from mantis.services.scheduler.operations.operations.stream.finder import Finder
 from mantis.services.scheduler.operations.operations.stream.reserver import Reserver

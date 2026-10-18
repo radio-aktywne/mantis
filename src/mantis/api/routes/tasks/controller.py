@@ -1,16 +1,14 @@
 from collections.abc import Mapping
 from typing import Annotated
 
-from litestar import Controller as BaseController
-from litestar import handlers
-from litestar.di import Provide
+from litestar import Controller as BaseController, handlers
+from litestar.di import NamedDependency, Provide
 from litestar.params import Body, Parameter
 from litestar.response import Response
 from litestar.status_codes import HTTP_200_OK
 
 from mantis.api.exceptions import BadRequestException, NotFoundException
-from mantis.api.routes.tasks import errors as e
-from mantis.api.routes.tasks import models as m
+from mantis.api.routes.tasks import errors as e, models as m
 from mantis.api.routes.tasks.service import Service
 from mantis.models.base import Serializable
 from mantis.state import State
@@ -38,7 +36,7 @@ class Controller(BaseController):
         summary="List tasks",
     )
     async def list(
-        self, service: Service
+        self, service: NamedDependency[Service]
     ) -> Response[Serializable[m.ListResponseTasks]]:
         """List tasks."""
         request = m.ListRequest()
@@ -54,7 +52,7 @@ class Controller(BaseController):
     )
     async def get(
         self,
-        service: Service,
+        service: NamedDependency[Service],
         id: Annotated[  # noqa: A002
             Serializable[m.GetRequestId],
             Parameter(
@@ -79,7 +77,7 @@ class Controller(BaseController):
     )
     async def get_queued(
         self,
-        service: Service,
+        service: NamedDependency[Service],
         id: Annotated[  # noqa: A002
             Serializable[m.GetQueuedRequestId],
             Parameter(
@@ -104,7 +102,7 @@ class Controller(BaseController):
     )
     async def get_waiting(
         self,
-        service: Service,
+        service: NamedDependency[Service],
         id: Annotated[  # noqa: A002
             Serializable[m.GetWaitingRequestId],
             Parameter(
@@ -129,7 +127,7 @@ class Controller(BaseController):
     )
     async def get_sleeping(
         self,
-        service: Service,
+        service: NamedDependency[Service],
         id: Annotated[  # noqa: A002
             Serializable[m.GetSleepingRequestId],
             Parameter(
@@ -154,7 +152,7 @@ class Controller(BaseController):
     )
     async def get_running(
         self,
-        service: Service,
+        service: NamedDependency[Service],
         id: Annotated[  # noqa: A002
             Serializable[m.GetRunningRequestId],
             Parameter(
@@ -179,7 +177,7 @@ class Controller(BaseController):
     )
     async def get_cancelled(
         self,
-        service: Service,
+        service: NamedDependency[Service],
         id: Annotated[  # noqa: A002
             Serializable[m.GetCancelledRequestId],
             Parameter(
@@ -204,7 +202,7 @@ class Controller(BaseController):
     )
     async def get_failed(
         self,
-        service: Service,
+        service: NamedDependency[Service],
         id: Annotated[  # noqa: A002
             Serializable[m.GetFailedRequestId],
             Parameter(
@@ -229,7 +227,7 @@ class Controller(BaseController):
     )
     async def get_completed(
         self,
-        service: Service,
+        service: NamedDependency[Service],
         id: Annotated[  # noqa: A002
             Serializable[m.GetCompletedRequestId],
             Parameter(
@@ -253,7 +251,7 @@ class Controller(BaseController):
     )
     async def schedule(
         self,
-        service: Service,
+        service: NamedDependency[Service],
         data: Annotated[
             Serializable[m.ScheduleRequestData],
             Body(
@@ -279,7 +277,7 @@ class Controller(BaseController):
     )
     async def cancel(
         self,
-        service: Service,
+        service: NamedDependency[Service],
         id: Annotated[  # noqa: A002
             Serializable[m.CancelRequestId],
             Parameter(
@@ -305,7 +303,7 @@ class Controller(BaseController):
     )
     async def clean(
         self,
-        service: Service,
+        service: NamedDependency[Service],
         data: Annotated[
             Serializable[m.CleanRequestData],
             Body(

@@ -1,5 +1,4 @@
-from collections.abc import AsyncIterator
-from collections.abc import Set as AbstractSet
+from collections.abc import AsyncIterator, Set as AbstractSet
 
 from mantis.models.base import datamodel
 from mantis.models.events.enums import EventType

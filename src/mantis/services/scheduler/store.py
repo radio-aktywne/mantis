@@ -1,9 +1,8 @@
 import json
 from types import TracebackType
-from typing import override
+from typing import Self, override
 
-from pyscheduler.models.data import runtime as r
-from pyscheduler.models.data import storage as s
+from pyscheduler.models.data import runtime as r, storage as s
 from pyscheduler.protocols import store as st
 from pystores import file as f
 
@@ -37,7 +36,7 @@ class Store(f.FileStore[s.State, str], st.Store[s.State]):
             default=self._build_default_state(),
         )
 
-    async def __aenter__(self) -> "Store":
+    async def __aenter__(self) -> Self:
         return self
 
     async def __aexit__(

@@ -70,7 +70,7 @@ class EventWhereInput(TypedDict, total=False):
     show_id: UUID | None
     """Identifier of the show the event belongs to."""
 
-    OR: list["EventWhereInput"]
+    OR: list[EventWhereInput]
     """List of event arguments for searching evaluated as alternatives."""
 
 

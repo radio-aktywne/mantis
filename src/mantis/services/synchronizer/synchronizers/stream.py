@@ -11,8 +11,7 @@ from mantis.config.models import StreamSynchronizerConfig
 from mantis.services.apis.beaver import models as bm
 from mantis.services.apis.beaver.service import BeaverService
 from mantis.services.scheduler import errors as se
-from mantis.services.scheduler.models import enums as e
-from mantis.services.scheduler.models import transfer as t
+from mantis.services.scheduler.models import enums as e, transfer as t
 from mantis.services.scheduler.operations.operations.stream.models import Parameters
 from mantis.services.scheduler.service import SchedulerService
 from mantis.services.synchronizer.synchronizers.synchronizer import Synchronizer
