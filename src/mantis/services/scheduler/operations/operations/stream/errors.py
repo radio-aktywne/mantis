@@ -62,3 +62,10 @@ class ReservationFailedError(OperationError):
             f"Failed to reserve stream for instance for event {instance.event.id} "
             f"and start {isostringify(instance.start)}."
         )
+
+
+class StreamFailedError(OperationError):
+    """Raised when the stream process exits unsuccessfully."""
+
+    def __init__(self, code: int) -> None:
+        super().__init__(f"Stream process failed with exit code {code}.")
