@@ -1,4 +1,6 @@
+import asyncio
 from collections.abc import Mapping
+from contextlib import suppress
 from datetime import timedelta
 from pathlib import Path
 from tempfile import TemporaryDirectory
@@ -6,6 +8,7 @@ from typing import override
 
 from pyscheduler.models import types as t
 from pyscheduler.protocols import operation as o
+from pystreams.base import Stream
 
 from mantis.config.models import Config
 from mantis.services.apis.beaver import models as bm
@@ -82,6 +85,15 @@ class StreamOperation(o.Operation):
 
         return reserve_response.credentials
 
+    async def _stop_stream(self, stream: Stream) -> None:
+        for action in (stream.terminate, stream.kill):
+            with suppress(Exception):
+                await asyncio.wait_for(action(), timeout=5)
+
+            with suppress(Exception):
+                await asyncio.wait_for(stream.wait(), timeout=5)
+                return
+
     async def _stream(
         self,
         path: Path,
@@ -90,7 +102,15 @@ class StreamOperation(o.Operation):
         metadata: Mapping[str, str] | None,
     ) -> None:
         stream = await self._runner.run(path, fmt, credentials, metadata)
-        await stream.wait()
+
+        try:
+            await stream.wait()
+        except BaseException:
+            await self._stop_stream(stream)
+            raise
+
+        if code := stream.process.returncode:
+            raise e.StreamFailedError(code)
 
     @override
     async def run(

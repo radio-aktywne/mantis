@@ -2,12 +2,15 @@ from collections.abc import Mapping, Sequence
 from math import ceil
 from pathlib import Path
 
-from pystreams.base import Stream
 from pystreams.ffmpeg import FFmpegNode, FFmpegStreamMetadata
-from pystreams.process import ProcessBasedStreamFactory, ProcessBasedStreamMetadata
+from pystreams.process import ProcessBasedStreamMetadata
 
 from mantis.config.models import Config
 from mantis.services.apis.octopus import models as om
+from mantis.services.scheduler.operations.operations.stream.stream import (
+    LoggedStream,
+    LoggedStreamFactory,
+)
 
 
 class Runner:
@@ -63,10 +66,14 @@ class Runner:
         return FFmpegStreamMetadata(
             input=self._build_stream_input(path, fmt),
             output=self._build_stream_output(fmt, credentials, metadata),
+            options={
+                "hide_banner": True,
+                "nostats": True,
+            },
         )
 
-    async def _run_stream(self, metadata: ProcessBasedStreamMetadata) -> Stream:
-        return await ProcessBasedStreamFactory().create(metadata)
+    async def _run_stream(self, metadata: ProcessBasedStreamMetadata) -> LoggedStream:
+        return await LoggedStreamFactory().create(metadata)
 
     async def run(
         self,
@@ -74,7 +81,7 @@ class Runner:
         fmt: om.Format,
         credentials: om.Credentials,
         metadata: Mapping[str, str] | None,
-    ) -> Stream:
+    ) -> LoggedStream:
         """Run the stream."""
         meta = self._build_stream_metadata(path, fmt, credentials, metadata)
         return await self._run_stream(meta)
