@@ -15,6 +15,13 @@ class Format(StrEnum):
     OGG = "ogg"
 
 
+class Start(StrEnum):
+    """Playback start behavior."""
+
+    HARD = "hard"
+    SOFT = "soft"
+
+
 class EventType(StrEnum):
     """Event types."""
 
@@ -39,6 +46,12 @@ class ReservationInput(SerializableModel):
 
     format: Format = Format.OGG
     """Format of the audio in the stream."""
+
+    force: bool = False
+    """Whether to replace an existing stream reservation."""
+
+    start: Start = Start.HARD
+    """How playback should start relative to existing audio."""
 
 
 class Credentials(SerializableModel):

@@ -73,6 +73,12 @@ You can configure the service at runtime using various environment variables:
 - `MANTIS__OPERATIONS__STREAM__LATENCY` -
   target latency for buffering outgoing stream
   (default: `PT0.2S`)
+- `MANTIS__OPERATIONS__STREAM__LINGER` -
+  time allowed for outgoing stream to linger when closing
+  (default: `PT1S`)
+- `MANTIS__OPERATIONS__STREAM__OGG__PAGE` -
+  preferred duration of outgoing Ogg pages
+  (default: `PT0.000001S`)
 - `MANTIS__OPERATIONS__STREAM__TIMEOUT` -
   timeout for trying to reserve a stream
   (default: `PT1H`)

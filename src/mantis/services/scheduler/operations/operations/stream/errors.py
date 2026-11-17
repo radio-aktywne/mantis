@@ -64,6 +64,13 @@ class ReservationFailedError(OperationError):
         )
 
 
+class StreamStopError(OperationError):
+    """Raised when the stream cannot be stopped."""
+
+    def __init__(self) -> None:
+        super().__init__("Failed to stop the stream.")
+
+
 class StreamFailedError(OperationError):
     """Raised when the stream process exits unsuccessfully."""
 

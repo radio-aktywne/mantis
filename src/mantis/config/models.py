@@ -179,6 +179,13 @@ class OctopusConfig(BaseModel):
     """Configuration for the SRT stream."""
 
 
+class StreamOGGConfig(BaseModel):
+    """Configuration for outgoing Ogg streams."""
+
+    page: timedelta = Field(default=timedelta(microseconds=1), gt=timedelta())
+    """Preferred duration of outgoing Ogg pages."""
+
+
 class StreamConfig(BaseModel):
     """Configuration for the stream operation."""
 
@@ -188,6 +195,12 @@ class StreamConfig(BaseModel):
         le=timedelta(milliseconds=8000),
     )
     """Target latency for buffering outgoing stream."""
+
+    linger: timedelta = Field(default=timedelta(seconds=1), ge=timedelta())
+    """Time allowed for outgoing stream to linger when closing."""
+
+    ogg: StreamOGGConfig = StreamOGGConfig()
+    """Configuration for outgoing Ogg streams."""
 
     timeout: timedelta = timedelta(hours=1)
     """Timeout for trying to reserve a stream."""

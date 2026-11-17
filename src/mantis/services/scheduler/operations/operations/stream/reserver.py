@@ -36,6 +36,8 @@ class Reserver:
                         event=request.instance.event.id, start=request.instance.start
                     ),
                     format=request.format,
+                    force=False,
+                    start=om.Start.SOFT,
                 )
             )
             reserve_response = await self._octopus.reserve(reserve_request)

@@ -2,6 +2,7 @@ import asyncio
 from collections.abc import Mapping
 from contextlib import suppress
 from datetime import timedelta
+from math import ceil
 from pathlib import Path
 from tempfile import TemporaryDirectory
 from typing import override
@@ -86,13 +87,17 @@ class StreamOperation(o.Operation):
         return reserve_response.credentials
 
     async def _stop_stream(self, stream: Stream) -> None:
-        for action in (stream.terminate, stream.kill):
+        linger = ceil(self._config.operations.stream.linger.total_seconds())
+
+        for action, timeout in ((stream.terminate, linger + 5), (stream.kill, 5)):
             with suppress(Exception):
                 await asyncio.wait_for(action(), timeout=5)
 
             with suppress(Exception):
-                await asyncio.wait_for(stream.wait(), timeout=5)
+                await asyncio.wait_for(stream.wait(), timeout=timeout)
                 return
+
+        raise e.StreamStopError
 
     async def _stream(
         self,
@@ -106,7 +111,13 @@ class StreamOperation(o.Operation):
         try:
             await stream.wait()
         except BaseException:
-            await self._stop_stream(stream)
+            task = asyncio.create_task(self._stop_stream(stream))
+
+            while not task.done():
+                with suppress(asyncio.CancelledError):
+                    await asyncio.shield(task)
+
+            await task
             raise
 
         if code := stream.process.returncode:
