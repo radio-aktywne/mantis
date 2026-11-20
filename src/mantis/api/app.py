@@ -6,6 +6,7 @@ from litestar.channels import ChannelsPlugin
 from litestar.channels.backends.memory import MemoryChannelsBackend
 from litestar.openapi import OpenAPIConfig
 from litestar.plugins import PluginProtocol
+from pylocks.asyncio import AsyncioLock
 
 from mantis.api.lifespans import (
     CleanerLifespan,
@@ -81,7 +82,10 @@ class AppBuilder:
         )
         cleaner = CleanerService(config=self._config.cleaner, scheduler=scheduler)
         synchronizer = SynchronizerService(
-            config=self._config.synchronizer, beaver=beaver, scheduler=scheduler
+            config=self._config.synchronizer,
+            lock=AsyncioLock(),
+            beaver=beaver,
+            scheduler=scheduler,
         )
 
         return State(

@@ -4,6 +4,8 @@ from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
 from datetime import datetime
 
+from pylocks.base import Lock
+
 from mantis.config.models import SynchronizerConfig
 from mantis.services.apis.beaver.service import BeaverService
 from mantis.services.scheduler.service import SchedulerService
@@ -17,10 +19,12 @@ class SynchronizerService:
     def __init__(
         self,
         config: SynchronizerConfig,
+        lock: Lock,
         beaver: BeaverService,
         scheduler: SchedulerService,
     ) -> None:
         self._config = config
+        self._lock = lock
         self._synchronizers = [
             StreamSynchronizer(
                 config=config.synchronizers.stream, beaver=beaver, scheduler=scheduler
@@ -44,9 +48,10 @@ class SynchronizerService:
         await asyncio.sleep(delta)
 
     async def _synchronize(self) -> None:
-        await asyncio.gather(
-            *(synchronizer.synchronize() for synchronizer in self._synchronizers)
-        )
+        async with self._lock:
+            await asyncio.gather(
+                *(synchronizer.synchronize() for synchronizer in self._synchronizers)
+            )
 
     async def _run(self) -> None:
         try:
